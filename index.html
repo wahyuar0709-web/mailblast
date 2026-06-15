@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MailBlast - Sistem Kirim Lamaran Otomatis</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F172A">
+<style>
+  :root {
+    --bg-dark: #0F172A;
+    --bg-card: #1E293B;
+    --bg-input: #0F172A;
+    --accent: #10B981;
+    --accent-dim: #064E3B;
+    --accent-yellow: #F59E0B;
+    --accent-red: #EF4444;
+    --accent-blue: #3B82F6;
+    --text-primary: #F8FAFC;
+    --text-muted: #94A3B8;
+    --border: #334155;
+    --sidebar-w: 220px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform .3s;
+  }
+  .sidebar-logo {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-text { font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .logo-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+  .nav-section { font-size: 0.65rem; color: var(--text-muted); padding: 0.75rem 1.25rem 0.25rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.6rem 1.25rem;
+    cursor: pointer;
+    font-size: 0.875rem; color: var(--text-muted);
+    transition: all .15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(16,185,129,0.08); }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .user-badge { display: flex; align-items: center; gap: 8px; }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: var(--accent);
+  }
+
+  /* Main content */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0.875rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title { font-size: 1rem; font-weight: 600; }
+  .topbar-actions { display: flex; gap: 8px; }
+  .content { padding: 1.5rem; flex: 1; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+    text-decoration: none;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #059669; }
+  .btn-danger { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+  .btn-danger:hover { background: #DC2626; }
+  .btn-warning { background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); }
+  .btn-warning:hover { background: #D97706; }
+  .btn-outline {
+    background: transparent; color: var(--text-muted);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { color: var(--text-primary); border-color: #475569; background: rgba(255,255,255,0.05); }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Stats cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.125rem 1.25rem;
+  }
+  .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  .stat-value { font-size: 1.875rem; font-weight: 700; line-height: 1; }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.yellow { color: var(--accent-yellow); }
+  .stat-value.red { color: var(--accent-red); }
+  .stat-value.blue { color: var(--accent-blue); }
+  .stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* Action bar */
+  .action-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .action-bar-label { font-size: 0.8125rem; color: var(--text-muted); flex: 1; }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .chip-idle { background: rgba(148,163,184,0.15); color: var(--text-muted); }
+  .chip-running { background: rgba(16,185,129,0.15); color: var(--accent); }
+  .chip-running::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+  .chip-paused { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+  .chip-stopped { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Live log */
+  .log-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .log-header {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.875rem; font-weight: 600;
+  }
+  .log-body { padding: 0.75rem 1.25rem; max-height: 300px; overflow-y: auto; }
+  .log-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.4rem 0;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-time { color: var(--text-muted); font-size: 0.7rem; width: 50px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .log-pt { flex: 1; }
+  .log-status { font-size: 0.7rem; font-weight: 600; }
+  .log-status.sent { color: var(--accent); }
+  .log-status.failed { color: var(--accent-red); }
+  .log-status.pending { color: var(--accent-yellow); }
+  .log-status.processing { color: var(--accent-blue); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.sent { background: var(--accent); }
+  .dot.failed { background: var(--accent-red); }
+  .dot.pending { background: var(--accent-yellow); }
+  .dot.processing { background: var(--accent-blue); animation: pulse 1s infinite; }
+
+  /* Table */
+  .table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .table-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .table-title { font-size: 0.875rem; font-weight: 600; flex: 1; }
+  .search-box {
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    outline: none;
+    width: 200px;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15,23,42,0.5);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .badge-pending { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+  .badge-sent { background: rgba(16,185,129,0.15); color: var(--accent); }
+  .badge-failed { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .badge-processing { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .badge-paused { background: rgba(148,163,184,0.15); color: var(--text-muted); }
+  .td-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .icon-btn:hover { color: var(--text-primary); border-color: #475569; background: rgba(255,255,255,0.07); }
+  .icon-btn.danger:hover { color: var(--accent-red); border-color: var(--accent-red); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  /* Forms */
+  .form-section { max-width: 680px; }
+  .form-row { margin-bottom: 1.125rem; }
+  .form-label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.375rem; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color .15s;
+    font-family: var(--font);
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 120px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-actions { display: flex; gap: 8px; padding-top: 0.5rem; }
+  .card-form {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card-form-title {
+    font-size: 0.875rem; font-weight: 600;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Progress bar */
+  .progress-wrap { background: rgba(51,65,85,0.5); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px; }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width .5s; }
+
+  /* Scheduler */
+  .scheduler-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* Mobile */
+  .menu-toggle {
+    display: none;
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-primary);
+    align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .menu-toggle svg { width: 18px; height: 18px; }
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .main { margin-left: 0; }
+    .menu-toggle { display: flex; }
+    .form-grid { grid-template-columns: 1fr; }
+    .scheduler-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .search-box { width: 140px; }
+    .topbar { padding: 0.75rem 1rem; }
+    .content { padding: 1rem; }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+  }
+  .empty-state svg { width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.3; display: block; }
+  .empty-state p { font-size: 0.875rem; }
+
+  /* Modal */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%; max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 500;
+  }
+  .toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    display: flex; align-items: center; gap: 8px;
+    min-width: 240px;
+    animation: slideIn .2s ease;
+  }
+  .toast.success { border-left: 3px solid var(--accent); }
+  .toast.error { border-left: 3px solid var(--accent-red); }
+  .toast.info { border-left: 3px solid var(--accent-blue); }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Helpers */
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .text-muted { color: var(--text-muted); font-size: 0.8125rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  select option { background: #1E293B; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">✉ MailBlast</div>
+    <div class="logo-sub">Sistem Kirim Lamaran Otomatis</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Utama</div>
+    <a class="nav-item active" onclick="showPage('dashboard')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('perusahaan')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3"/></svg>
+      Data Perusahaan
+    </a>
+    <a class="nav-item" onclick="showPage('template')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      Template Email
+    </a>
+    <a class="nav-item" onclick="showPage('lampiran')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+      Lampiran
+    </a>
+    <div class="nav-section">Pengiriman</div>
+    <a class="nav-item" onclick="showPage('scheduler')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Scheduler
+    </a>
+    <a class="nav-item" onclick="showPage('monitoring')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Monitoring
+    </a>
+    <a class="nav-item" onclick="showPage('log')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Log Pengiriman
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-badge">
+      <div class="user-avatar">WS</div>
+      <div>
+        <div style="font-size:0.8rem;color:var(--text-primary)">Wahyu Susanto</div>
+        <div style="font-size:0.7rem">wahyu@gmail.com</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="topbar">
+    <div class="flex items-center gap-3">
+      <button class="menu-toggle" onclick="toggleSidebar()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary" onclick="showPage('perusahaan'); setTimeout(()=>openAddModal(),100)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah PT
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Perusahaan</div>
+          <div class="stat-value blue" id="stat-total">0</div>
+          <div class="stat-sub">dalam daftar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value yellow" id="stat-pending">0</div>
+          <div class="stat-sub">menunggu kirim</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Terkirim</div>
+          <div class="stat-value green" id="stat-sent">0</div>
+          <div class="stat-sub">berhasil dikirim</div>
+          <div class="progress-wrap"><div class="progress-bar" id="progress-sent" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gagal</div>
+          <div class="stat-value red" id="stat-failed">0</div>
+          <div class="stat-sub">perlu diulang</div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <span class="action-bar-label">
+          Status pengiriman:
+          <span class="status-chip chip-idle" id="run-status-badge">Idle</span>
+        </span>
+        <button class="btn btn-primary" onclick="startSend()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start
+        </button>
+        <button class="btn btn-warning" onclick="pauseSend()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          Pause
+        </button>
+        <button class="btn btn-outline" onclick="resumeSend()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+          Resume
+        </button>
+        <button class="btn btn-danger" onclick="stopSend()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Stop
+        </button>
+      </div>
+
+      <div class="log-card">
+        <div class="log-header">
+          <span>Live Log</span>
+          <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="log-body" id="live-log">
+          <div class="empty-state">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+            <p>Log pengiriman akan muncul di sini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERUSAHAAN PAGE -->
+    <div class="page" id="page-perusahaan">
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Daftar Perusahaan</span>
+          <input type="text" class="search-box" placeholder="Cari perusahaan..." oninput="filterTable(this.value)" id="search-pt">
+          <button class="btn btn-outline" onclick="importExcel()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import Excel
+          </button>
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="pt-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nama PT</th>
+                <th>Email HRD</th>
+                <th>Kota</th>
+                <th>Posisi</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="pt-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada data perusahaan</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPLATE PAGE -->
+    <div class="page" id="page-template">
+      <div class="card-form form-section">
+        <div class="card-form-title">Template Email Lamaran</div>
+        <div class="form-row">
+          <label class="form-label">Nama Template</label>
+          <input type="text" class="form-input" id="tpl-name" placeholder="Contoh: Lamaran Umum" value="Lamaran Kerja - Wahyu Susanto">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Subject Email</label>
+          <input type="text" class="form-input" id="tpl-subject" placeholder="Subject email..." value="Lamaran Kerja - Wahyu Susanto">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Isi Email</label>
+          <p class="text-muted mb-4">Gunakan <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{NAMA_PT}</code> untuk nama perusahaan otomatis</p>
+          <textarea class="form-textarea" id="tpl-body" rows="10">Yth. Bapak/Ibu HRD
+PT {NAMA_PT}
+
+Dengan hormat,
+
+Perkenalkan saya Wahyu Susanto. Melalui email ini, saya bermaksud mengajukan lamaran kerja pada perusahaan yang Bapak/Ibu pimpin.
+
+Saya merupakan lulusan [Jurusan] dari [Universitas] dan memiliki pengalaman di bidang [Bidang Keahlian]. Saya sangat tertarik untuk bergabung dan berkontribusi pada perkembangan perusahaan Bapak/Ibu.
+
+CV dan dokumen pendukung saya lampirkan pada email ini.
+
+Besar harapan saya untuk mendapat kesempatan wawancara. Atas perhatian Bapak/Ibu, saya ucapkan terima kasih.
+
+Hormat saya,
+Wahyu Susanto
+HP: 08xx-xxxx-xxxx
+Email: wahyu@gmail.com</textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveTemplate()">Simpan Template</button>
+          <button class="btn btn-outline" onclick="previewTemplate()">Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAMPIRAN PAGE -->
+    <div class="page" id="page-lampiran">
+      <div class="card-form form-section">
+        <div class="card-form-title">File Lampiran</div>
+        <p class="text-muted mb-4">Upload file ke Google Drive lalu tempel link-nya di sini.</p>
+        <div id="lampiran-list"></div>
+        <button class="btn btn-primary" onclick="addLampiran()" style="margin-top:0.5rem">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Lampiran
+        </button>
+      </div>
+    </div>
+
+    <!-- SCHEDULER PAGE -->
+    <div class="page" id="page-scheduler">
+      <div class="card-form" style="max-width:600px">
+        <div class="card-form-title">Pengaturan Jadwal Kirim</div>
+        <div class="scheduler-grid">
+          <div class="form-row">
+            <label class="form-label">Tanggal Mulai</label>
+            <input type="date" class="form-input" id="sch-date">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Jam Mulai (WIB)</label>
+            <input type="time" class="form-input" id="sch-time" value="08:00">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Delay Antar Email (detik)</label>
+            <input type="number" class="form-input" id="sch-delay" value="30" min="10" max="300">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Maks Email per Batch</label>
+            <input type="number" class="form-input" id="sch-batch" value="20" min="1" max="100">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Istirahat Antar Batch (menit)</label>
+            <input type="number" class="form-input" id="sch-rest" value="5" min="1" max="60">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Template Email</label>
+            <select class="form-select" id="sch-template">
+              <option value="default">Lamaran Kerja - Wahyu Susanto</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">URL Google Apps Script</label>
+          <input type="url" class="form-input" id="sch-gas-url" placeholder="https://script.google.com/macros/s/xxx/exec">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveScheduler()">Simpan Jadwal</button>
+          <button class="btn btn-outline" onclick="loadScheduler()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONITORING PAGE -->
+    <div class="page" id="page-monitoring">
+      <div class="stats-grid" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-label">Sesi Ini</div>
+          <div class="stat-value blue" id="mon-session">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Berhasil</div>
+          <div class="stat-value green" id="mon-ok">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gagal</div>
+          <div class="stat-value red" id="mon-fail">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Estimasi Selesai</div>
+          <div class="stat-value" id="mon-eta" style="font-size:1.25rem">-</div>
+        </div>
+      </div>
+      <div class="log-card">
+        <div class="log-header">
+          <span>Live Monitor</span>
+          <span class="status-chip chip-idle" id="mon-badge">Idle</span>
+        </div>
+        <div class="log-body" id="mon-log">
+          <div class="empty-state">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <p>Monitoring akan aktif saat pengiriman berjalan</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG PAGE -->
+    <div class="page" id="page-log">
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Log Pengiriman</span>
+          <button class="btn btn-outline" onclick="exportLog()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Nama PT</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada log pengiriman</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- Modal Tambah/Edit PT -->
+<div class="modal-backdrop" id="modal-pt">
+  <div class="modal">
+    <div class="modal-title" id="modal-pt-title">Tambah Perusahaan</div>
+    <input type="hidden" id="modal-pt-id">
+    <div class="form-row">
+      <label class="form-label">Nama Perusahaan *</label>
+      <input type="text" class="form-input" id="modal-nama" placeholder="PT Contoh Indonesia">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Email HRD *</label>
+      <input type="email" class="form-input" id="modal-email" placeholder="hrd@perusahaan.com">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="form-label">Kota</label>
+        <input type="text" class="form-input" id="modal-kota" placeholder="Bekasi">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Posisi Dilamar</label>
+        <input type="text" class="form-input" id="modal-posisi" placeholder="Warehouse Supervisor">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="modal-status">
+        <option value="Pending">Pending</option>
+        <option value="Sent">Sent</option>
+        <option value="Failed">Failed</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-pt')">Batal</button>
+      <button class="btn btn-primary" onclick="savePT()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ===== STATE =====
+let state = {
+  ptList: [],
+  logs: [],
+  scheduler: {
+    date: '', time: '08:00', delay: 30, batch: 20, rest: 5,
+    gasUrl: '', template: 'default'
+  },
+  template: {
+    name: 'Lamaran Kerja - Wahyu Susanto',
+    subject: 'Lamaran Kerja - Wahyu Susanto',
+    body: ''
+  },
+  lampiranList: [
+    { nama: 'CV.pdf', link: '', aktif: true },
+    { nama: 'Sertifikat.pdf', link: '', aktif: false }
+  ],
+  runStatus: 'idle',
+  sendInterval: null,
+  monStats: { session: 0, ok: 0, fail: 0 }
+};
+
+// Load from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('mailblast_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+      state.runStatus = 'idle';
+      state.sendInterval = null;
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    const toSave = {...state, sendInterval: null};
+    localStorage.setItem('mailblast_state', JSON.stringify(toSave));
+  } catch(e) {}
+}
+
+// ===== NAVIGATION =====
+const pageTitles = {
+  dashboard: 'Dashboard',
+  perusahaan: 'Data Perusahaan',
+  template: 'Template Email',
+  lampiran: 'Lampiran',
+  scheduler: 'Scheduler',
+  monitoring: 'Monitoring',
+  log: 'Log Pengiriman'
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'")) {
+      n.classList.add('active');
+    }
+  });
+  document.getElementById('topbar-title').textContent = pageTitles[name] || name;
+  if (name === 'perusahaan') renderPTTable();
+  if (name === 'log') renderLogTable();
+  if (name === 'lampiran') renderLampiran();
+  if (name === 'scheduler') loadSchedulerForm();
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ===== STATS =====
+function updateStats() {
+  const total = state.ptList.length;
+  const pending = state.ptList.filter(p => p.status === 'Pending').length;
+  const sent = state.ptList.filter(p => p.status === 'Sent').length;
+  const failed = state.ptList.filter(p => p.status === 'Failed').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-sent').textContent = sent;
+  document.getElementById('stat-failed').textContent = failed;
+  const pct = total > 0 ? Math.round(sent / total * 100) : 0;
+  document.getElementById('progress-sent').style.width = pct + '%';
+}
+
+// ===== PT TABLE =====
+let filteredPT = [];
+
+function renderPTTable(filter = '') {
+  const tbody = document.getElementById('pt-tbody');
+  const list = filter
+    ? state.ptList.filter(p => p.nama.toLowerCase().includes(filter.toLowerCase()) || p.email.toLowerCase().includes(filter.toLowerCase()) || (p.kota||'').toLowerCase().includes(filter.toLowerCase()))
+    : state.ptList;
+  filteredPT = list;
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada data perusahaan</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map((p, i) => `
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong>${escHtml(p.nama)}</strong></td>
+      <td style="color:var(--accent-blue)">${escHtml(p.email)}</td>
+      <td>${escHtml(p.kota||'-')}</td>
+      <td>${escHtml(p.posisi||'-')}</td>
+      <td><span class="badge badge-${p.status.toLowerCase()}">${p.status}</span></td>
+      <td>
+        <div class="td-actions">
+          <button class="icon-btn" onclick="editPT(${p.id})" title="Edit">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button class="icon-btn danger" onclick="deletePT(${p.id})" title="Hapus">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterTable(val) { renderPTTable(val); }
+
+function openAddModal() {
+  document.getElementById('modal-pt-title').textContent = 'Tambah Perusahaan';
+  document.getElementById('modal-pt-id').value = '';
+  document.getElementById('modal-nama').value = '';
+  document.getElementById('modal-email').value = '';
+  document.getElementById('modal-kota').value = '';
+  document.getElementById('modal-posisi').value = '';
+  document.getElementById('modal-status').value = 'Pending';
+  openModal('modal-pt');
+}
+
+function editPT(id) {
+  const pt = state.ptList.find(p => p.id === id);
+  if (!pt) return;
+  document.getElementById('modal-pt-title').textContent = 'Edit Perusahaan';
+  document.getElementById('modal-pt-id').value = id;
+  document.getElementById('modal-nama').value = pt.nama;
+  document.getElementById('modal-email').value = pt.email;
+  document.getElementById('modal-kota').value = pt.kota || '';
+  document.getElementById('modal-posisi').value = pt.posisi || '';
+  document.getElementById('modal-status').value = pt.status;
+  openModal('modal-pt');
+}
+
+function savePT() {
+  const id = document.getElementById('modal-pt-id').value;
+  const nama = document.getElementById('modal-nama').value.trim();
+  const email = document.getElementById('modal-email').value.trim();
+  if (!nama || !email) { showToast('Nama PT dan email wajib diisi', 'error'); return; }
+  if (id) {
+    const idx = state.ptList.findIndex(p => p.id == id);
+    if (idx >= 0) {
+      state.ptList[idx] = {
+        ...state.ptList[idx],
+        nama, email,
+        kota: document.getElementById('modal-kota').value,
+        posisi: document.getElementById('modal-posisi').value,
+        status: document.getElementById('modal-status').value
+      };
+    }
+    showToast('Data perusahaan diperbarui', 'success');
+  } else {
+    const newId = Date.now();
+    state.ptList.push({
+      id: newId, nama, email,
+      kota: document.getElementById('modal-kota').value,
+      posisi: document.getElementById('modal-posisi').value,
+      status: 'Pending',
+      addedAt: new Date().toISOString()
+    });
+    showToast('Perusahaan berhasil ditambahkan', 'success');
+  }
+  closeModal('modal-pt');
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+}
+
+function deletePT(id) {
+  if (!confirm('Hapus perusahaan ini?')) return;
+  state.ptList = state.ptList.filter(p => p.id !== id);
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  showToast('Perusahaan dihapus', 'info');
+}
+
+function importExcel() {
+  showToast('Buat input file untuk import Excel di sini', 'info');
+  // Implementasi: buat <input type="file"> lalu parse dengan SheetJS
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls,.csv';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    showToast('File dipilih: ' + file.name + ' — Parsing...', 'info');
+    // Parse CSV sederhana
+    if (file.name.endsWith('.csv')) {
+      const text = await file.text();
+      const rows = text.split('\n').slice(1);
+      let count = 0;
+      rows.forEach(row => {
+        const cols = row.split(',');
+        if (cols[0] && cols[1]) {
+          state.ptList.push({
+            id: Date.now() + Math.random(),
+            nama: cols[0]?.trim().replace(/"/g,''),
+            email: cols[1]?.trim().replace(/"/g,''),
+            kota: cols[2]?.trim().replace(/"/g,'') || '',
+            posisi: cols[3]?.trim().replace(/"/g,'') || '',
+            status: 'Pending',
+            addedAt: new Date().toISOString()
+          });
+          count++;
+        }
+      });
+      saveState(); updateStats(); renderPTTable();
+      showToast(count + ' perusahaan berhasil diimport', 'success');
+    } else {
+      showToast('Gunakan format CSV. Kolom: Nama PT, Email, Kota, Posisi', 'info');
+    }
+  };
+  input.click();
+}
+
+// ===== TEMPLATE =====
+function saveTemplate() {
+  state.template.name = document.getElementById('tpl-name').value;
+  state.template.subject = document.getElementById('tpl-subject').value;
+  state.template.body = document.getElementById('tpl-body').value;
+  saveState();
+  showToast('Template disimpan', 'success');
+}
+
+function previewTemplate() {
+  const body = document.getElementById('tpl-body').value.replace('{NAMA_PT}', 'PT Contoh Indonesia');
+  alert('PREVIEW EMAIL\n\nSubject: ' + document.getElementById('tpl-subject').value + '\n\n' + body);
+}
+
+// ===== LAMPIRAN =====
+function renderLampiran() {
+  const el = document.getElementById('lampiran-list');
+  el.innerHTML = state.lampiranList.map((l, i) => `
+    <div class="card-form" style="margin-bottom:0.75rem;padding:1rem">
+      <div class="form-grid">
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Nama File</label>
+          <input type="text" class="form-input" value="${escHtml(l.nama)}" onchange="state.lampiranList[${i}].nama=this.value;saveState()">
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Link Google Drive</label>
+          <input type="url" class="form-input" value="${escHtml(l.link)}" placeholder="https://drive.google.com/..." onchange="state.lampiranList[${i}].link=this.value;saveState()">
+        </div>
+      </div>
+      <div class="flex items-center gap-2" style="margin-top:0.75rem;justify-content:space-between">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.8125rem;cursor:pointer">
+          <input type="checkbox" ${l.aktif ? 'checked' : ''} onchange="state.lampiranList[${i}].aktif=this.checked;saveState()">
+          Aktif
+        </label>
+        <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="removeLampiran(${i})">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addLampiran() {
+  state.lampiranList.push({ nama: '', link: '', aktif: true });
+  renderLampiran();
+}
+
+function removeLampiran(i) {
+  state.lampiranList.splice(i, 1);
+  saveState();
+  renderLampiran();
+}
+
+// ===== SCHEDULER =====
+function loadSchedulerForm() {
+  const s = state.scheduler;
+  document.getElementById('sch-date').value = s.date;
+  document.getElementById('sch-time').value = s.time;
+  document.getElementById('sch-delay').value = s.delay;
+  document.getElementById('sch-batch').value = s.batch;
+  document.getElementById('sch-rest').value = s.rest;
+  document.getElementById('sch-gas-url').value = s.gasUrl;
+}
+
+function saveScheduler() {
+  state.scheduler = {
+    date: document.getElementById('sch-date').value,
+    time: document.getElementById('sch-time').value,
+    delay: parseInt(document.getElementById('sch-delay').value),
+    batch: parseInt(document.getElementById('sch-batch').value),
+    rest: parseInt(document.getElementById('sch-rest').value),
+    gasUrl: document.getElementById('sch-gas-url').value.trim(),
+    template: 'default'
+  };
+  saveState();
+  showToast('Jadwal disimpan', 'success');
+}
+
+function loadScheduler() { loadSchedulerForm(); }
+
+// ===== SEND CONTROL =====
+function setRunStatus(status) {
+  state.runStatus = status;
+  const badge = document.getElementById('run-status-badge');
+  const monBadge = document.getElementById('mon-badge');
+  const map = {
+    idle: ['chip-idle', 'Idle'],
+    running: ['chip-running', 'Berjalan'],
+    paused: ['chip-paused', 'Dijeda'],
+    stopped: ['chip-stopped', 'Dihentikan']
+  };
+  badge.className = 'status-chip ' + (map[status]?.[0] || 'chip-idle');
+  badge.textContent = map[status]?.[1] || status;
+  if (monBadge) {
+    monBadge.className = 'status-chip ' + (map[status]?.[0] || 'chip-idle');
+    monBadge.textContent = map[status]?.[1] || status;
+  }
+}
+
+function startSend() {
+  const pending = state.ptList.filter(p => p.status === 'Pending');
+  if (pending.length === 0) { showToast('Tidak ada perusahaan Pending', 'error'); return; }
+  if (!state.scheduler.gasUrl) { showToast('URL Google Apps Script belum diisi di Scheduler', 'error'); return; }
+  if (state.runStatus === 'running') { showToast('Pengiriman sudah berjalan', 'info'); return; }
+  state.monStats = { session: 0, ok: 0, fail: 0 };
+  setRunStatus('running');
+  showToast('Pengiriman dimulai. ' + pending.length + ' PT dalam antrian.', 'success');
+  addLog('Sistem', '-', 'Pengiriman dimulai', 'processing');
+  runQueue();
+}
+
+function pauseSend() {
+  if (state.runStatus !== 'running') return;
+  if (state.sendInterval) clearTimeout(state.sendInterval);
+  setRunStatus('paused');
+  showToast('Pengiriman dijeda', 'info');
+  addLog('Sistem', '-', 'Pengiriman dijeda', 'pending');
+}
+
+function resumeSend() {
+  if (state.runStatus !== 'paused') return;
+  setRunStatus('running');
+  showToast('Pengiriman dilanjutkan', 'success');
+  addLog('Sistem', '-', 'Pengiriman dilanjutkan', 'processing');
+  runQueue();
+}
+
+function stopSend() {
+  if (state.sendInterval) clearTimeout(state.sendInterval);
+  setRunStatus('stopped');
+  showToast('Pengiriman dihentikan', 'info');
+  addLog('Sistem', '-', 'Pengiriman dihentikan', 'failed');
+}
+
+let queueIndex = 0;
+function runQueue() {
+  if (state.runStatus !== 'running') return;
+  const pending = state.ptList.filter(p => p.status === 'Pending');
+  if (pending.length === 0) {
+    setRunStatus('idle');
+    showToast('Semua email selesai dikirim!', 'success');
+    addLog('Sistem', '-', 'Semua email terkirim', 'sent');
+    return;
+  }
+  const pt = pending[0];
+  addLog(pt.nama, pt.email, 'Mengirim...', 'processing');
+  sendEmail(pt).then(ok => {
+    const status = ok ? 'Sent' : 'Failed';
+    const idx = state.ptList.findIndex(p => p.id === pt.id);
+    if (idx >= 0) state.ptList[idx].status = status;
+    state.monStats.session++;
+    if (ok) state.monStats.ok++; else state.monStats.fail++;
+    updateMonStats();
+    addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed');
+    saveState(); updateStats();
+    if (state.runStatus === 'running') {
+      const delay = (state.scheduler.delay || 30) * 1000;
+      state.sendInterval = setTimeout(runQueue, delay);
+    }
+  });
+}
+
+async function sendEmail(pt) {
+  try {
+    const gasUrl = state.scheduler.gasUrl;
+    if (!gasUrl) return false;
+    const body = (state.template.body || '').replace('{NAMA_PT}', pt.nama);
+    const payload = {
+      action: 'sendEmail',
+      to: pt.email,
+      subject: state.template.subject,
+      body: body,
+      ptNama: pt.nama,
+      posisi: pt.posisi || '',
+      attachments: state.lampiranList.filter(l => l.aktif).map(l => l.link)
+    };
+    const resp = await fetch(gasUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await resp.json();
+    return data.status === 'ok';
+  } catch(e) {
+    return false;
+  }
+}
+
+function updateMonStats() {
+  document.getElementById('mon-session').textContent = state.monStats.session;
+  document.getElementById('mon-ok').textContent = state.monStats.ok;
+  document.getElementById('mon-fail').textContent = state.monStats.fail;
+  const remaining = state.ptList.filter(p => p.status === 'Pending').length;
+  const delay = (state.scheduler.delay || 30);
+  if (remaining > 0) {
+    const mins = Math.ceil(remaining * delay / 60);
+    document.getElementById('mon-eta').textContent = mins + ' mnt';
+  } else {
+    document.getElementById('mon-eta').textContent = 'Selesai';
+  }
+}
+
+// ===== LOG =====
+function addLog(nama, email, keterangan, status) {
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const entry = { waktu: timeStr, waktuFull: now.toLocaleString('id-ID'), nama, email, keterangan, status };
+  state.logs.unshift(entry);
+  if (state.logs.length > 500) state.logs.pop();
+  renderLiveLog();
+  renderMonLog(entry);
+}
+
+function renderLiveLog() {
+  const el = document.getElementById('live-log');
+  if (state.logs.length === 0) {
+    el.innerHTML = '<div class="empty-state"><p>Log pengiriman akan muncul di sini</p></div>';
+    return;
+  }
+  el.innerHTML = state.logs.slice(0,50).map(l => `
+    <div class="log-item">
+      <span class="log-time">${l.waktu}</span>
+      <span class="dot ${l.status}"></span>
+      <span class="log-pt">${escHtml(l.nama)}</span>
+      <span class="log-status ${l.status}">${escHtml(l.keterangan)}</span>
+    </div>
+  `).join('');
+}
+
+function renderMonLog(entry) {
+  const el = document.getElementById('mon-log');
+  if (el.querySelector('.empty-state')) el.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'log-item';
+  div.innerHTML = `
+    <span class="log-time">${entry.waktu}</span>
+    <span class="dot ${entry.status}"></span>
+    <span class="log-pt">${escHtml(entry.nama)}</span>
+    <span class="log-status ${entry.status}">${escHtml(entry.keterangan)}</span>
+  `;
+  el.prepend(div);
+}
+
+function renderLogTable() {
+  const tbody = document.getElementById('log-tbody');
+  if (state.logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada log pengiriman</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.logs.map(l => `
+    <tr>
+      <td style="color:var(--text-muted);white-space:nowrap">${l.waktuFull}</td>
+      <td>${escHtml(l.nama)}</td>
+      <td>${escHtml(l.email)}</td>
+      <td><span class="badge badge-${l.status}">${l.status}</span></td>
+      <td>${escHtml(l.keterangan)}</td>
+    </tr>
+  `).join('');
+}
+
+function clearLog() {
+  state.logs = [];
+  renderLiveLog();
+}
+
+function exportLog() {
+  const rows = [['Waktu','Nama PT','Email','Status','Keterangan']];
+  state.logs.forEach(l => rows.push([l.waktuFull, l.nama, l.email, l.status, l.keterangan]));
+  const csv = rows.map(r => r.map(c => '"' + (c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mailblast-log-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('Log berhasil diexport', 'success');
+}
+
+// ===== MODAL =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== TOAST =====
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  const icons = { success: '✓', error: '✗', info: 'ℹ' };
+  t.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 3500);
+}
+
+// ===== HELPERS =====
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== INIT =====
+(function init() {
+  loadState();
+  updateStats();
+  // Set default date
+  if (!state.scheduler.date) {
+    const today = new Date();
+    state.scheduler.date = today.toISOString().slice(0,10);
+  }
+  // Restore template form
+  if (state.template.body) {
+    document.getElementById('tpl-body').value = state.template.body;
+  }
+  if (state.template.subject) document.getElementById('tpl-subject').value = state.template.subject;
+  if (state.template.name) document.getElementById('tpl-name').value = state.template.name;
+})();
+</script>
+</body>
+</html>
