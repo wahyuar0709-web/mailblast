@@ -698,6 +698,10 @@ Email: wahyu@gmail.com</textarea>
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" onclick="saveScheduler()">Simpan Jadwal</button>
+          <button class="btn btn-outline" onclick="testKoneksi()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Test Koneksi GAS
+          </button>
           <button class="btn btn-outline" onclick="loadScheduler()">Reset</button>
         </div>
       </div>
@@ -1126,6 +1130,39 @@ function saveScheduler() {
 
 function loadScheduler() { loadSchedulerForm(); }
 
+async function testKoneksi() {
+  const url = document.getElementById('sch-gas-url').value.trim();
+  if (!url) { showToast('Isi URL Google Apps Script dulu', 'error'); return; }
+  showToast('Menghubungi Google Apps Script...', 'info');
+  try {
+    // Test GET dulu
+    const respGet = await fetch(url + '?action=status');
+    const textGet = await respGet.text();
+    let dataGet;
+    try { dataGet = JSON.parse(textGet); } catch(e) { showToast('Response bukan JSON. Cek: deploy sudah "Anyone"?', 'error'); return; }
+
+    if (dataGet.status !== 'ok') { showToast('GAS error: ' + dataGet.message, 'error'); return; }
+
+    // Test POST ping
+    const respPost = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'ping' }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const textPost = await respPost.text();
+    let dataPost;
+    try { dataPost = JSON.parse(textPost); } catch(e) { showToast('POST test gagal - response bukan JSON', 'error'); return; }
+
+    if (dataPost.status === 'ok') {
+      showToast('✓ Koneksi berhasil! GAS siap digunakan. Quota: ' + (dataGet.quotaRemaining || '?') + ' email/hari', 'success');
+    } else {
+      showToast('POST gagal: ' + dataPost.message, 'error');
+    }
+  } catch(e) {
+    showToast('Gagal konek: ' + e.message, 'error');
+  }
+}
+
 // ===== SEND CONTROL =====
 function setRunStatus(status) {
   state.runStatus = status;
@@ -1212,24 +1249,38 @@ async function sendEmail(pt) {
   try {
     const gasUrl = state.scheduler.gasUrl;
     if (!gasUrl) return false;
-    const body = (state.template.body || '').replace('{NAMA_PT}', pt.nama);
+
+    // Ganti semua {NAMA_PT} di body
+    const body = (state.template.body || '').replace(/\{NAMA_PT\}/g, pt.nama);
+
     const payload = {
       action: 'sendEmail',
       to: pt.email,
-      subject: state.template.subject,
+      subject: state.template.subject || 'Lamaran Kerja',
       body: body,
       ptNama: pt.nama,
       posisi: pt.posisi || '',
-      attachments: state.lampiranList.filter(l => l.aktif).map(l => l.link)
+      senderName: state.template.senderName || 'Pelamar Kerja',
+      attachments: state.lampiranList.filter(l => l.aktif && l.link).map(l => l.link)
     };
+
+    // PENTING: Kirim sebagai text/plain bukan application/json
+    // Google Apps Script tidak support CORS untuk application/json
+    // text/plain tidak trigger browser preflight OPTIONS → tidak ada CORS error
     const resp = await fetch(gasUrl, {
       method: 'POST',
       body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
-    const data = await resp.json();
+
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { console.error('GAS response bukan JSON:', text); return false; }
+    if (data.status !== 'ok') console.warn('GAS error:', data.message);
     return data.status === 'ok';
+
   } catch(e) {
+    console.error('sendEmail error:', e.message || e);
     return false;
   }
 }
