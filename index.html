@@ -347,18 +347,180 @@
   }
 
   @media (max-width: 768px) {
+    /* Hide sidebar on mobile */
     .sidebar { transform: translateX(-100%); }
     .sidebar.open { transform: translateX(0); }
     .sidebar-overlay.open { display: block; }
-    .main { margin-left: 0; }
-    .menu-toggle { display: flex; }
+    .main { margin-left: 0; padding-bottom: 64px; }
+    .menu-toggle { display: none; } /* Replaced by bottom nav */
     .form-grid { grid-template-columns: 1fr; }
     .scheduler-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .search-box { width: 140px; }
     .topbar { padding: 0.75rem 1rem; }
-    .content { padding: 1rem; }
+    .content { padding: 0.875rem; }
+
+    /* Bottom navigation */
+    .bottom-nav {
+      display: flex !important;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      height: 64px;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .topbar .menu-toggle-area { display: none; }
+
+    /* PT Card View ganti tabel */
+    #pt-table-wrap { display: none !important; }
+    #pt-card-wrap { display: block !important; }
+
+    /* Hide desktop action buttons on mobile — use dropdown instead */
+    .desktop-actions { display: none !important; }
+    .action-dropdown { display: inline-block !important; }
+
+    /* Start blast button full width on mobile dashboard */
+    .blast-btn-wrap { display: block !important; }
+
+    /* Preview modal tabs */
+    .preview-tabs { display: flex !important; }
+    .preview-tab-content { display: none; }
+    .preview-tab-content.active { display: block; }
   }
+
+  /* Bottom Nav (hidden on desktop) */
+  .bottom-nav {
+    display: none;
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.62rem;
+    font-weight: 500;
+    border: none;
+    background: none;
+    padding: 0.5rem 0.25rem;
+    transition: color .15s;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+  }
+  .bottom-nav-item svg { width: 22px; height: 22px; }
+  .bottom-nav-item.active { color: var(--accent); }
+  .bottom-nav-item .bnav-badge {
+    position: absolute;
+    top: 6px;
+    background: var(--accent-red);
+    color: #fff;
+    font-size: 0.55rem;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3px;
+  }
+  .bottom-nav-item { position: relative; }
+
+  /* Action dropdown — hidden on desktop */
+  .action-dropdown { display: none; }
+
+  /* PT card view (hidden on desktop, shown on mobile) */
+  #pt-card-wrap { display: none; }
+  .pt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.625rem;
+  }
+  .pt-card-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .pt-card-name { font-weight: 600; font-size: 0.9rem; }
+  .pt-card-email { font-size: 0.78rem; color: var(--accent-blue); margin-top: 2px; word-break: break-all; }
+  .pt-card-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 1rem;
+    font-size: 0.77rem; color: var(--text-muted); margin: 0.5rem 0;
+  }
+  .pt-card-meta span { color: var(--text-primary); }
+  .pt-card-actions { display: flex; gap: 6px; margin-top: 0.625rem; }
+  .pt-card-actions .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 0.4rem 0.5rem; }
+
+  /* Blast big button (hidden on desktop) */
+  .blast-btn-wrap {
+    display: none;
+    margin-bottom: 1rem;
+  }
+  .blast-btn-big {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+
+  /* Action dropdown menu */
+  .action-dropdown { position: relative; display: inline-block; }
+  .action-dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0; bottom: calc(100% + 6px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 160px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .action-dropdown-menu.open { display: block; }
+  .action-dropdown-menu button {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .action-dropdown-menu button:last-child { border-bottom: none; }
+  .action-dropdown-menu button:hover { background: rgba(255,255,255,0.05); }
+  .action-dropdown-menu button svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  /* Preview modal tabs */
+  .preview-tabs {
+    display: none;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin: -1rem -1rem 1rem;
+    padding: 0 1rem;
+  }
+  .preview-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    white-space: nowrap;
+  }
+  .preview-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
   /* Empty state */
   .empty-state {
@@ -437,6 +599,58 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
+  <div style="text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast</div>
+    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Memuat aplikasi...</div>
+  </div>
+
+  <!-- Spinner -->
+  <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>
+
+  <!-- Status text -->
+  <div id="loading-status" style="font-size:0.8rem;color:var(--text-muted);text-align:center;max-width:260px;line-height:1.5">
+    Memuat data lokal...
+  </div>
+
+  <!-- Progress steps -->
+  <div id="loading-steps" style="display:flex;flex-direction:column;gap:6px;min-width:220px">
+    <div class="loading-step" id="lstep-1">
+      <span class="lstep-icon">⏳</span>
+      <span>Memuat cache lokal</span>
+    </div>
+    <div class="loading-step" id="lstep-2" style="opacity:.35">
+      <span class="lstep-icon">⏳</span>
+      <span>Menghubungi Spreadsheet</span>
+    </div>
+    <div class="loading-step" id="lstep-3" style="opacity:.35">
+      <span class="lstep-icon">⏳</span>
+      <span>Memuat data PT</span>
+    </div>
+    <div class="loading-step" id="lstep-4" style="opacity:.35">
+      <span class="lstep-icon">⏳</span>
+      <span>Siap digunakan</span>
+    </div>
+  </div>
+
+  <!-- Fallback button (muncul setelah 6 detik) -->
+  <button id="loading-skip-btn" onclick="skipLoading()" style="display:none;background:none;border:1px solid var(--border);color:var(--text-muted);padding:0.5rem 1.25rem;border-radius:8px;font-size:0.8rem;cursor:pointer">
+    Lanjut tanpa Spreadsheet →
+  </button>
+</div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-step {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; color: var(--text-muted);
+    transition: opacity .3s;
+  }
+  .lstep-icon { width: 16px; text-align: center; font-size: 0.75rem; }
+</style>
+
 <!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
@@ -499,6 +713,11 @@
       <span class="topbar-title" id="topbar-title">Dashboard</span>
     </div>
     <div class="topbar-actions">
+      <!-- Connection status chip -->
+      <div id="conn-status" title="Status koneksi Spreadsheet" style="display:flex;align-items:center;gap:5px;font-size:0.72rem;padding:4px 10px;border-radius:20px;background:var(--bg-input);border:1px solid var(--border);cursor:default;user-select:none">
+        <span id="conn-dot" style="width:7px;height:7px;border-radius:50%;background:#ca8a04;flex-shrink:0"></span>
+        <span id="conn-label" style="color:var(--text-muted)">Offline</span>
+      </div>
       <button class="btn btn-primary" onclick="showPage('perusahaan'); setTimeout(()=>openAddModal(),100)">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Tambah PT
@@ -534,26 +753,69 @@
         </div>
       </div>
 
+      <!-- Mobile: Big blast button -->
+      <div class="blast-btn-wrap">
+        <button class="btn btn-primary blast-btn-big" onclick="startSend()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          START BLAST
+        </button>
+      </div>
+
       <div class="action-bar">
         <span class="action-bar-label">
           Status pengiriman:
           <span class="status-chip chip-idle" id="run-status-badge">Idle</span>
         </span>
+        <button class="btn btn-outline" onclick="previewAllPT()" title="Preview semua email sebelum blast">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          Preview Semua
+        </button>
         <button class="btn btn-primary" onclick="startSend()">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Start
         </button>
-        <button class="btn btn-warning" onclick="pauseSend()">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          Pause
-        </button>
-        <button class="btn btn-outline" onclick="resumeSend()">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
-          Resume
-        </button>
-        <button class="btn btn-danger" onclick="stopSend()">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Stop
+        <!-- Desktop: semua tombol tampil -->
+        <span class="desktop-actions" style="display:contents">
+          <button class="btn btn-warning" onclick="pauseSend()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            Pause
+          </button>
+          <button class="btn btn-outline" onclick="resumeSend()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+            Resume
+          </button>
+          <button class="btn btn-danger" onclick="stopSend()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            Stop
+          </button>
+        </span>
+        <!-- Mobile: dropdown menu -->
+        <div class="action-dropdown" id="action-dropdown">
+          <button class="btn btn-outline" onclick="toggleActionMenu()" style="padding:0.5rem 0.75rem">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+          <div class="action-dropdown-menu" id="action-dropdown-menu">
+            <button onclick="pauseSend();closeActionMenu()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              Pause
+            </button>
+            <button onclick="resumeSend();closeActionMenu()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+              Resume
+            </button>
+            <button onclick="stopSend();closeActionMenu()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Stop
+            </button>
+            <button onclick="retryFailed();closeActionMenu()" id="dropdown-retry" style="display:none;color:var(--accent-red)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Kirim Ulang Failed (<span id="retry-failed-count-dropdown">0</span>)
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="retryFailed()" id="btn-retry-failed" style="display:none;border-color:var(--accent-red);color:var(--accent-red)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Kirim Ulang Failed (<span id="retry-failed-count">0</span>)
         </button>
       </div>
 
@@ -578,15 +840,16 @@
           <span class="table-title">Daftar Perusahaan</span>
           <input type="text" class="search-box" placeholder="Cari perusahaan..." oninput="filterTable(this.value)" id="search-pt">
           <button class="btn btn-outline" onclick="importExcel()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Import Excel
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import CSV
           </button>
           <button class="btn btn-primary" onclick="openAddModal()">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah
           </button>
         </div>
-        <div style="overflow-x:auto">
+        <!-- Desktop: tabel -->
+        <div id="pt-table-wrap" style="overflow-x:auto">
           <table id="pt-table">
             <thead>
               <tr>
@@ -604,24 +867,63 @@
             </tbody>
           </table>
         </div>
+        <!-- Mobile: card list -->
+        <div id="pt-card-wrap" style="padding:0.75rem"></div>
       </div>
     </div>
 
     <!-- TEMPLATE PAGE -->
     <div class="page" id="page-template">
+      <!-- A/B Mode selector -->
+      <div class="card-form form-section" style="margin-bottom:0.75rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
+          <div>
+            <div class="card-form-title" style="margin-bottom:0.15rem">Variasi Body Email (A/B)</div>
+            <div style="font-size:0.78rem;color:var(--text-muted)">Tambah beberapa versi email — sistem akan memilih salah satu saat blast</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <span style="font-size:0.8rem;color:var(--text-muted)">Mode:</span>
+            <select class="form-select" id="ab-mode" onchange="saveAbMode()" style="width:auto;padding:0.35rem 0.6rem;font-size:0.82rem">
+              <option value="first">Gunakan Pertama</option>
+              <option value="roundrobin">Bergantian (Round-robin)</option>
+              <option value="random">Acak</option>
+            </select>
+            <button class="btn btn-primary" onclick="addVariant()" style="padding:0.35rem 0.75rem;font-size:0.82rem">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah Variant
+            </button>
+          </div>
+        </div>
+        <!-- Variant list -->
+        <div id="variant-list" style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem"></div>
+        <div id="variant-empty" style="display:none;padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem;border:1px dashed var(--border);border-radius:8px;margin-top:0.75rem">
+          Belum ada variant. Klik "Tambah Variant" atau simpan template di bawah sebagai Variant A.
+        </div>
+        <div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center">
+          <button class="btn btn-outline" onclick="saveCurrentAsVariant()" style="font-size:0.8rem;padding:0.35rem 0.75rem">
+            Simpan Template Bawah → Jadikan Variant
+          </button>
+          <button class="btn btn-outline" onclick="loadTemplateFromGAS()" style="font-size:0.8rem;padding:0.35rem 0.75rem">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
+            Muat dari GAS
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor template (tetap sebagai "global fallback") -->
       <div class="card-form form-section">
-        <div class="card-form-title">Template Email Lamaran</div>
+        <div class="card-form-title">Template Global <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">(dipakai jika tidak ada variant / PT tanpa custom body)</span></div>
         <div class="form-row">
           <label class="form-label">Nama Template</label>
           <input type="text" class="form-input" id="tpl-name" placeholder="Contoh: Lamaran Umum" value="Lamaran Kerja - Wahyu Susanto">
         </div>
         <div class="form-row">
           <label class="form-label">Subject Email</label>
-          <input type="text" class="form-input" id="tpl-subject" placeholder="Subject email..." value="Lamaran Kerja - Wahyu Susanto">
+          <input type="text" class="form-input" id="tpl-subject" placeholder="Subject email...">
         </div>
         <div class="form-row">
           <label class="form-label">Isi Email</label>
-          <p class="text-muted mb-4">Gunakan <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{NAMA_PT}</code> untuk nama perusahaan otomatis</p>
+          <p class="text-muted mb-4">Placeholder: <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{NAMA_PT}</code> <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{POSISI}</code> <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{EMAIL}</code></p>
           <textarea class="form-textarea" id="tpl-body" rows="10">Yth. Bapak/Ibu HRD
 PT {NAMA_PT}
 
@@ -641,7 +943,7 @@ HP: 08xx-xxxx-xxxx
 Email: wahyu@gmail.com</textarea>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveTemplate()">Simpan Template</button>
+          <button class="btn btn-primary" onclick="saveTemplate()">Simpan Template Global</button>
           <button class="btn btn-outline" onclick="previewTemplate()">Preview</button>
         </div>
       </div>
@@ -653,10 +955,20 @@ Email: wahyu@gmail.com</textarea>
         <div class="card-form-title">File Lampiran</div>
         <p class="text-muted mb-4">Upload file ke Google Drive lalu tempel link-nya di sini.</p>
         <div id="lampiran-list"></div>
-        <button class="btn btn-primary" onclick="addLampiran()" style="margin-top:0.5rem">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Tambah Lampiran
-        </button>
+        <div class="form-actions" style="margin-top:0.75rem">
+          <button class="btn btn-primary" onclick="addLampiran()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Lampiran
+          </button>
+          <button class="btn btn-outline" onclick="saveLampiranToGAS()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            Simpan ke Spreadsheet
+          </button>
+          <button class="btn btn-outline" onclick="loadLampiranFromGAS()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
+            Muat dari Spreadsheet
+          </button>
+        </div>
       </div>
     </div>
 
@@ -702,7 +1014,19 @@ Email: wahyu@gmail.com</textarea>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Test Koneksi GAS
           </button>
+          <button class="btn btn-outline" onclick="setupSheets()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/></svg>
+            Setup Sheets
+          </button>
+          <button class="btn btn-outline" onclick="syncAllFromGAS()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Sync Semua
+          </button>
           <button class="btn btn-outline" onclick="loadScheduler()">Reset</button>
+          <button class="btn btn-outline" onclick="rerunOnboarding()" style="border-color:var(--accent);color:var(--accent)" title="Ulangi wizard setup awal">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            Setup Ulang
+          </button>
         </div>
       </div>
     </div>
@@ -726,6 +1050,15 @@ Email: wahyu@gmail.com</textarea>
           <div class="stat-label">Estimasi Selesai</div>
           <div class="stat-value" id="mon-eta" style="font-size:1.25rem">-</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-label">Quota Gmail</div>
+          <div class="stat-value" id="mon-quota" style="font-size:1.25rem">-</div>
+        </div>
+      </div>
+      <!-- Quota Warning Banner -->
+      <div id="quota-warning-bar" style="display:none;margin-bottom:0.75rem;padding:0.65rem 1rem;border-radius:8px;font-size:0.82rem;display:none;align-items:center;gap:0.5rem">
+        <span id="quota-warning-icon">⚠️</span>
+        <span id="quota-warning-text"></span>
       </div>
       <div class="log-card">
         <div class="log-header">
@@ -804,10 +1137,282 @@ Email: wahyu@gmail.com</textarea>
         <option value="Failed">Failed</option>
       </select>
     </div>
+    <div class="form-row" style="margin-top:0.5rem">
+      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.85rem;color:var(--text-muted)">
+        <input type="checkbox" id="modal-use-custom" onchange="toggleCustomBody(this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
+        Gunakan body email khusus untuk PT ini
+      </label>
+    </div>
+    <div id="modal-custom-section" style="display:none">
+      <div class="form-row">
+        <label class="form-label">Subject Khusus <span style="color:var(--text-muted);font-weight:400">(kosongkan = pakai template global)</span></label>
+        <input type="text" class="form-input" id="modal-custom-subject" placeholder="Lamaran Kerja — {POSISI} di {NAMA_PT}">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Body Email Khusus</label>
+        <textarea class="form-input" id="modal-custom-body" rows="7" placeholder="Tulis body email khusus untuk PT ini. Gunakan {NAMA_PT} dan {POSISI} sebagai placeholder." style="resize:vertical;font-size:0.82rem;line-height:1.5"></textarea>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:-0.25rem">
+        Placeholder: <code style="background:var(--bg-input);padding:1px 4px;border-radius:3px">{NAMA_PT}</code> <code style="background:var(--bg-input);padding:1px 4px;border-radius:3px">{POSISI}</code> <code style="background:var(--bg-input);padding:1px 4px;border-radius:3px">{EMAIL}</code>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:0.5rem">
+      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.85rem;color:var(--text-muted)">
+        <input type="checkbox" id="modal-use-custom-att" onchange="toggleCustomAttachments(this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
+        Gunakan lampiran khusus untuk PT ini
+      </label>
+    </div>
+    <div id="modal-custom-att-section" style="display:none">
+      <div class="form-row">
+        <label class="form-label">Pilih Lampiran</label>
+        <div id="modal-att-checklist" style="display:flex;flex-direction:column;gap:6px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:0.75rem"></div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Hanya lampiran yang dicentang yang akan dikirim ke PT ini</div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-pt')">Batal</button>
       <button class="btn btn-primary" onclick="savePT()">Simpan</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL PREVIEW EMAIL -->
+<div class="modal-backdrop" id="modal-preview">
+  <div class="modal" style="max-width:600px">
+    <!-- Tabs (visible on mobile) -->
+    <div class="preview-tabs" id="preview-tabs">
+      <button class="preview-tab active" onclick="switchPreviewTab('info',this)">Info</button>
+      <button class="preview-tab" onclick="switchPreviewTab('subject',this)">Subject</button>
+      <button class="preview-tab" onclick="switchPreviewTab('body',this)">Body</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div class="modal-title" style="margin-bottom:0">Preview Email</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-outline" id="preview-prev" onclick="previewNav(-1)" style="padding:4px 10px;font-size:0.8rem">‹ Prev</button>
+        <span id="preview-counter" style="font-size:0.8rem;color:var(--text-muted)">1 / 1</span>
+        <button class="btn btn-outline" id="preview-next" onclick="previewNav(1)" style="padding:4px 10px;font-size:0.8rem">Next ›</button>
+      </div>
+    </div>
+
+    <!-- Tab: Info (always visible on desktop, tab on mobile) -->
+    <div class="preview-tab-content active" id="preview-tab-info">
+      <div style="background:var(--bg-input);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.82rem;display:grid;gap:4px">
+        <div style="display:flex;gap:0.5rem">
+          <span style="color:var(--text-muted);width:60px;flex-shrink:0">Kepada</span>
+          <span id="pv-to" style="color:var(--accent-blue);word-break:break-all"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <span style="color:var(--text-muted);width:60px;flex-shrink:0">PT</span>
+          <span id="pv-nama" style="font-weight:600"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <span style="color:var(--text-muted);width:60px;flex-shrink:0">Posisi</span>
+          <span id="pv-posisi"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <span style="color:var(--text-muted);width:60px;flex-shrink:0">Body</span>
+          <span id="pv-source" style="font-size:0.72rem;padding:1px 6px;border-radius:3px"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Subject -->
+    <div class="preview-tab-content active" id="preview-tab-subject">
+      <div style="margin-bottom:0.75rem">
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Subject</div>
+        <div id="pv-subject" style="font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.5rem 0.75rem;border-radius:6px;border:1px solid var(--border)"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Body -->
+    <div class="preview-tab-content active" id="preview-tab-body">
+      <div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Body Email</div>
+        <pre id="pv-body" style="white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:0.82rem;line-height:1.6;background:var(--bg-input);padding:0.75rem 1rem;border-radius:6px;border:1px solid var(--border);max-height:280px;overflow-y:auto;margin:0"></pre>
+      </div>
+    </div>
+
+    <div id="pv-warning" style="display:none;margin-top:0.75rem;padding:0.5rem 0.75rem;background:rgba(239,68,68,0.1);border:1px solid var(--accent-red);border-radius:6px;font-size:0.8rem;color:var(--accent-red)">
+      ⚠️ Body email kosong! PT ini akan dilewati saat blast atau terkirim tanpa isi.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-preview')">Tutup</button>
+      <button class="btn btn-outline" onclick="editPTFromPreview()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit PT Ini
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT VARIANT -->
+<div class="modal-backdrop" id="modal-variant">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-title">Edit Variant <span id="modal-variant-label" style="color:var(--accent)"></span></div>
+    <input type="hidden" id="modal-variant-idx">
+    <div class="form-row">
+      <label class="form-label">Nama Variant</label>
+      <input type="text" class="form-input" id="modal-variant-name" placeholder="Contoh: Variant A - Formal">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-input" id="modal-variant-subject" placeholder="Subject email...">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Body Email</label>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px">Placeholder: <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">{NAMA_PT}</code> <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">{POSISI}</code> <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">{EMAIL}</code></div>
+      <textarea class="form-input" id="modal-variant-body" rows="10" style="resize:vertical;font-size:0.82rem;line-height:1.55"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-variant')">Batal</button>
+      <button class="btn btn-primary" onclick="saveVariant()">Simpan Variant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING WIZARD -->
+<div id="onboarding-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;overflow:hidden">
+
+    <!-- Progress bar -->
+    <div style="height:3px;background:var(--border)">
+      <div id="ob-progress" style="height:100%;background:var(--accent);transition:width .4s;width:25%"></div>
+    </div>
+
+    <!-- Step indicator -->
+    <div style="padding:1.25rem 1.5rem 0;display:flex;align-items:center;gap:0.5rem">
+      <div id="ob-step-label" style="font-size:0.72rem;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase">Langkah 1 dari 4</div>
+    </div>
+
+    <!-- Steps container -->
+    <div id="ob-steps" style="padding:1rem 1.5rem 1.5rem">
+
+      <!-- STEP 1: Selamat datang -->
+      <div class="ob-step" id="ob-step-1">
+        <div style="text-align:center;padding:1rem 0 1.5rem">
+          <div style="font-size:2.5rem;margin-bottom:0.75rem">✉️</div>
+          <div style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem">Selamat datang di MailBlast!</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.6">
+            Aplikasi ini membantu kamu kirim lamaran kerja ke ratusan perusahaan secara otomatis.<br><br>
+            Setup hanya butuh <strong style="color:var(--text-primary)">2 menit</strong>. Ikuti langkah-langkah berikut.
+          </div>
+        </div>
+        <div style="background:var(--bg-input);border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.5rem">Yang akan kamu setup:</div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.82rem;color:var(--text-muted)">
+            <div>✅ Koneksi ke Google Sheets (tempat data tersimpan)</div>
+            <div>⬜ Buat tabel data otomatis di Spreadsheet</div>
+            <div>⬜ Nama & email pengirim</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem" onclick="obNext()">
+          Mulai Setup →
+        </button>
+      </div>
+
+      <!-- STEP 2: URL GAS -->
+      <div class="ob-step" id="ob-step-2" style="display:none">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">Hubungkan ke Google Sheets</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+          MailBlast menyimpan data di Google Sheets milikmu. Kamu perlu <strong style="color:var(--text-primary)">URL Google Apps Script</strong> yang sudah di-deploy.
+        </div>
+
+        <div style="background:var(--bg-input);border-radius:8px;padding:0.875rem;margin-bottom:1rem;font-size:0.8rem;line-height:1.6;color:var(--text-muted)">
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:0.4rem">📋 Cara mendapatkan URL:</div>
+          <div>1. Buka <strong style="color:var(--accent)">script.google.com</strong></div>
+          <div>2. Buat project baru → paste kode MailBlast.gs</div>
+          <div>3. Klik <strong>Deploy → New deployment</strong></div>
+          <div>4. Pilih type: <strong>Web app</strong> → Execute as: <strong>Me</strong></div>
+          <div>5. Copy URL yang muncul → paste di bawah</div>
+        </div>
+
+        <div style="margin-bottom:0.75rem">
+          <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.375rem">URL Google Apps Script</label>
+          <input type="url" id="ob-gas-url" class="form-input" placeholder="https://script.google.com/macros/s/..." style="font-size:0.82rem">
+        </div>
+
+        <div id="ob-test-result" style="display:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;margin-bottom:0.75rem"></div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
+          <button class="btn btn-outline" style="justify-content:center;padding:0.5rem 1rem" onclick="obTestKoneksi()" id="ob-test-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Test
+          </button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="obNextFromStep2()">Lanjut →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Setup Sheets -->
+      <div class="ob-step" id="ob-step-3" style="display:none">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">Buat Tabel di Spreadsheet</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+          MailBlast perlu membuat beberapa sheet di Spreadsheet kamu. Klik tombol di bawah — prosesnya otomatis.
+        </div>
+
+        <div style="background:var(--bg-input);border-radius:8px;padding:0.875rem;margin-bottom:1.25rem;font-size:0.8rem;color:var(--text-muted)">
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:0.4rem">Sheet yang akan dibuat:</div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div>📋 <strong style="color:var(--text-primary)">PT_List</strong> — daftar perusahaan</div>
+            <div>📧 <strong style="color:var(--text-primary)">Template</strong> — template email</div>
+            <div>📎 <strong style="color:var(--text-primary)">Lampiran</strong> — daftar file lampiran</div>
+            <div>📊 <strong style="color:var(--text-primary)">Log</strong> — riwayat pengiriman</div>
+          </div>
+        </div>
+
+        <div id="ob-setup-result" style="display:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;margin-bottom:0.75rem"></div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
+          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obSetupSheets()" id="ob-setup-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Buat Sheet Sekarang
+          </button>
+        </div>
+        <div style="text-align:center;margin-top:0.75rem">
+          <button onclick="obNext()" style="background:none;border:none;color:var(--text-muted);font-size:0.78rem;cursor:pointer;text-decoration:underline">Lewati langkah ini →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Identitas pengirim -->
+      <div class="ob-step" id="ob-step-4" style="display:none">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">Identitas Pengirim</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+          Nama dan email ini akan tampil sebagai pengirim di setiap lamaran yang dikirim.
+        </div>
+
+        <div style="margin-bottom:0.875rem">
+          <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.375rem">Nama Lengkap</label>
+          <input type="text" id="ob-sender-name" class="form-input" placeholder="Contoh: Wahyu Susanto">
+        </div>
+        <div style="margin-bottom:0.875rem">
+          <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.375rem">Email Kamu (Gmail yang dipakai untuk kirim)</label>
+          <input type="email" id="ob-sender-email" class="form-input" placeholder="wahyu@gmail.com">
+        </div>
+        <div style="margin-bottom:1.25rem">
+          <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.375rem">Posisi yang Dilamar (default)</label>
+          <input type="text" id="ob-default-posisi" class="form-input" placeholder="Contoh: Staff Administrasi">
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
+          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obFinish()">
+            ✓ Selesai, Mulai Pakai!
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:900;background:#92400e;color:#fef3c7;padding:0.5rem 1rem;font-size:0.8rem;align-items:center;justify-content:space-between;gap:0.5rem">
+  <span>📡 Tidak ada koneksi — perubahan disimpan lokal dan akan disync otomatis</span>
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+    <span id="offline-queue-count" style="background:rgba(0,0,0,0.2);padding:1px 8px;border-radius:10px;font-size:0.75rem;white-space:nowrap"></span>
+    <button onclick="flushOfflineQueue()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fef3c7;padding:2px 10px;border-radius:5px;font-size:0.75rem;cursor:pointer;white-space:nowrap">Sync</button>
   </div>
 </div>
 
@@ -828,13 +1433,17 @@ let state = {
     subject: 'Lamaran Kerja - Wahyu Susanto',
     body: ''
   },
+  templates: [], // array of { id, name, subject, body }
+  abMode: 'first', // 'first' | 'random' | 'roundrobin'
   lampiranList: [
     { nama: 'CV.pdf', link: '', aktif: true },
     { nama: 'Sertifikat.pdf', link: '', aktif: false }
   ],
   runStatus: 'idle',
   sendInterval: null,
-  monStats: { session: 0, ok: 0, fail: 0 }
+  monStats: { session: 0, ok: 0, fail: 0, batchCount: 0 },
+  quotaCache: null,
+  offlineQueue: [] // { action, payload, timestamp }
 };
 
 // Load from localStorage
@@ -877,12 +1486,20 @@ function showPage(name) {
       n.classList.add('active');
     }
   });
+  // Bottom nav active
+  document.querySelectorAll('.bottom-nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'")) {
+      n.classList.add('active');
+    }
+  });
   document.getElementById('topbar-title').textContent = pageTitles[name] || name;
-  if (name === 'perusahaan') renderPTTable();
+  if (name === 'perusahaan') { renderPTTable(); renderPTCards(); }
   if (name === 'log') renderLogTable();
   if (name === 'lampiran') renderLampiran();
   if (name === 'scheduler') loadSchedulerForm();
   closeSidebar();
+  closeActionMenu();
 }
 
 function toggleSidebar() {
@@ -901,12 +1518,31 @@ function updateStats() {
   const pending = state.ptList.filter(p => p.status === 'Pending').length;
   const sent = state.ptList.filter(p => p.status === 'Sent').length;
   const failed = state.ptList.filter(p => p.status === 'Failed').length;
+  const unsynced = state.ptList.filter(p => p._unsynced).length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-pending').textContent = pending;
   document.getElementById('stat-sent').textContent = sent;
   document.getElementById('stat-failed').textContent = failed;
   const pct = total > 0 ? Math.round(sent / total * 100) : 0;
   document.getElementById('progress-sent').style.width = pct + '%';
+  if (typeof updateRetryButton === 'function') updateRetryButton();
+
+  // Unsynced warning banner
+  let banner = document.getElementById('unsynced-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'unsynced-banner';
+    banner.style.cssText = 'display:none;margin:0.75rem 0;padding:0.6rem 1rem;background:rgba(234,179,8,0.12);border:1px solid #ca8a04;border-radius:8px;font-size:0.82rem;color:#ca8a04;display:flex;align-items:center;justify-content:space-between;gap:0.5rem';
+    const tableCard = document.querySelector('#page-perusahaan .table-card');
+    if (tableCard) tableCard.insertBefore(banner, tableCard.querySelector('.table-header').nextSibling);
+  }
+  if (unsynced > 0 && state.scheduler.gasUrl) {
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span>⚠️ ${unsynced} PT belum tersync ke Spreadsheet</span>
+      <button onclick="syncUnsyncedPT()" style="background:none;border:1px solid #ca8a04;color:#ca8a04;padding:3px 10px;border-radius:5px;font-size:0.78rem;cursor:pointer;white-space:nowrap">Sync Sekarang</button>`;
+  } else {
+    banner.style.display = 'none';
+  }
 }
 
 // ===== PT TABLE =====
@@ -920,18 +1556,25 @@ function renderPTTable(filter = '') {
   filteredPT = list;
   if (list.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada data perusahaan</td></tr>';
+    renderPTCards(filter);
     return;
   }
   tbody.innerHTML = list.map((p, i) => `
     <tr>
       <td style="color:var(--text-muted)">${i+1}</td>
-      <td><strong>${escHtml(p.nama)}</strong></td>
+      <td><strong>${escHtml(p.nama)}</strong>${p.customBody ? ' <span title="Punya body email khusus" style="display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px">CUSTOM</span>' : ''}${Array.isArray(p.customAttachments) ? ' <span title="Punya lampiran khusus" style="display:inline-block;background:rgba(139,92,246,0.15);color:#a78bfa;font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px">ATT</span>' : ''}${p._unsynced ? ' <span title="Belum tersync ke Spreadsheet" style="display:inline-block;background:rgba(234,179,8,0.15);color:#ca8a04;font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px">⚠ LOKAL</span>' : ''}</td>
       <td style="color:var(--accent-blue)">${escHtml(p.email)}</td>
       <td>${escHtml(p.kota||'-')}</td>
       <td>${escHtml(p.posisi||'-')}</td>
       <td><span class="badge badge-${p.status.toLowerCase()}">${p.status}</span></td>
       <td>
         <div class="td-actions">
+          <button class="icon-btn" onclick="previewEmailPT(${p.id})" title="Preview Email">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+          ${p.status === 'Failed' ? `<button class="icon-btn" onclick="retrySingle(${p.id})" title="Kirim Ulang" style="color:var(--accent-red)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          </button>` : ''}
           <button class="icon-btn" onclick="editPT(${p.id})" title="Edit">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
           </button>
@@ -942,9 +1585,373 @@ function renderPTTable(filter = '') {
       </td>
     </tr>
   `).join('');
+  renderPTCards(filter);
 }
 
-function filterTable(val) { renderPTTable(val); }
+function filterTable(val) { renderPTTable(val); renderPTCards(val); }
+
+// ===== PREVIEW EMAIL =====
+const previewState = { list: [], idx: 0 };
+
+function resolveEmail(pt, ptIndex) {
+  const replacements = { '{NAMA_PT}': pt.nama, '{POSISI}': pt.posisi || '', '{EMAIL}': pt.email };
+  const fix = s => (s || '').replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
+  const useCustom = !!(pt.customBody);
+  // Priority: custom body → A/B variant → template global
+  let rawBody, rawSubject, source, sourceBg, sourceColor;
+  if (useCustom) {
+    rawBody = pt.customBody; rawSubject = pt.customSubject;
+    source = 'CUSTOM'; sourceBg = 'var(--accent-dim)'; sourceColor = 'var(--accent)';
+  } else {
+    const variant = resolveVariant(ptIndex);
+    if (variant) {
+      rawBody = variant.body; rawSubject = variant.subject;
+      const vLabel = state.templates ? 'VARIANT ' + String.fromCharCode(65 + state.templates.indexOf(variant)) : 'VARIANT';
+      source = vLabel; sourceBg = 'rgba(139,92,246,0.15)'; sourceColor = '#a78bfa';
+    } else {
+      rawBody = state.template.body; rawSubject = state.template.subject;
+      source = 'TEMPLATE GLOBAL'; sourceBg = 'rgba(100,116,139,0.15)'; sourceColor = 'var(--text-muted)';
+    }
+  }
+  return {
+    to: pt.email, nama: pt.nama, posisi: pt.posisi || '-',
+    subject: fix(rawSubject || state.template.subject || 'Lamaran Kerja'),
+    body: fix(rawBody || state.template.body || ''),
+    source, sourceColor, sourceBg,
+    isEmpty: !(rawBody || state.template.body || '').trim()
+  };
+}
+
+function renderPreviewModal() {
+  const data = previewState.list[previewState.idx];
+  if (!data) return;
+  const total = previewState.list.length;
+  document.getElementById('pv-to').textContent = data.to;
+  document.getElementById('pv-nama').textContent = data.nama;
+  document.getElementById('pv-posisi').textContent = data.posisi;
+  document.getElementById('pv-subject').textContent = data.subject;
+  document.getElementById('pv-body').textContent = data.body;
+  const src = document.getElementById('pv-source');
+  src.textContent = data.source;
+  src.style.background = data.sourceBg;
+  src.style.color = data.sourceColor;
+  document.getElementById('pv-warning').style.display = data.isEmpty ? 'block' : 'none';
+  document.getElementById('preview-counter').textContent = (previewState.idx + 1) + ' / ' + total;
+  document.getElementById('preview-prev').disabled = previewState.idx === 0;
+  document.getElementById('preview-next').disabled = previewState.idx === total - 1;
+}
+
+function previewEmailPT(id) {
+  const pt = state.ptList.find(p => String(p.id) === String(id));
+  if (!pt) return;
+  previewState.list = [resolveEmail(pt)];
+  previewState.idx = 0;
+  renderPreviewModal();
+  openModal('modal-preview');
+}
+
+function previewAllPT() {
+  const pending = state.ptList.filter(p => p.status === 'Pending');
+  if (!pending.length) { showToast('Tidak ada PT berstatus Pending', 'info'); return; }
+  previewState.list = pending.map(resolveEmail);
+  previewState.idx = 0;
+  renderPreviewModal();
+  openModal('modal-preview');
+}
+
+function previewNav(dir) {
+  const next = previewState.idx + dir;
+  if (next < 0 || next >= previewState.list.length) return;
+  previewState.idx = next;
+  renderPreviewModal();
+}
+
+function editPTFromPreview() {
+  closeModal('modal-preview');
+  const data = previewState.list[previewState.idx];
+  if (!data) return;
+  const pt = state.ptList.find(p => p.email === data.to && p.nama === data.nama);
+  if (pt) editPT(pt.id);
+}
+
+async function syncUnsyncedPT() {
+  const unsynced = state.ptList.filter(p => p._unsynced);
+  if (!unsynced.length) { showToast('Tidak ada data yang perlu disync', 'info'); return; }
+  if (!state.scheduler.gasUrl) { showToast('URL GAS belum diisi', 'error'); return; }
+  showToast('Menyync ' + unsynced.length + ' PT...', 'info');
+  let ok = 0, fail = 0;
+  for (const pt of unsynced) {
+    try {
+      const action = pt.addedAt ? 'addPT' : 'updatePT';
+      const resp = await gasPost({ action, ...pt });
+      if (resp.status !== 'ok') throw new Error();
+      const idx = state.ptList.findIndex(p => String(p.id) === String(pt.id));
+      if (idx >= 0) delete state.ptList[idx]._unsynced;
+      ok++;
+    } catch(e) { fail++; }
+  }
+  saveState(); updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  if (fail === 0) showToast('✅ Semua PT berhasil disync ke Spreadsheet', 'success');
+  else showToast(`⚠️ ${ok} berhasil, ${fail} masih gagal`, 'error');
+}
+
+// ===== OFFLINE SYSTEM =====
+let isOnline = navigator.onLine;
+
+function updateOfflineBanner() {
+  const banner = document.getElementById('offline-banner');
+  if (!banner) return;
+  const qLen = (state.offlineQueue || []).length;
+  if (!isOnline) {
+    banner.style.display = 'flex';
+    const countEl = document.getElementById('offline-queue-count');
+    if (countEl) countEl.textContent = qLen > 0 ? qLen + ' aksi pending' : '';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function enqueueOffline(action, payload) {
+  if (!state.offlineQueue) state.offlineQueue = [];
+  state.offlineQueue.push({ action, payload, timestamp: Date.now() });
+  saveState();
+  updateOfflineBanner();
+}
+
+async function flushOfflineQueue() {
+  if (!state.offlineQueue || state.offlineQueue.length === 0) return;
+  if (!state.scheduler.gasUrl) return;
+  const queue = [...state.offlineQueue];
+  let flushed = 0, failed = [];
+  showToast('Menyync ' + queue.length + ' aksi yang tertunda...', 'info');
+  for (const item of queue) {
+    try {
+      const resp = await gasPost({ action: item.action, ...item.payload });
+      if (resp.status !== 'ok') throw new Error(resp.message || 'GAS error');
+      // Hapus dari queue
+      state.offlineQueue = state.offlineQueue.filter(q => q.timestamp !== item.timestamp);
+      // Hapus flag _unsynced dari PT jika ada
+      if (item.payload?.id) {
+        const idx = state.ptList.findIndex(p => String(p.id) === String(item.payload.id));
+        if (idx >= 0) delete state.ptList[idx]._unsynced;
+      }
+      flushed++;
+    } catch(e) {
+      failed.push(item);
+    }
+  }
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  updateOfflineBanner();
+  if (failed.length === 0) {
+    showToast('✅ Semua aksi berhasil disync ke Spreadsheet', 'success');
+  } else {
+    showToast(`⚠️ ${flushed} berhasil, ${failed.length} masih gagal`, 'error');
+  }
+}
+
+// Deteksi perubahan status koneksi
+window.addEventListener('online', async () => {
+  isOnline = true;
+  updateOfflineBanner();
+  showToast('🟢 Koneksi kembali!', 'success');
+  // Auto-flush queue jika ada
+  if (state.offlineQueue && state.offlineQueue.length > 0) {
+    await new Promise(r => setTimeout(r, 1000)); // tunggu koneksi stabil
+    await flushOfflineQueue();
+  }
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  updateOfflineBanner();
+  showToast('📡 Koneksi terputus — mode offline aktif', 'info');
+});
+
+// Wrapper gasPost yang offline-aware
+async function gasPostSafe(payload) {
+  if (!navigator.onLine) throw new Error('OFFLINE');
+  try {
+    const resp = await gasPost(payload);
+    return resp;
+  } catch(e) {
+    if (!navigator.onLine || e.message === 'OFFLINE' || e.name === 'TypeError') {
+      throw new Error('OFFLINE');
+    }
+    throw e;
+  }
+}
+
+// ===== RETRY FAILED =====
+function retryFailed() {
+  const failedCount = state.ptList.filter(p => p.status === 'Failed').length;
+  if (!failedCount) { showToast('Tidak ada email yang gagal', 'info'); return; }
+  if (!confirm(`Reset ${failedCount} PT berstatus Failed ke Pending dan kirim ulang?`)) return;
+  state.ptList.forEach(p => { if (p.status === 'Failed') p.status = 'Pending'; });
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  addLog('Sistem', '-', `${failedCount} PT direset ke Pending untuk retry`, 'processing');
+  showToast(`${failedCount} PT direset. Tekan Start untuk kirim ulang.`, 'success');
+  updateRetryButton();
+}
+
+async function retrySingle(id) {
+  const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+  if (idx < 0) return;
+  const pt = state.ptList[idx];
+  if (!state.scheduler.gasUrl) { showToast('URL GAS belum diisi', 'error'); return; }
+
+  // Cek quota dulu
+  const quota = await fetchQuota();
+  if (quota !== null && quota <= 5) {
+    showToast('🚨 Quota Gmail terlalu rendah untuk retry (' + quota + ' tersisa)', 'error');
+    return;
+  }
+
+  state.ptList[idx].status = 'Pending';
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  addLog(pt.nama, pt.email, 'Retry...', 'processing');
+  showToast('Mengirim ulang ke ' + pt.nama + '...', 'info');
+
+  const ok = await sendEmail(state.ptList[idx]);
+  state.ptList[idx].status = ok ? 'Sent' : 'Failed';
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  addLog(pt.nama, pt.email, ok ? 'Retry berhasil ✓' : 'Retry gagal ✗', ok ? 'sent' : 'failed');
+  showToast(ok ? '✅ Retry berhasil: ' + pt.nama : '❌ Retry gagal: ' + pt.nama, ok ? 'success' : 'error');
+  updateRetryButton();
+}
+
+function updateRetryButton() {
+  const failedCount = state.ptList.filter(p => p.status === 'Failed').length;
+  const pendingCount = state.ptList.filter(p => p.status === 'Pending').length;
+  // Desktop retry button
+  const btn = document.getElementById('btn-retry-failed');
+  const counter = document.getElementById('retry-failed-count');
+  if (btn) btn.style.display = failedCount > 0 ? 'inline-flex' : 'none';
+  if (counter) counter.textContent = failedCount;
+  // Dropdown retry button
+  const dBtn = document.getElementById('dropdown-retry');
+  const dCounter = document.getElementById('retry-failed-count-dropdown');
+  if (dBtn) dBtn.style.display = failedCount > 0 ? 'flex' : 'none';
+  if (dCounter) dCounter.textContent = failedCount;
+  // Bottom nav badge
+  const badge = document.getElementById('bnav-pending');
+  if (badge) {
+    badge.style.display = pendingCount > 0 ? 'flex' : 'none';
+    badge.textContent = pendingCount > 99 ? '99+' : pendingCount;
+  }
+}
+
+// ===== PT CARD VIEW (MOBILE) =====
+function renderPTCards(filter = '') {
+  const wrap = document.getElementById('pt-card-wrap');
+  if (!wrap) return;
+  const list = filter
+    ? state.ptList.filter(p =>
+        p.nama.toLowerCase().includes(filter.toLowerCase()) ||
+        p.email.toLowerCase().includes(filter.toLowerCase()) ||
+        (p.kota || '').toLowerCase().includes(filter.toLowerCase()))
+    : state.ptList;
+  if (!list.length) {
+    wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.85rem">Belum ada data perusahaan</div>';
+    return;
+  }
+  wrap.innerHTML = list.map((p, i) => `
+    <div class="pt-card">
+      <div class="pt-card-head">
+        <div>
+          <div class="pt-card-name">
+            ${escHtml(p.nama)}
+            ${p.customBody ? '<span style="display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.6rem;padding:0px 4px;border-radius:3px;vertical-align:middle;margin-left:4px">CUSTOM</span>' : ''}
+            ${Array.isArray(p.customAttachments) ? '<span style="display:inline-block;background:rgba(139,92,246,0.15);color:#a78bfa;font-size:0.6rem;padding:0px 4px;border-radius:3px;vertical-align:middle;margin-left:2px">ATT</span>' : ''}
+            ${p._unsynced ? '<span title="Belum tersync ke Spreadsheet" style="display:inline-block;background:rgba(234,179,8,0.15);color:#ca8a04;font-size:0.6rem;padding:0px 4px;border-radius:3px;vertical-align:middle;margin-left:2px">⚠ LOKAL</span>' : ''}
+          </div>
+          <div class="pt-card-email">${escHtml(p.email)}</div>
+        </div>
+        <span class="badge badge-${p.status.toLowerCase()}">${p.status}</span>
+      </div>
+      <div class="pt-card-meta">
+        <div>Kota <span>${escHtml(p.kota || '-')}</span></div>
+        <div>Posisi <span>${escHtml(p.posisi || '-')}</span></div>
+      </div>
+      <div class="pt-card-actions">
+        <button class="btn btn-outline" onclick="previewEmailPT(${p.id})">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          Preview
+        </button>
+        ${p.status === 'Failed' ? `<button class="btn btn-outline" onclick="retrySingle(${p.id})" style="color:var(--accent-red);border-color:var(--accent-red)">↺ Retry</button>` : ''}
+        <button class="btn btn-outline" onclick="editPT(${p.id})">Edit</button>
+        <button class="btn btn-outline" onclick="deletePT(${p.id})" style="color:var(--accent-red);border-color:var(--accent-red)">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== ACTION DROPDOWN =====
+function toggleActionMenu() {
+  const menu = document.getElementById('action-dropdown-menu');
+  if (menu) menu.classList.toggle('open');
+}
+function closeActionMenu() {
+  const menu = document.getElementById('action-dropdown-menu');
+  if (menu) menu.classList.remove('open');
+}
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  const dd = document.getElementById('action-dropdown');
+  if (dd && !dd.contains(e.target)) closeActionMenu();
+});
+
+// ===== PREVIEW TABS =====
+function switchPreviewTab(tab, btn) {
+  document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // On mobile, show only the selected tab content
+  if (window.innerWidth <= 768) {
+    document.querySelectorAll('.preview-tab-content').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById('preview-tab-' + tab);
+    if (el) el.classList.add('active');
+  }
+}
+
+function toggleCustomAttachments(checked) {
+  document.getElementById('modal-custom-att-section').style.display = checked ? 'block' : 'none';
+  if (checked) renderAttChecklist();
+}
+
+function renderAttChecklist(selectedIds) {
+  const el = document.getElementById('modal-att-checklist');
+  if (!el) return;
+  const global = state.lampiranList.filter(l => l.nama || l.link);
+  if (!global.length) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem">Belum ada lampiran global. Tambahkan di halaman Lampiran dulu.</div>';
+    return;
+  }
+  el.innerHTML = global.map((l, i) => `
+    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.83rem">
+      <input type="checkbox" data-att-idx="${i}" ${!selectedIds || selectedIds.includes(i) ? 'checked' : ''}
+        style="accent-color:var(--accent);width:14px;height:14px">
+      <span>${escHtml(l.nama || 'Lampiran ' + (i+1))}</span>
+      ${l.link ? `<span style="font-size:0.72rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${escHtml(l.link)}</span>` : '<span style="font-size:0.72rem;color:var(--accent-red)">link kosong</span>'}
+    </label>
+  `).join('');
+}
+
+function getCheckedAttachments() {
+  return Array.from(document.querySelectorAll('#modal-att-checklist input[data-att-idx]:checked'))
+    .map(cb => parseInt(cb.dataset.attIdx));
+}
+
+function toggleCustomBody(checked) {
+  document.getElementById('modal-custom-section').style.display = checked ? 'block' : 'none';
+}
 
 function openAddModal() {
   document.getElementById('modal-pt-title').textContent = 'Tambah Perusahaan';
@@ -954,11 +1961,17 @@ function openAddModal() {
   document.getElementById('modal-kota').value = '';
   document.getElementById('modal-posisi').value = '';
   document.getElementById('modal-status').value = 'Pending';
+  document.getElementById('modal-use-custom').checked = false;
+  document.getElementById('modal-custom-subject').value = '';
+  document.getElementById('modal-custom-body').value = '';
+  toggleCustomBody(false);
+  document.getElementById('modal-use-custom-att').checked = false;
+  toggleCustomAttachments(false);
   openModal('modal-pt');
 }
 
 function editPT(id) {
-  const pt = state.ptList.find(p => p.id === id);
+  const pt = state.ptList.find(p => String(p.id) === String(id));
   if (!pt) return;
   document.getElementById('modal-pt-title').textContent = 'Edit Perusahaan';
   document.getElementById('modal-pt-id').value = id;
@@ -967,50 +1980,165 @@ function editPT(id) {
   document.getElementById('modal-kota').value = pt.kota || '';
   document.getElementById('modal-posisi').value = pt.posisi || '';
   document.getElementById('modal-status').value = pt.status;
+  const hasCustom = !!(pt.customBody);
+  document.getElementById('modal-use-custom').checked = hasCustom;
+  document.getElementById('modal-custom-subject').value = pt.customSubject || '';
+  document.getElementById('modal-custom-body').value = pt.customBody || '';
+  toggleCustomBody(hasCustom);
+  const hasCustomAtt = Array.isArray(pt.customAttachments);
+  document.getElementById('modal-use-custom-att').checked = hasCustomAtt;
+  toggleCustomAttachments(false);
+  if (hasCustomAtt) {
+    toggleCustomAttachments(true);
+    renderAttChecklist(pt.customAttachments);
+  }
   openModal('modal-pt');
 }
 
-function savePT() {
+async function savePT() {
   const id = document.getElementById('modal-pt-id').value;
   const nama = document.getElementById('modal-nama').value.trim();
   const email = document.getElementById('modal-email').value.trim();
   if (!nama || !email) { showToast('Nama PT dan email wajib diisi', 'error'); return; }
-  if (id) {
-    const idx = state.ptList.findIndex(p => p.id == id);
-    if (idx >= 0) {
-      state.ptList[idx] = {
-        ...state.ptList[idx],
+
+  const useCustom = document.getElementById('modal-use-custom').checked;
+  const customBody = useCustom ? document.getElementById('modal-custom-body').value.trim() : '';
+  const customSubject = useCustom ? document.getElementById('modal-custom-subject').value.trim() : '';
+  const useCustomAtt = document.getElementById('modal-use-custom-att').checked;
+  const customAttachments = useCustomAtt ? getCheckedAttachments() : null;
+
+  const entry = id
+    ? { ...state.ptList.find(p => String(p.id) === String(id)),
         nama, email,
         kota: document.getElementById('modal-kota').value,
         posisi: document.getElementById('modal-posisi').value,
-        status: document.getElementById('modal-status').value
-      };
+        status: document.getElementById('modal-status').value,
+        customBody, customSubject, customAttachments }
+    : { id: String(Date.now()), nama, email,
+        kota: document.getElementById('modal-kota').value,
+        posisi: document.getElementById('modal-posisi').value,
+        status: 'Pending',
+        addedAt: new Date().toISOString(),
+        customBody, customSubject, customAttachments };
+
+  // Loading state di tombol
+  const saveBtn = document.querySelector('#modal-pt .btn-primary');
+  const origText = saveBtn?.innerHTML;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<span style="opacity:.7">Menyimpan...</span>'; }
+
+  // Jika GAS terhubung → wajib simpan ke Spreadsheet dulu
+  if (state.scheduler.gasUrl) {
+    try {
+      const action = id ? 'updatePT' : 'addPT';
+      const resp = await gasPost({ action, ...entry });
+      if (resp.status !== 'ok') throw new Error(resp.message || 'GAS error');
+      // Berhasil → update lokal
+      if (id) {
+        const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+        if (idx >= 0) state.ptList[idx] = entry;
+      } else {
+        if (resp.id) entry.id = String(resp.id);
+        state.ptList.push(entry);
+      }
+      saveState(); updateStats();
+      renderPTTable(document.getElementById('search-pt')?.value || '');
+      closeModal('modal-pt');
+      showToast(id ? '✅ Data diperbarui di Spreadsheet' : '✅ PT berhasil ditambahkan ke Spreadsheet', 'success');
+    } catch(e) {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = origText; }
+
+      // Jika offline → simpan lokal + enqueue otomatis
+      if (!navigator.onLine || e.message === 'OFFLINE') {
+        const action = id ? 'updatePT' : 'addPT';
+        if (id) {
+          const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+          if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
+        } else {
+          state.ptList.push({ ...entry, _unsynced: true });
+        }
+        enqueueOffline(action, entry);
+        saveState(); updateStats();
+        renderPTTable(document.getElementById('search-pt')?.value || '');
+        closeModal('modal-pt');
+        showToast('📭 Offline — disimpan lokal, akan sync otomatis saat online', 'info');
+      } else {
+        // Online tapi GAS error → tanya user
+        const forceLocal = confirm(
+          '❌ Gagal simpan ke Spreadsheet:\n' + e.message +
+          '\n\nSimpan lokal saja? (data belum tersync ke Spreadsheet)'
+        );
+        if (forceLocal) {
+          if (id) {
+            const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+            if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
+          } else {
+            state.ptList.push({ ...entry, _unsynced: true });
+          }
+          saveState(); updateStats();
+          renderPTTable(document.getElementById('search-pt')?.value || '');
+          closeModal('modal-pt');
+          showToast('⚠️ Disimpan lokal — belum tersync ke Spreadsheet', 'info');
+        }
+      }
+      return;
     }
-    showToast('Data perusahaan diperbarui', 'success');
   } else {
-    const newId = Date.now();
-    state.ptList.push({
-      id: newId, nama, email,
-      kota: document.getElementById('modal-kota').value,
-      posisi: document.getElementById('modal-posisi').value,
-      status: 'Pending',
-      addedAt: new Date().toISOString()
-    });
-    showToast('Perusahaan berhasil ditambahkan', 'success');
+    // Tidak ada URL GAS → simpan lokal, tandai unsynced
+    if (id) {
+      const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+      if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
+    } else {
+      state.ptList.push({ ...entry, _unsynced: true });
+    }
+    saveState(); updateStats();
+    renderPTTable(document.getElementById('search-pt')?.value || '');
+    closeModal('modal-pt');
+    showToast('⚠️ Tersimpan lokal — URL GAS belum diisi di Setting', 'info');
   }
-  closeModal('modal-pt');
-  saveState();
-  updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = origText; }
 }
 
-function deletePT(id) {
+async function deletePT(id) {
   if (!confirm('Hapus perusahaan ini?')) return;
-  state.ptList = state.ptList.filter(p => p.id !== id);
-  saveState();
-  updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
-  showToast('Perusahaan dihapus', 'info');
+  const pt = state.ptList.find(p => String(p.id) === String(id));
+
+  if (state.scheduler.gasUrl) {
+    if (!navigator.onLine) {
+      // Offline → hapus lokal + enqueue
+      state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
+      enqueueOffline('deletePT', { id: String(id) });
+      saveState(); updateStats();
+      renderPTTable(document.getElementById('search-pt')?.value || '');
+      showToast('📡 Offline — dihapus lokal, akan disync saat online', 'info');
+      return;
+    }
+    showToast('Menghapus...', 'info');
+    try {
+      const resp = await gasPost({ action: 'deletePT', id: String(id) });
+      if (resp.status !== 'ok') throw new Error(resp.message || 'GAS error');
+      state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
+      saveState(); updateStats();
+      renderPTTable(document.getElementById('search-pt')?.value || '');
+      showToast('✅ ' + (pt?.nama || 'PT') + ' dihapus dari Spreadsheet', 'info');
+    } catch(e) {
+      const forceLocal = confirm(
+        '❌ Gagal hapus dari Spreadsheet:\n' + e.message +
+        '\n\nHapus dari lokal saja?'
+      );
+      if (forceLocal) {
+        state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
+        saveState(); updateStats();
+        renderPTTable(document.getElementById('search-pt')?.value || '');
+        showToast('⚠️ Dihapus lokal — Spreadsheet belum diupdate', 'info');
+      }
+    }
+  } else {
+    state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
+    saveState(); updateStats();
+    renderPTTable(document.getElementById('search-pt')?.value || '');
+    showToast('Dihapus lokal — URL GAS belum diisi', 'info');
+  }
 }
 
 function importExcel() {
@@ -1053,12 +2181,158 @@ function importExcel() {
 }
 
 // ===== TEMPLATE =====
-function saveTemplate() {
+// ===== A/B TEMPLATE VARIANTS =====
+let abRoundRobinIndex = 0;
+
+function renderVariantList() {
+  const list = document.getElementById('variant-list');
+  const empty = document.getElementById('variant-empty');
+  if (!list) return;
+  if (!state.templates || state.templates.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = state.templates.map((t, i) => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;background:var(--bg-input);display:flex;gap:0.75rem;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem">
+          <span style="font-size:0.72rem;font-weight:700;background:var(--accent-dim);color:var(--accent);padding:1px 7px;border-radius:3px">${String.fromCharCode(65+i)}</span>
+          <span style="font-weight:600;font-size:0.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(t.name)}</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Subject: ${escHtml(t.subject)}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml((t.body || '').slice(0, 80))}${t.body && t.body.length > 80 ? '...' : ''}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-outline" onclick="editVariant(${i})" style="padding:4px 10px;font-size:0.75rem">Edit</button>
+        <button class="btn btn-outline" onclick="previewVariant(${i})" style="padding:4px 10px;font-size:0.75rem">Preview</button>
+        <button class="icon-btn danger" onclick="deleteVariant(${i})" title="Hapus variant ini">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+  // Set ab-mode select
+  const sel = document.getElementById('ab-mode');
+  if (sel) sel.value = state.abMode || 'first';
+}
+
+function saveAbMode() {
+  state.abMode = document.getElementById('ab-mode').value;
+  saveState();
+  showToast('Mode A/B disimpan: ' + { first: 'Gunakan Pertama', roundrobin: 'Bergantian', random: 'Acak' }[state.abMode], 'success');
+}
+
+function addVariant() {
+  const name = prompt('Nama variant baru (misal: Variant B - Formal):');
+  if (!name) return;
+  if (!state.templates) state.templates = [];
+  state.templates.push({ id: String(Date.now()), name, subject: '', body: '' });
+  saveState();
+  renderVariantList();
+  // Langsung buka edit
+  editVariant(state.templates.length - 1);
+}
+
+function editVariant(idx) {
+  const t = state.templates[idx];
+  if (!t) return;
+  openModal('modal-variant');
+  document.getElementById('modal-variant-idx').value = idx;
+  document.getElementById('modal-variant-name').value = t.name;
+  document.getElementById('modal-variant-subject').value = t.subject;
+  document.getElementById('modal-variant-body').value = t.body;
+}
+
+function saveVariant() {
+  const idx = parseInt(document.getElementById('modal-variant-idx').value);
+  if (isNaN(idx) || !state.templates[idx]) return;
+  state.templates[idx].name = document.getElementById('modal-variant-name').value.trim() || state.templates[idx].name;
+  state.templates[idx].subject = document.getElementById('modal-variant-subject').value;
+  state.templates[idx].body = document.getElementById('modal-variant-body').value;
+  saveState();
+  renderVariantList();
+  closeModal('modal-variant');
+  showToast('Variant ' + String.fromCharCode(65 + idx) + ' disimpan', 'success');
+}
+
+function deleteVariant(idx) {
+  const t = state.templates[idx];
+  if (!t || !confirm('Hapus variant "' + t.name + '"?')) return;
+  state.templates.splice(idx, 1);
+  saveState();
+  renderVariantList();
+  showToast('Variant dihapus', 'info');
+}
+
+function previewVariant(idx) {
+  const t = state.templates[idx];
+  if (!t) return;
+  const dummy = { nama: 'PT Contoh Indonesia', posisi: 'Staff', email: 'hrd@contoh.com', customBody: t.body, customSubject: t.subject };
+  const resolved = resolveEmail(dummy);
+  // Reuse preview modal dengan 1 item
+  previewState.list = [{ ...resolved, nama: 'PT Contoh Indonesia', source: 'VARIANT ' + String.fromCharCode(65+idx), sourceBg: 'var(--accent-dim)', sourceColor: 'var(--accent)' }];
+  previewState.idx = 0;
+  renderPreviewModal();
+  openModal('modal-preview');
+}
+
+function saveCurrentAsVariant() {
+  const name = document.getElementById('tpl-name').value.trim() || 'Variant';
+  const subject = document.getElementById('tpl-subject').value;
+  const body = document.getElementById('tpl-body').value;
+  if (!body.trim()) { showToast('Isi body template dulu sebelum dijadikan variant', 'error'); return; }
+  if (!state.templates) state.templates = [];
+  state.templates.push({ id: String(Date.now()), name, subject, body });
+  saveState();
+  renderVariantList();
+  showToast('Disimpan sebagai Variant ' + String.fromCharCode(64 + state.templates.length), 'success');
+}
+
+// Resolve variant untuk PT tertentu berdasarkan abMode
+function resolveVariant(ptIndex) {
+  if (!state.templates || state.templates.length === 0) return null;
+  const mode = state.abMode || 'first';
+  if (mode === 'first') return state.templates[0];
+  if (mode === 'random') return state.templates[Math.floor(Math.random() * state.templates.length)];
+  if (mode === 'roundrobin') {
+    const t = state.templates[abRoundRobinIndex % state.templates.length];
+    abRoundRobinIndex++;
+    return t;
+  }
+  return state.templates[0];
+}
+
+async function saveTemplate() {
   state.template.name = document.getElementById('tpl-name').value;
   state.template.subject = document.getElementById('tpl-subject').value;
   state.template.body = document.getElementById('tpl-body').value;
   saveState();
-  showToast('Template disimpan', 'success');
+  if (state.scheduler.gasUrl) {
+    try {
+      const resp = await gasPost({ action: 'saveTemplate', ...state.template });
+      if (resp.status === 'ok') showToast('Template disimpan ke Spreadsheet ✓', 'success');
+      else showToast('Disimpan lokal. GAS: ' + resp.message, 'info');
+    } catch(e) { showToast('Disimpan lokal saja (GAS tidak terhubung)', 'info'); }
+  } else {
+    showToast('Template disimpan lokal', 'success');
+  }
+}
+
+async function loadTemplateFromGAS() {
+  if (!state.scheduler.gasUrl) return;
+  try {
+    const data = await gasGet('template');
+    if (data.status === 'ok' && data.data) {
+      state.template = { ...state.template, ...data.data };
+      saveState();
+      document.getElementById('tpl-name').value = state.template.name || '';
+      document.getElementById('tpl-subject').value = state.template.subject || '';
+      document.getElementById('tpl-body').value = state.template.body || '';
+      showToast('Template dimuat dari Spreadsheet ✓', 'success');
+    }
+  } catch(e) {}
 }
 
 function previewTemplate() {
@@ -1154,7 +2428,7 @@ async function testKoneksi() {
     try { dataPost = JSON.parse(textPost); } catch(e) { showToast('POST test gagal - response bukan JSON', 'error'); return; }
 
     if (dataPost.status === 'ok') {
-      showToast('✓ Koneksi berhasil! GAS siap digunakan. Quota: ' + (dataGet.quotaRemaining || '?') + ' email/hari', 'success');
+      showToast('✓ Koneksi berhasil! GAS siap digunakan. Quota: ' + (dataGet.quota ?? '?') + ' email/hari', 'success');
     } else {
       showToast('POST gagal: ' + dataPost.message, 'error');
     }
@@ -1187,7 +2461,8 @@ function startSend() {
   if (pending.length === 0) { showToast('Tidak ada perusahaan Pending', 'error'); return; }
   if (!state.scheduler.gasUrl) { showToast('URL Google Apps Script belum diisi di Scheduler', 'error'); return; }
   if (state.runStatus === 'running') { showToast('Pengiriman sudah berjalan', 'info'); return; }
-  state.monStats = { session: 0, ok: 0, fail: 0 };
+  state.monStats = { session: 0, ok: 0, fail: 0, batchCount: 0 };
+  state.quotaCache = null;
   setRunStatus('running');
   showToast('Pengiriman dimulai. ' + pending.length + ' PT dalam antrian.', 'success');
   addLog('Sistem', '-', 'Pengiriman dimulai', 'processing');
@@ -1217,32 +2492,125 @@ function stopSend() {
   addLog('Sistem', '-', 'Pengiriman dihentikan', 'failed');
 }
 
+// Ambil quota dari GAS, cache per 5 menit
+async function fetchQuota() {
+  const now = Date.now();
+  if (state.quotaCache && (now - state.quotaCache.ts) < 5 * 60 * 1000) return state.quotaCache.val;
+  try {
+    const data = await gasGet('status');
+    const q = data.quota ?? null;
+    state.quotaCache = { val: q, ts: now };
+    return q;
+  } catch (e) { return null; }
+}
+
+function showQuotaWarning(type, quota) {
+  const bar = document.getElementById('quota-warning-bar');
+  const text = document.getElementById('quota-warning-text');
+  const icon = document.getElementById('quota-warning-icon');
+  if (type === 'none') {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  if (type === 'critical') {
+    bar.style.background = 'rgba(239,68,68,0.12)';
+    bar.style.border = '1px solid var(--accent-red)';
+    bar.style.color = 'var(--accent-red)';
+    icon.textContent = '🚨';
+    text.textContent = `Quota Gmail sangat rendah (${quota} tersisa) — pengiriman dijeda otomatis. Lanjutkan besok atau ganti akun.`;
+  } else if (type === 'low') {
+    bar.style.background = 'rgba(234,179,8,0.12)';
+    bar.style.border = '1px solid #ca8a04';
+    bar.style.color = '#ca8a04';
+    icon.textContent = '⚠️';
+    text.textContent = `Quota Gmail hampir habis (${quota} tersisa) — pengiriman diperlambat otomatis.`;
+  } else if (type === 'rest') {
+    bar.style.background = 'rgba(59,130,246,0.1)';
+    bar.style.border = '1px solid #3b82f6';
+    bar.style.color = '#60a5fa';
+    icon.textContent = '⏸️';
+    text.textContent = `Batch selesai — istirahat ${state.scheduler.rest || 5} menit sebelum batch berikutnya.`;
+  }
+}
+
 let queueIndex = 0;
-function runQueue() {
+async function runQueue() {
   if (state.runStatus !== 'running') return;
   const pending = state.ptList.filter(p => p.status === 'Pending');
   if (pending.length === 0) {
     setRunStatus('idle');
+    showQuotaWarning('none');
     showToast('Semua email selesai dikirim!', 'success');
     addLog('Sistem', '-', 'Semua email terkirim', 'sent');
     return;
   }
+
+  // --- Cek quota sebelum kirim ---
+  const quota = await fetchQuota();
+  const QUOTA_CRITICAL = 5;
+  const QUOTA_LOW = 20;
+  document.getElementById('mon-quota').textContent = quota !== null ? quota : '?';
+  document.getElementById('mon-quota').style.color =
+    quota === null ? '' : quota <= QUOTA_CRITICAL ? 'var(--accent-red)' : quota <= QUOTA_LOW ? '#ca8a04' : 'var(--accent-green)';
+
+  if (quota !== null && quota <= QUOTA_CRITICAL) {
+    showQuotaWarning('critical', quota);
+    pauseSend();
+    showToast('🚨 Quota Gmail hampir habis (' + quota + ' tersisa) — pengiriman dijeda otomatis!', 'error');
+    addLog('Sistem', '-', 'Auto-pause: quota kritis (' + quota + ' tersisa)', 'failed');
+    return;
+  }
+  if (quota !== null && quota <= QUOTA_LOW) {
+    showQuotaWarning('low', quota);
+    // Perlambat delay 2x lipat jika quota rendah
+    const slowDelay = (state.scheduler.delay || 30) * 2 * 1000;
+    addLog('Sistem', '-', 'Quota rendah — delay diperlambat 2x', 'pending');
+    state.sendInterval = setTimeout(runQueue, slowDelay);
+    return;
+  } else {
+    showQuotaWarning('none');
+  }
+
+  // --- Cek batch ---
+  const batchSize = state.scheduler.batch || 20;
+  const restMins = state.scheduler.rest || 5;
+  if (!state.monStats.batchCount) state.monStats.batchCount = 0;
+
+  if (state.monStats.batchCount > 0 && state.monStats.batchCount % batchSize === 0) {
+    const restMs = restMins * 60 * 1000;
+    showQuotaWarning('rest', quota);
+    addLog('Sistem', '-', `Istirahat ${restMins} mnt setelah ${batchSize} email`, 'pending');
+    showToast(`⏸️ Batch ${Math.floor(state.monStats.batchCount / batchSize)} selesai — istirahat ${restMins} mnt`, 'info');
+    state.sendInterval = setTimeout(() => {
+      showQuotaWarning('none');
+      runQueue();
+    }, restMs);
+    return;
+  }
+
+  // --- Kirim email ---
   const pt = pending[0];
   addLog(pt.nama, pt.email, 'Mengirim...', 'processing');
-  sendEmail(pt).then(ok => {
-    const status = ok ? 'Sent' : 'Failed';
-    const idx = state.ptList.findIndex(p => p.id === pt.id);
-    if (idx >= 0) state.ptList[idx].status = status;
-    state.monStats.session++;
-    if (ok) state.monStats.ok++; else state.monStats.fail++;
-    updateMonStats();
-    addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed');
-    saveState(); updateStats();
-    if (state.runStatus === 'running') {
-      const delay = (state.scheduler.delay || 30) * 1000;
-      state.sendInterval = setTimeout(runQueue, delay);
-    }
-  });
+  const ok = await sendEmail(pt);
+  const status = ok ? 'Sent' : 'Failed';
+  const idx = state.ptList.findIndex(p => String(p.id) === String(pt.id));
+  if (idx >= 0) state.ptList[idx].status = status;
+  state.monStats.session++;
+  state.monStats.batchCount++;
+  if (ok) state.monStats.ok++; else state.monStats.fail++;
+
+  // Invalidasi cache quota setelah kirim agar nilai diperbarui
+  if (state.quotaCache) state.quotaCache.ts = 0;
+
+  updateMonStats();
+  addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed');
+  saveState(); updateStats();
+
+  if (state.runStatus === 'running') {
+    const delay = (state.scheduler.delay || 30) * 1000;
+    state.sendInterval = setTimeout(runQueue, delay);
+  }
 }
 
 async function sendEmail(pt) {
@@ -1250,18 +2618,44 @@ async function sendEmail(pt) {
     const gasUrl = state.scheduler.gasUrl;
     if (!gasUrl) return false;
 
-    // Ganti semua {NAMA_PT} di body
-    const body = (state.template.body || '').replace(/\{NAMA_PT\}/g, pt.nama);
+    // Pakai custom body jika ada → variant A/B → fallback ke template global
+    let rawBody, rawSubject;
+    if (pt.customBody) {
+      rawBody = pt.customBody;
+      rawSubject = pt.customSubject;
+    } else {
+      const variant = resolveVariant();
+      rawBody = variant ? variant.body : state.template.body;
+      rawSubject = variant ? variant.subject : state.template.subject;
+    }
+    rawBody = rawBody || state.template.body || '';
+    rawSubject = rawSubject || state.template.subject || 'Lamaran Kerja';
+
+    // Replace placeholders
+    const replacements = { '{NAMA_PT}': pt.nama, '{POSISI}': pt.posisi || '', '{EMAIL}': pt.email };
+    const body = rawBody.replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
+    const subject = rawSubject.replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
+
+    // Resolve lampiran: custom per PT → semua yang aktif global
+    let attachments;
+    if (Array.isArray(pt.customAttachments)) {
+      attachments = pt.customAttachments
+        .map(i => state.lampiranList[i])
+        .filter(l => l && l.link)
+        .map(l => l.link);
+    } else {
+      attachments = state.lampiranList.filter(l => l.aktif && l.link).map(l => l.link);
+    }
 
     const payload = {
       action: 'sendEmail',
       to: pt.email,
-      subject: state.template.subject || 'Lamaran Kerja',
+      subject: subject,
       body: body,
       ptNama: pt.nama,
       posisi: pt.posisi || '',
       senderName: state.template.senderName || 'Pelamar Kerja',
-      attachments: state.lampiranList.filter(l => l.aktif && l.link).map(l => l.link)
+      attachments
     };
 
     // PENTING: Kirim sebagai text/plain bukan application/json
@@ -1291,12 +2685,22 @@ function updateMonStats() {
   document.getElementById('mon-fail').textContent = state.monStats.fail;
   const remaining = state.ptList.filter(p => p.status === 'Pending').length;
   const delay = (state.scheduler.delay || 30);
+  const batchSize = state.scheduler.batch || 20;
+  const restMins = state.scheduler.rest || 5;
   if (remaining > 0) {
-    const mins = Math.ceil(remaining * delay / 60);
+    const batches = Math.ceil(remaining / batchSize);
+    const totalRestSecs = (batches - 1) * restMins * 60;
+    const totalSendSecs = remaining * delay;
+    const mins = Math.ceil((totalSendSecs + totalRestSecs) / 60);
     document.getElementById('mon-eta').textContent = mins + ' mnt';
   } else {
     document.getElementById('mon-eta').textContent = 'Selesai';
   }
+  // Batch counter di label
+  const batchCount = state.monStats.batchCount || 0;
+  const currentBatch = Math.floor(batchCount / batchSize) + 1;
+  const posInBatch = batchCount % batchSize;
+  document.getElementById('mon-session').title = `Batch ${currentBatch}, email ke-${posInBatch} dalam batch ini`;
 }
 
 // ===== LOG =====
@@ -1389,27 +2793,475 @@ function showToast(msg, type = 'info') {
   setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 3500);
 }
 
+// ===== GAS INTEGRATION FUNCTIONS =====
+
+async function setupSheets() {
+  try {
+    showToast('Menginisialisasi Spreadsheet...', 'info');
+    const resp = await gasPost({ action: 'setupSheets' });
+    if (resp.status === 'ok') {
+      showToast('✅ Spreadsheet berhasil disiapkan!', 'success');
+    } else {
+      showToast('❌ Setup gagal: ' + (resp.message || 'Unknown error'), 'error');
+    }
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+async function syncAllFromGAS() {
+  const url = state.scheduler.gasUrl;
+  if (!url) { showToast('URL GAS belum diisi di halaman Scheduler', 'error'); return; }
+  showToast('Memuat data dari GAS...', 'info');
+  let errors = [];
+
+  // 1. Sync PT List
+  try {
+    const ptData = await gasGet('ptlist');
+    if (ptData.status === 'ok' && Array.isArray(ptData.rows)) {
+      state.ptList = ptData.rows.map(r => ({
+        id: String(r.id || r[0] || Date.now() + Math.random()),
+        nama: r.nama || r[1] || '',
+        email: r.email || r[2] || '',
+        kota: r.kota || r[3] || '',
+        posisi: r.posisi || r[4] || '',
+        status: r.status || r[5] || 'Pending',
+        addedAt: r.addedAt || r[6] || ''
+      }));
+    }
+  } catch (e) { errors.push('PT: ' + e.message); }
+
+  // 2. Sync Lampiran
+  try {
+    const lamData = await gasGet('lampiran');
+    if (lamData.status === 'ok' && Array.isArray(lamData.rows)) {
+      state.lampiran = lamData.rows.map(r => ({
+        nama: r.nama || r[0] || '',
+        link: r.link || r[1] || ''
+      }));
+    }
+  } catch (e) { errors.push('Lampiran: ' + e.message); }
+
+  // 3. Sync Log
+  try {
+    const logData = await gasGet('log');
+    if (logData.status === 'ok' && Array.isArray(logData.rows)) {
+      state.log = logData.rows.map(r => ({
+        time: r.time || r[0] || '',
+        pt: r.pt || r[1] || '',
+        email: r.email || r[2] || '',
+        status: r.status || r[3] || '',
+        note: r.note || r[4] || ''
+      }));
+    }
+  } catch (e) { errors.push('Log: ' + e.message); }
+
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  renderLampiran();
+  renderLogTable();
+
+  if (errors.length > 0) {
+    showToast('⚠️ Sync selesai dengan error: ' + errors.join(', '), 'error');
+  } else {
+    showToast('✅ Sync selesai! PT, Lampiran, dan Log diperbarui.', 'success');
+  }
+}
+
+async function saveLampiranToGAS() {
+  try {
+    showToast('Menyimpan lampiran ke Spreadsheet...', 'info');
+    const resp = await gasPost({ action: 'saveLampiran', rows: state.lampiran });
+    if (resp.status === 'ok') {
+      showToast('✅ Lampiran berhasil disimpan ke Spreadsheet', 'success');
+    } else {
+      showToast('❌ Gagal simpan: ' + (resp.message || 'Unknown error'), 'error');
+    }
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+async function loadLampiranFromGAS() {
+  try {
+    showToast('Memuat lampiran dari Spreadsheet...', 'info');
+    const data = await gasGet('lampiran');
+    if (data.status === 'ok' && Array.isArray(data.rows)) {
+      state.lampiran = data.rows.map(r => ({
+        nama: r.nama || r[0] || '',
+        link: r.link || r[1] || ''
+      }));
+      saveState();
+      renderLampiran();
+      showToast('✅ ' + state.lampiran.length + ' lampiran dimuat dari Spreadsheet', 'success');
+    } else {
+      showToast('⚠️ Tidak ada data lampiran di Spreadsheet', 'info');
+    }
+  } catch (e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  }
+}
+
+// ===== GAS HELPERS =====
+async function gasGet(action) {
+  const url = state.scheduler.gasUrl;
+  if (!url) throw new Error('URL GAS belum diisi');
+  const resp = await fetch(url + '?action=' + encodeURIComponent(action));
+  const text = await resp.text();
+  try { return JSON.parse(text); } catch(e) { throw new Error('Response bukan JSON: ' + text.slice(0, 100)); }
+}
+
+async function gasPost(payload) {
+  const url = state.scheduler.gasUrl;
+  if (!url) throw new Error('URL GAS belum diisi');
+  const resp = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+  });
+  const text = await resp.text();
+  try { return JSON.parse(text); } catch(e) { throw new Error('Response bukan JSON: ' + text.slice(0, 100)); }
+}
+
 // ===== HELPERS =====
 function escHtml(str) {
   return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ===== ONBOARDING WIZARD =====
+let obCurrentStep = 1;
+
+function obShow() {
+  const el = document.getElementById('onboarding-backdrop');
+  el.style.display = 'flex';
+  obGoTo(1);
+}
+
+function obHide() {
+  document.getElementById('onboarding-backdrop').style.display = 'none';
+}
+
+function obGoTo(step) {
+  obCurrentStep = step;
+  document.querySelectorAll('.ob-step').forEach(s => s.style.display = 'none');
+  const el = document.getElementById('ob-step-' + step);
+  if (el) el.style.display = 'block';
+  document.getElementById('ob-step-label').textContent = 'Langkah ' + step + ' dari 4';
+  document.getElementById('ob-progress').style.width = (step * 25) + '%';
+}
+
+function obNext() { if (obCurrentStep < 4) obGoTo(obCurrentStep + 1); }
+function obPrev() { if (obCurrentStep > 1) obGoTo(obCurrentStep - 1); }
+
+async function obTestKoneksi() {
+  const url = document.getElementById('ob-gas-url').value.trim();
+  const result = document.getElementById('ob-test-result');
+  const btn = document.getElementById('ob-test-btn');
+  if (!url) {
+    result.style.display = 'block';
+    result.style.background = 'rgba(239,68,68,0.12)';
+    result.style.border = '1px solid var(--accent-red)';
+    result.style.color = 'var(--accent-red)';
+    result.textContent = '⚠️ URL belum diisi';
+    return;
+  }
+  btn.textContent = 'Testing...';
+  btn.disabled = true;
+  try {
+    const resp = await fetch(url + '?action=status');
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      result.style.display = 'block';
+      result.style.background = 'rgba(16,185,129,0.1)';
+      result.style.border = '1px solid var(--accent)';
+      result.style.color = 'var(--accent)';
+      result.textContent = '✅ Koneksi berhasil! Quota Gmail: ' + (data.quota ?? '?') + ' email/hari';
+      // Simpan URL ke state
+      state.scheduler.gasUrl = url;
+      const urlInput = document.getElementById('sch-gas-url');
+      if (urlInput) urlInput.value = url;
+      saveState();
+    } else {
+      throw new Error('Response tidak valid');
+    }
+  } catch(e) {
+    result.style.display = 'block';
+    result.style.background = 'rgba(239,68,68,0.12)';
+    result.style.border = '1px solid var(--accent-red)';
+    result.style.color = 'var(--accent-red)';
+    result.textContent = '❌ Koneksi gagal. Periksa URL dan pastikan script sudah di-deploy.';
+  }
+  btn.textContent = 'Test';
+  btn.disabled = false;
+}
+
+function obNextFromStep2() {
+  const url = document.getElementById('ob-gas-url').value.trim();
+  if (!url) {
+    showToast('Isi URL GAS dulu, atau klik Test untuk verifikasi', 'error');
+    return;
+  }
+  state.scheduler.gasUrl = url;
+  const urlInput = document.getElementById('sch-gas-url');
+  if (urlInput) urlInput.value = url;
+  saveState();
+  obNext();
+}
+
+async function obSetupSheets() {
+  const btn = document.getElementById('ob-setup-btn');
+  const result = document.getElementById('ob-setup-result');
+  btn.textContent = 'Membuat sheet...';
+  btn.disabled = true;
+  try {
+    const resp = await gasPost({ action: 'setupSheets' });
+    result.style.display = 'block';
+    if (resp.status === 'ok') {
+      result.style.background = 'rgba(16,185,129,0.1)';
+      result.style.border = '1px solid var(--accent)';
+      result.style.color = 'var(--accent)';
+      result.textContent = '✅ Sheet berhasil dibuat! Data siap disimpan ke Spreadsheet.';
+      btn.textContent = '✓ Selesai';
+      setTimeout(() => obNext(), 1200);
+    } else {
+      throw new Error(resp.message || 'Gagal');
+    }
+  } catch(e) {
+    result.style.display = 'block';
+    result.style.background = 'rgba(239,68,68,0.12)';
+    result.style.border = '1px solid var(--accent-red)';
+    result.style.color = 'var(--accent-red)';
+    result.textContent = '❌ Gagal: ' + e.message + '. Bisa lewati dan setup manual nanti.';
+    btn.textContent = 'Coba Lagi';
+    btn.disabled = false;
+  }
+}
+
+function obFinish() {
+  const name = document.getElementById('ob-sender-name').value.trim();
+  const email = document.getElementById('ob-sender-email').value.trim();
+  const posisi = document.getElementById('ob-default-posisi').value.trim();
+  if (!name || !email) {
+    showToast('Nama dan email wajib diisi', 'error');
+    return;
+  }
+  // Simpan ke state
+  state.template.senderName = name;
+  state.template.senderEmail = email;
+  if (posisi) state.template.defaultPosisi = posisi;
+  // Update form template
+  const tplName = document.getElementById('tpl-name');
+  if (tplName && !tplName.value) tplName.value = 'Lamaran Kerja - ' + name;
+  // Update subject default
+  const tplSubject = document.getElementById('tpl-subject');
+  if (tplSubject && !tplSubject.value) tplSubject.value = 'Lamaran Kerja - ' + name;
+  // Tandai onboarding selesai
+  state.onboardingDone = true;
+  saveState();
+  obHide();
+  showToast('✅ Setup selesai! Selamat menggunakan MailBlast, ' + name + '!', 'success');
+  // Arahkan ke halaman PT untuk mulai input
+  setTimeout(() => showPage('perusahaan'), 600);
+}
+
+function rerunOnboarding() {
+  state.onboardingDone = false;
+  saveState();
+  obShow();
+}
+
+// ===== LOADING SCREEN HELPERS =====
+function lstepDone(n) {
+  const el = document.getElementById('lstep-' + n);
+  if (!el) return;
+  el.style.opacity = '1';
+  el.querySelector('.lstep-icon').textContent = '✅';
+}
+function lstepFail(n) {
+  const el = document.getElementById('lstep-' + n);
+  if (!el) return;
+  el.style.opacity = '1';
+  el.querySelector('.lstep-icon').textContent = '⚠️';
+}
+function lstepActive(n, text) {
+  const el = document.getElementById('lstep-' + n);
+  if (!el) return;
+  el.style.opacity = '1';
+  el.querySelector('.lstep-icon').textContent = '⏳';
+  const statusEl = document.getElementById('loading-status');
+  if (statusEl && text) statusEl.textContent = text;
+}
+function hideLoading() {
+  const el = document.getElementById('app-loading');
+  if (!el) return;
+  el.style.transition = 'opacity .35s';
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 350);
+}
+function skipLoading() {
+  hideLoading();
+  showToast('Melanjutkan dengan data lokal', 'info');
+}
+
 // ===== INIT =====
-(function init() {
+(async function init() {
+  // Tampilkan tombol skip setelah 6 detik
+  const skipTimer = setTimeout(() => {
+    const btn = document.getElementById('loading-skip-btn');
+    if (btn) btn.style.display = 'block';
+  }, 6000);
+
+  // --- STEP 1: Load cache lokal ---
+  lstepActive(1, 'Memuat data lokal...');
   loadState();
-  updateStats();
   // Set default date
   if (!state.scheduler.date) {
-    const today = new Date();
-    state.scheduler.date = today.toISOString().slice(0,10);
+    state.scheduler.date = new Date().toISOString().slice(0,10);
   }
-  // Restore template form
-  if (state.template.body) {
-    document.getElementById('tpl-body').value = state.template.body;
-  }
+  // Restore UI dari cache
+  if (state.template.body) document.getElementById('tpl-body').value = state.template.body;
   if (state.template.subject) document.getElementById('tpl-subject').value = state.template.subject;
   if (state.template.name) document.getElementById('tpl-name').value = state.template.name;
+  renderVariantList();
+  const abSel = document.getElementById('ab-mode');
+  if (abSel && state.abMode) abSel.value = state.abMode;
+  updateStats();
+  renderPTTable();
+  lstepDone(1);
+
+  // --- Cek apakah perlu onboarding ---
+  if (!state.onboardingDone) {
+    clearTimeout(skipTimer);
+    hideLoading();
+    setTimeout(() => obShow(), 300);
+    return;
+  }
+
+  // --- STEP 2: Cek koneksi GAS ---
+  if (!state.scheduler.gasUrl) {
+    lstepFail(2);
+    document.getElementById('loading-status').textContent = 'URL GAS belum diisi — pakai data lokal';
+    await new Promise(r => setTimeout(r, 800));
+    clearTimeout(skipTimer);
+    hideLoading();
+    updateOfflineBanner();
+    return;
+  }
+
+  lstepActive(2, 'Menghubungi Spreadsheet...');
+  let gasOk = false;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(state.scheduler.gasUrl + '?action=status', { signal: controller.signal });
+    clearTimeout(timeout);
+    const data = await resp.json();
+    gasOk = data.status === 'ok';
+    lstepDone(2);
+  } catch(e) {
+    lstepFail(2);
+    document.getElementById('loading-status').textContent = 'Spreadsheet tidak bisa dihubungi — pakai data lokal';
+    await new Promise(r => setTimeout(r, 1200));
+    clearTimeout(skipTimer);
+    hideLoading();
+    updateOfflineBanner();
+    showToast('⚠️ Spreadsheet offline — data lokal ditampilkan', 'info');
+    return;
+  }
+
+  // --- STEP 3: Fetch data PT, Lampiran, Log ---
+  lstepActive(3, 'Memuat data dari Spreadsheet...');
+  let fetchErrors = [];
+
+  try {
+    const ptData = await gasGet('ptlist');
+    if (ptData.status === 'ok' && Array.isArray(ptData.rows)) {
+      state.ptList = ptData.rows.map(r => ({
+        id: String(r.id || r[0] || Date.now() + Math.random()),
+        nama: r.nama || r[1] || '',
+        email: r.email || r[2] || '',
+        kota: r.kota || r[3] || '',
+        posisi: r.posisi || r[4] || '',
+        status: r.status || r[5] || 'Pending',
+        addedAt: r.addedAt || r[6] || ''
+      }));
+    }
+  } catch(e) { fetchErrors.push('PT'); }
+
+  try {
+    const lamData = await gasGet('lampiran');
+    if (lamData.status === 'ok' && Array.isArray(lamData.rows)) {
+      state.lampiranList = lamData.rows.map(r => ({
+        nama: r.nama || r[0] || '',
+        link: r.link || r[1] || '',
+        aktif: true
+      }));
+    }
+  } catch(e) { fetchErrors.push('Lampiran'); }
+
+  try {
+    const logData = await gasGet('log');
+    if (logData.status === 'ok' && Array.isArray(logData.rows)) {
+      state.logs = logData.rows.map(r => ({
+        time: r.time || r[0] || '',
+        pt: r.pt || r[1] || '',
+        email: r.email || r[2] || '',
+        status: r.status || r[3] || '',
+        note: r.note || r[4] || ''
+      }));
+    }
+  } catch(e) { fetchErrors.push('Log'); }
+
+  saveState();
+  updateStats();
+  renderPTTable();
+  renderLampiran();
+  renderLogTable();
+
+  if (fetchErrors.length > 0) lstepFail(3);
+  else lstepDone(3);
+
+  // --- STEP 4: Selesai ---
+  lstepActive(4, fetchErrors.length > 0
+    ? 'Sebagian data gagal dimuat (' + fetchErrors.join(', ') + ')'
+    : 'Data berhasil dimuat dari Spreadsheet!');
+  lstepDone(4);
+
+  await new Promise(r => setTimeout(r, 600));
+  clearTimeout(skipTimer);
+  hideLoading();
+  updateOfflineBanner();
+
+  if (fetchErrors.length > 0) {
+    showToast('⚠️ Gagal muat: ' + fetchErrors.join(', ') + ' — data lokal dipakai', 'error');
+  }
 })();
 </script>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a class="bottom-nav-item active" onclick="showPage('dashboard')" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
+  <a class="bottom-nav-item" onclick="showPage('perusahaan')" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3"/></svg>
+    PT
+    <span class="bnav-badge" id="bnav-pending" style="display:none">0</span>
+  </a>
+  <a class="bottom-nav-item" onclick="showPage('monitoring')" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    Blast
+  </a>
+  <a class="bottom-nav-item" onclick="showPage('template')" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    Template
+  </a>
+  <a class="bottom-nav-item" onclick="showPage('scheduler')" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Setting
+  </a>
+</nav>
+
 </body>
 </html>
