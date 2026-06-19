@@ -1808,32 +1808,7 @@ function updateStats() {
   }
 }
 
-// ===== FIREBASE HELPERS =====
-function fbReady() {
-  return window._fbReady && window._fb;
-}
-
-
-
-function fbListenPT(callback) {
-  if (!fbReady()) return;
-  const { ref, onValue } = window._fb;
-  const db = window._fb.db;
-  return onValue(ref(db, 'ptList'), (snap) => {
-    const data = snap.val() || {};
-    const list = Object.entries(data).map(([k, v]) => ({ id: k, ...v }));
-    callback(list);
-  });
-}
-
-function attachFirebaseListeners() {
-  fbListenPT((list) => {
-    state.ptList = list;
-    saveState();
-    updateStats();
-    renderPTTable(document.getElementById('search-pt')?.value || '');
-  });
-}
+// (duplicate definitions removed — see attachFirebaseListeners above)
 
 // ===== PT TABLE =====
 let filteredPT = [];
