@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast v22 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- Firebase SDK v10 (modular via CDN) -->
@@ -352,6 +352,35 @@
 
   /* Scheduler */
   .scheduler-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .sch-section { margin-bottom: 1.5rem; }
+  .sch-section:last-of-type { margin-bottom: 0; }
+  .sch-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 0.875rem;
+  }
+  .sch-section-title .sch-step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .sch-divider { border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  .sch-actions-primary { display: flex; gap: 8px; margin-top: 0.25rem; }
+  .sch-actions-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.75rem; }
+  .sch-actions-tools .btn { font-size: 0.82rem; }
 
   /* Mobile */
   .menu-toggle {
@@ -382,9 +411,60 @@
     .form-grid { grid-template-columns: 1fr; }
     .scheduler-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .search-box { width: 140px; }
-    .topbar { padding: 0.75rem 1rem; }
+    .search-box { width: 120px; }
+    .topbar { padding: 0.5rem 0.75rem; height: auto; }
     .content { padding: 0.875rem; }
+
+    /* Pengaturan / Scheduler page — rapikan untuk HP */
+    .card-form { padding: 1rem; margin-bottom: 1rem; border-radius: 12px; }
+    .card-form-title { font-size: 0.95rem; margin-bottom: 1rem; padding-bottom: 0.625rem; }
+
+    .form-actions {
+      flex-wrap: wrap;
+      gap: 0.625rem;
+    }
+    .form-actions .btn {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+    /* Tombol utama (Simpan / Kirim Sekarang) berdampingan, sisanya full-width di bawah */
+    .form-actions .btn-primary,
+    .form-actions .btn-success {
+      flex: 1 1 calc(50% - 0.3125rem);
+      width: auto;
+    }
+
+    .scheduler-info-box {
+      padding: 0.875rem !important;
+      font-size: 0.8rem !important;
+      margin-bottom: 0.875rem !important;
+    }
+
+    .sch-section { margin-bottom: 1.25rem; }
+    .sch-divider { margin: 1.25rem 0; }
+    .sch-actions-primary { flex-wrap: wrap; }
+    .sch-actions-primary .btn { flex: 1 1 100% !important; }
+    .sch-actions-tools { flex-direction: column; }
+    .sch-actions-tools .btn { width: 100%; font-size: 0.9rem; }
+
+    /* Increase button sizes for mobile touch targets */
+    .btn {
+      min-height: 44px;
+      padding: 0.875rem 1.25rem;
+      font-size: 0.95rem;
+    }
+    
+    .icon-btn {
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .form-label {
+      font-size: 0.95rem;
+    }
 
     /* Bottom navigation */
     .bottom-nav {
@@ -415,6 +495,14 @@
     .preview-tab-content { display: none; }
     .preview-tab-content.active { display: block; }
   }
+  
+  /* Extra small phones (< 480px) */
+  @media (max-width: 480px) {
+    .search-box { width: 80px; font-size: 0.85rem; }
+    .topbar-title { font-size: 1.1rem; }
+    #conn-dot { display: none; }
+    .btn-sm { padding: 0.625rem 1rem; font-size: 0.9rem; }
+  }
 
   /* Bottom Nav (hidden on desktop) */
   .bottom-nav {
@@ -429,11 +517,11 @@
     gap: 3px;
     cursor: pointer;
     color: var(--text-muted);
-    font-size: 0.62rem;
+    font-size: 0.75rem;
     font-weight: 500;
     border: none;
     background: none;
-    padding: 0.5rem 0.25rem;
+    padding: 0.75rem 0.5rem;
     transition: color .15s;
     letter-spacing: 0.02em;
     text-decoration: none;
@@ -470,15 +558,41 @@
     display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
     margin-bottom: 0.5rem;
   }
-  .pt-card-name { font-weight: 600; font-size: 0.9rem; }
-  .pt-card-email { font-size: 0.78rem; color: var(--accent-blue); margin-top: 2px; word-break: break-all; }
+  .pt-card-name { 
+    font-weight: 600; 
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pt-card-email { 
+    font-size: 0.9rem;
+    color: var(--accent-blue); 
+    margin-top: 2px; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .pt-card-meta {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4px 1rem;
-    font-size: 0.77rem; color: var(--text-muted); margin: 0.5rem 0;
+    font-size: 0.85rem; color: var(--text-muted); margin: 0.5rem 0;
   }
   .pt-card-meta span { color: var(--text-primary); }
-  .pt-card-actions { display: flex; gap: 6px; margin-top: 0.625rem; }
-  .pt-card-actions .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 0.4rem 0.5rem; }
+  .pt-card-actions { 
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .pt-card-actions button { 
+    min-height: 44px;
+    font-size: 0.85rem;
+    padding: 0.75rem 0.5rem;
+  }
+  .pt-card-actions .icon-btn svg { 
+    width: 18px;
+    height: 18px;
+  }
 
   /* Blast big button (hidden on desktop) */
   .blast-btn-wrap {
@@ -578,6 +692,60 @@
   .modal-title { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
 
+  /* Bottom Sheet (mobile "Lainnya" menu) */
+  .sheet-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: flex-end; justify-content: center;
+  }
+  .sheet-backdrop.open { display: flex; }
+  .sheet {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+    width: 100%; max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    margin: 0.625rem auto 0.875rem;
+  }
+  .sheet-title {
+    font-size: 0.78rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+    padding: 0 1.25rem 0.625rem;
+  }
+  .sheet-item {
+    display: flex; align-items: center; gap: 0.875rem;
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: none; border: none;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: var(--font);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .sheet-item:active { background: rgba(255,255,255,0.05); }
+  .sheet-item svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-muted); }
+  .sheet-item-label { flex: 1; }
+  .sheet-item-badge {
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px;
+    background: rgba(148,163,184,0.15); color: var(--text-muted);
+  }
+  .sheet-divider { border-top: 1px solid var(--border); margin: 0.375rem 0; }
+  @keyframes sheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-backdrop.open .sheet { animation: sheetSlideUp .22s ease-out; }
+
   /* Toast */
   .toast-container {
     position: fixed; bottom: 1.5rem; right: 1.5rem;
@@ -620,6 +788,30 @@
   .text-muted { color: var(--text-muted); font-size: 0.8125rem; }
   .mb-4 { margin-bottom: 1rem; }
   .mb-6 { margin-bottom: 1.5rem; }
+  /* Day picker buttons */
+  .day-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font);
+  }
+  .day-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .day-btn.day-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  @media (max-width: 768px) {
+    .day-btn { width: 40px; height: 40px; font-size: 0.72rem; }
+  }
+
   select option { background: #1E293B; }
 </style>
 </head>
@@ -629,7 +821,7 @@
 <div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
   <div style="text-align:center">
     <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
-    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast</div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v22</span></div>
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Memuat aplikasi...</div>
   </div>
 
@@ -684,7 +876,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">✉ MailBlast</div>
-    <div class="logo-sub">Sistem Kirim Lamaran Otomatis</div>
+    <div class="logo-sub">v22 · Sistem Kirim Lamaran Otomatis</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
@@ -692,6 +884,7 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
     </a>
+    <div class="nav-section">Data &amp; Konten</div>
     <a class="nav-item" onclick="showPage('perusahaan')" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3"/></svg>
       Data Perusahaan
@@ -707,15 +900,17 @@
     <div class="nav-section">Pengiriman</div>
     <a class="nav-item" onclick="showPage('scheduler')" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Scheduler
+      Jadwal Kirim
     </a>
-    <a class="nav-item" onclick="showPage('monitoring')" href="#">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      Monitoring
-    </a>
+    <div class="nav-section">Riwayat</div>
     <a class="nav-item" onclick="showPage('log')" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Log Pengiriman
+    </a>
+    <div class="nav-section">Sistem</div>
+    <a class="nav-item" onclick="showPage('integrasi')" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Integrasi
     </a>
   </nav>
   <div class="sidebar-footer">
@@ -737,17 +932,14 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v22</span>
     </div>
     <div class="topbar-actions">
       <!-- Connection status chip -->
-      <div id="conn-status" title="Status koneksi Spreadsheet" style="display:flex;align-items:center;gap:5px;font-size:0.72rem;padding:4px 10px;border-radius:20px;background:var(--bg-input);border:1px solid var(--border);cursor:default;user-select:none">
+      <div id="conn-status" title="Status koneksi Firebase" style="display:flex;align-items:center;gap:5px;font-size:0.72rem;padding:4px 10px;border-radius:20px;background:var(--bg-input);border:1px solid var(--border);cursor:default;user-select:none">
         <span id="conn-dot" style="width:7px;height:7px;border-radius:50%;background:#ca8a04;flex-shrink:0"></span>
         <span id="conn-label" style="color:var(--text-muted)">Offline</span>
       </div>
-      <button class="btn btn-primary" onclick="showPage('perusahaan'); setTimeout(()=>openAddModal(),100)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Tambah PT
-      </button>
     </div>
   </div>
 
@@ -777,6 +969,19 @@
           <div class="stat-value red" id="stat-failed">0</div>
           <div class="stat-sub">perlu diulang</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-label">Estimasi Selesai</div>
+          <div class="stat-value" id="mon-eta" style="font-size:1.25rem">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Quota Gmail</div>
+          <div class="stat-value" id="mon-quota" style="font-size:1.25rem">-</div>
+        </div>
+      </div>
+      <!-- Quota Warning Banner -->
+      <div id="quota-warning-bar" style="display:none;margin-bottom:0.75rem;padding:0.65rem 1rem;border-radius:8px;font-size:0.82rem;align-items:center;gap:0.5rem">
+        <span id="quota-warning-icon">⚠️</span>
+        <span id="quota-warning-text"></span>
       </div>
 
       <!-- Mobile: Big blast button -->
@@ -900,6 +1105,50 @@
 
     <!-- TEMPLATE PAGE -->
     <div class="page" id="page-template">
+
+      <!-- PANDUAN: Apa yang bikin email lamaran dilirik HRD -->
+      <div class="card-form form-section" style="margin-bottom:0.75rem;border-color:rgba(59,130,246,0.3)">
+        <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="toggleTplGuide()">
+          💡 Panduan: Email Lamaran yang Dilirik HRD
+          <svg id="tpl-guide-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-left:auto;transition:transform .2s">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+        <div id="tpl-guide-body" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--text-muted);line-height:1.8">
+          <div><strong style="color:var(--text-primary)">📌 Subject jelas & spesifik</strong> — HRD menyaring ratusan email lewat subject. Format terbaik: <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">Lamaran Kerja - [Posisi] - [Nama Kamu]</code></div>
+          <div><strong style="color:var(--text-primary)">📌 Body singkat, maks 150–200 kata</strong> — HRD scan email dalam 5–10 detik. Paragraf panjang berisiko di-skip.</div>
+          <div><strong style="color:var(--text-primary)">📌 Sebutkan posisi & sumber info loker</strong> — Tunjukkan kamu melamar posisi spesifik, bukan email massal generik.</div>
+          <div><strong style="color:var(--text-primary)">📌 Cantumkan 1–2 poin kekuatan utama</strong> — Skill/pengalaman paling relevan, bukan riwayat hidup lengkap (itu fungsi CV).</div>
+          <div><strong style="color:var(--text-primary)">📌 Sertakan kontak aktif</strong> — No. HP & email yang sering dicek, supaya gampang dihubungi untuk tes.</div>
+          <div><strong style="color:var(--text-primary)">📌 CTA jelas di akhir</strong> — "Saya siap mengikuti tahap seleksi/wawancara" lebih kuat daripada sekadar "terima kasih".</div>
+          <div><strong style="color:var(--text-primary)">📌 Lampiran lengkap & rapi</strong> — CV + portofolio (jika ada). File bernama jelas: <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">CV_NamaKamu.pdf</code>, bukan <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">scan001.pdf</code>.</div>
+          <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border);color:#ca8a04"><strong>⚠️ Hindari:</strong> huruf kapital berlebihan, banyak tanda seru, font warna-warni, dan badan email yang sama persis untuk semua PT tanpa personalisasi posisi.</div>
+        </div>
+      </div>
+
+      <!-- PANDUAN PLACEHOLDER -->
+      <div class="card-form form-section" style="margin-bottom:0.75rem;border-color:rgba(16,185,129,0.3)">
+        <div class="card-form-title">🔖 Placeholder Otomatis — Cara Kerja & Cara Isi</div>
+        <p class="text-muted mb-4" style="font-size:0.8rem">Placeholder ini <strong style="color:var(--text-primary)">otomatis terisi berbeda untuk tiap PT</strong> saat email dikirim. Kamu tidak perlu menulis ulang body untuk tiap lowongan — cukup isi data per-PT di halaman Perusahaan.</p>
+        <div style="display:flex;flex-direction:column;gap:0.6rem">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;background:var(--bg-input);border-radius:8px;padding:0.6rem 0.875rem">
+            <code style="background:rgba(16,185,129,0.15);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:0.8rem;white-space:nowrap;font-weight:600">{NAMA_PT}</code>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Diambil dari kolom <strong style="color:var(--text-primary)">"Nama PT"</strong> saat kamu menambah perusahaan di halaman Perusahaan.</div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;background:var(--bg-input);border-radius:8px;padding:0.6rem 0.875rem">
+            <code style="background:rgba(16,185,129,0.15);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:0.8rem;white-space:nowrap;font-weight:600">{POSISI}</code>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Diambil dari kolom <strong style="color:var(--text-primary)">"Posisi"</strong> per-PT. <span style="color:#ca8a04">Ini kunci untuk lowongan yang beda-beda</span> — isi posisi sesuai info loker yang kamu lihat (LinkedIn/Jobstreet/dll) saat menambah PT itu.</div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;background:var(--bg-input);border-radius:8px;padding:0.6rem 0.875rem">
+            <code style="background:rgba(16,185,129,0.15);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:0.8rem;white-space:nowrap;font-weight:600">{EMAIL}</code>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Email tujuan (HRD) PT tersebut, otomatis dari data PT.</div>
+          </div>
+        </div>
+        <div style="margin-top:0.75rem;padding:0.6rem 0.875rem;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;font-size:0.8rem;color:var(--text-muted)">
+          💬 <strong style="color:var(--accent-blue)">Lowongan beda posisi tiap PT?</strong> Tidak perlu bikin template baru. Cukup pastikan kolom <strong style="color:var(--text-primary)">Posisi</strong> diisi benar saat tambah/edit PT — body email ini otomatis menyesuaikan lewat {POSISI}. Untuk PT dengan kebutuhan body yang benar-benar berbeda (bukan cuma posisi), pakai <strong style="color:var(--text-primary)">"Body Email Khusus"</strong> di form edit PT tersebut.
+        </div>
+      </div>
+
       <!-- A/B Mode selector -->
       <div class="card-form form-section" style="margin-bottom:0.75rem">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
@@ -929,48 +1178,97 @@
           <button class="btn btn-outline" onclick="saveCurrentAsVariant()" style="font-size:0.8rem;padding:0.35rem 0.75rem">
             Simpan Template Bawah → Jadikan Variant
           </button>
-          <button class="btn btn-outline" onclick="loadTemplateFromGAS()" style="font-size:0.8rem;padding:0.35rem 0.75rem">
+          <button class="btn btn-outline" onclick="loadTemplateFromFirebase()" style="font-size:0.8rem;padding:0.35rem 0.75rem;border-color:var(--accent);color:var(--accent)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
-            Muat dari GAS
+            📥 Muat dari Firebase
           </button>
         </div>
+      </div>
+
+      <!-- ANALITIK PER-VARIANT -->
+      <div class="card-form form-section" style="margin-bottom:0.75rem">
+        <div class="card-form-title" style="display:flex;align-items:center;justify-content:space-between">
+          📊 Analitik per Template/Variant
+          <button class="btn btn-outline" onclick="renderVariantAnalytics()" style="padding:0.25rem 0.6rem;font-size:0.72rem">↺ Refresh</button>
+        </div>
+        <p class="text-muted mb-4" style="font-size:0.8rem">Lihat performa pengiriman tiap variant/template untuk membantu analisa mana yang paling efektif.</p>
+        <div id="variant-analytics"></div>
       </div>
 
       <!-- Editor template (tetap sebagai "global fallback") -->
       <div class="card-form form-section">
         <div class="card-form-title">Template Global <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">(dipakai jika tidak ada variant / PT tanpa custom body)</span></div>
+
         <div class="form-row">
           <label class="form-label">Nama Template</label>
           <input type="text" class="form-input" id="tpl-name" placeholder="Contoh: Lamaran Umum" value="Lamaran Kerja - Wahyu Susanto">
         </div>
+
         <div class="form-row">
           <label class="form-label">Subject Email</label>
-          <input type="text" class="form-input" id="tpl-subject" placeholder="Subject email...">
+          <input type="text" class="form-input" id="tpl-subject" placeholder="Lamaran Kerja - {POSISI} - Nama Kamu" oninput="validateTplLive()">
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">💡 Sertakan {POSISI} di subject supaya HRD langsung tahu kamu melamar posisi apa.</div>
         </div>
+
         <div class="form-row">
-          <label class="form-label">Isi Email</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem">
+            <label class="form-label" style="margin-bottom:0">Isi Email</label>
+            <div id="tpl-word-count" style="font-size:0.72rem;color:var(--text-muted)">0 kata</div>
+          </div>
           <p class="text-muted mb-4">Placeholder: <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{NAMA_PT}</code> <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{POSISI}</code> <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">{EMAIL}</code></p>
-          <textarea class="form-textarea" id="tpl-body" rows="10">Yth. Bapak/Ibu HRD
-PT {NAMA_PT}
+          <textarea class="form-textarea" id="tpl-body" rows="10" oninput="validateTplLive()">Yth. Bapak/Ibu HRD PT {NAMA_PT}
 
 Dengan hormat,
 
-Perkenalkan saya Wahyu Susanto. Melalui email ini, saya bermaksud mengajukan lamaran kerja pada perusahaan yang Bapak/Ibu pimpin.
+Perkenalkan saya Wahyu Susanto. Saya bermaksud melamar untuk posisi {POSISI} yang sedang dibuka di PT {NAMA_PT}.
 
-Saya merupakan lulusan [Jurusan] dari [Universitas] dan memiliki pengalaman di bidang [Bidang Keahlian]. Saya sangat tertarik untuk bergabung dan berkontribusi pada perkembangan perusahaan Bapak/Ibu.
+Saya merupakan lulusan [Jurusan] dari [Universitas] dengan pengalaman/keahlian di bidang [Bidang Keahlian]. Saya yakin kualifikasi saya sesuai dengan kebutuhan posisi tersebut dan siap berkontribusi bagi perusahaan.
 
-CV dan dokumen pendukung saya lampirkan pada email ini.
+CV dan dokumen pendukung telah saya lampirkan pada email ini. Saya siap mengikuti tahapan seleksi/wawancara sesuai jadwal yang Bapak/Ibu tentukan.
 
-Besar harapan saya untuk mendapat kesempatan wawancara. Atas perhatian Bapak/Ibu, saya ucapkan terima kasih.
+Atas perhatian dan kesempatannya, saya ucapkan terima kasih.
 
 Hormat saya,
 Wahyu Susanto
 HP: 08xx-xxxx-xxxx
 Email: wahyu@gmail.com</textarea>
+
+          <!-- Live validation checklist -->
+          <div id="tpl-checklist" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:4px;font-size:0.78rem"></div>
         </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" onclick="saveTemplate()">Simpan Template Global</button>
-          <button class="btn btn-outline" onclick="previewTemplate()">Preview</button>
+          <button class="btn btn-outline" onclick="previewTemplate()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview Email
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: PREVIEW EMAIL (mirip tampilan inbox) -->
+    <div class="modal-backdrop" id="modal-preview-email">
+      <div class="modal-box" style="max-width:520px">
+        <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
+          📧 Preview Email
+          <button onclick="closePreviewEmailModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
+        </div>
+        <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:0.5rem">
+          <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border)">
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">Kepada</div>
+            <div id="prev-to" style="font-size:0.85rem;color:var(--text-primary);font-weight:500">hrd@contoh.com</div>
+          </div>
+          <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border)">
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">Subjek</div>
+            <div id="prev-subject" style="font-size:0.9rem;color:var(--text-primary);font-weight:600"></div>
+          </div>
+          <div id="prev-body" style="padding:1rem;font-size:0.84rem;color:var(--text-primary);line-height:1.7;white-space:pre-wrap;max-height:340px;overflow-y:auto"></div>
+          <div id="prev-attachments" style="padding:0.75rem 1rem;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.6rem">📌 Contoh disimulasikan dengan data PT: <strong style="color:var(--text-primary)">PT Contoh Indonesia</strong>, posisi <strong style="color:var(--text-primary)">Staff Admin</strong>.</div>
+        <div class="modal-actions" style="margin-top:0.75rem">
+          <button class="btn btn-outline" onclick="closePreviewEmailModal()" style="width:100%;justify-content:center">Tutup</button>
         </div>
       </div>
     </div>
@@ -978,35 +1276,40 @@ Email: wahyu@gmail.com</textarea>
     <!-- LAMPIRAN PAGE -->
     <div class="page" id="page-lampiran">
       <div class="card-form form-section">
-        <div class="card-form-title">File Lampiran</div>
-        <p class="text-muted mb-4">Upload file ke Google Drive lalu tempel link-nya di sini.</p>
+        <div class="card-form-title">File Lampiran
+          <span id="lampiran-save-status" style="display:none;font-size:0.72rem;font-weight:400;margin-left:0.5rem;padding:2px 8px;border-radius:10px"></span>
+        </div>
+        <p class="text-muted mb-4">Tambah nama file dan link Google Drive. Data lampiran disimpan ke Firebase.</p>
         <div id="lampiran-list"></div>
         <div class="form-actions" style="margin-top:0.75rem">
           <button class="btn btn-primary" onclick="addLampiran()">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah Lampiran
           </button>
-          <button class="btn btn-outline" onclick="saveLampiranToGAS()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-            Simpan ke Spreadsheet
+          <button class="btn btn-outline" onclick="saveLampiranToFirebase()" style="border-color:var(--accent);color:var(--accent)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z" transform="scale(1,-1) translate(0,-24)"/></svg>
+            📤 Simpan ke Firebase
           </button>
-          <button class="btn btn-outline" onclick="loadLampiranFromGAS()">
+          <button class="btn btn-outline" onclick="loadLampiranFromFirebase()">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
-            Muat dari Spreadsheet
+            📥 Muat dari Firebase
           </button>
         </div>
+        <div id="lampiran-fb-status" style="display:none;margin-top:0.75rem;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem"></div>
       </div>
     </div>
 
     <!-- SCHEDULER PAGE -->
-    <div class="page" id="page-scheduler">
+    <!-- INTEGRASI PAGE (Firebase + GAS) -->
+    <div class="page" id="page-integrasi">
 
-      <!-- Firebase Config Section -->
-      <div class="card-form" style="max-width:600px;margin-bottom:1rem">
+      <!-- Firebase status card besar di atas -->
+      <div class="card-form" style="max-width:600px;margin-bottom:1rem;border-color:rgba(16,185,129,0.3)">
         <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem">
           🔥 Firebase Realtime Database
           <span id="fb-conn-badge" style="font-size:0.7rem;font-weight:500;padding:2px 8px;border-radius:10px;background:rgba(148,163,184,0.15);color:var(--text-muted)">Belum terhubung</span>
         </div>
+        <p class="text-muted mb-4" style="font-size:0.8rem">Database utama MailBlast — menyimpan PT, template, lampiran, dan log secara realtime.</p>
         <div class="form-grid">
           <div class="form-row">
             <label class="form-label">Database URL</label>
@@ -1026,107 +1329,215 @@ Email: wahyu@gmail.com</textarea>
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveFirebaseConfig()">Simpan & Hubungkan</button>
+          <button class="btn btn-primary" onclick="saveFirebaseConfig()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Simpan &amp; Hubungkan
+          </button>
           <button class="btn btn-outline" onclick="testFirebaseConfig()">Test Koneksi</button>
         </div>
       </div>
 
-      <div class="card-form" style="max-width:600px">
-        <div class="card-form-title">Pengaturan Jadwal Kirim</div>
-        <div class="scheduler-grid">
-          <div class="form-row">
-            <label class="form-label">Tanggal Mulai</label>
-            <input type="date" class="form-input" id="sch-date">
+      <!-- Tombol Push & Pull Firebase -->
+      <div class="card-form" style="max-width:600px;margin-bottom:1rem">
+        <div class="card-form-title">📤📥 Push &amp; Pull Data ke Firebase</div>
+        <p class="text-muted mb-4" style="font-size:0.8rem">Gunakan tombol ini untuk memaksa sinkronisasi data antara aplikasi dan Firebase. Realtime listener sudah otomatis, tapi tombol ini berguna jika data tidak sinkron.</p>
+
+        <!-- Status simpan terakhir -->
+        <div id="firebase-sync-status" style="display:none;padding:0.6rem 1rem;border-radius:8px;font-size:0.82rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem">
+          <!-- PUSH -->
+          <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:1rem">
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.4rem;color:var(--accent)">📤 PUSH ke Firebase</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5">Kirim semua data lokal (PT, template, lampiran) ke Firebase. Timpa data lama di server.</div>
+            <button class="btn btn-primary" onclick="pushAllToFirebase()" style="width:100%;justify-content:center">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" transform="scale(1,-1) translate(0,-24)"/></svg>
+              Push Semua Data
+            </button>
           </div>
-          <div class="form-row">
-            <label class="form-label">Jam Mulai (WIB)</label>
-            <input type="time" class="form-input" id="sch-time" value="08:00">
-          </div>
-          <div class="form-row">
-            <label class="form-label">Delay Antar Email (detik)</label>
-            <input type="number" class="form-input" id="sch-delay" value="30" min="10" max="300">
-          </div>
-          <div class="form-row">
-            <label class="form-label">Maks Email per Batch</label>
-            <input type="number" class="form-input" id="sch-batch" value="20" min="1" max="100">
-          </div>
-          <div class="form-row">
-            <label class="form-label">Istirahat Antar Batch (menit)</label>
-            <input type="number" class="form-input" id="sch-rest" value="5" min="1" max="60">
-          </div>
-          <div class="form-row">
-            <label class="form-label">Template Email</label>
-            <select class="form-select" id="sch-template">
-              <option value="default">Lamaran Kerja - Wahyu Susanto</option>
-            </select>
+          <!-- PULL -->
+          <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:1rem">
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.4rem;color:var(--accent-blue)">📥 PULL dari Firebase</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5">Ambil semua data dari Firebase ke aplikasi. Timpa data lokal dengan data server.</div>
+            <button class="btn btn-outline" onclick="pullAllFromFirebase()" style="width:100%;justify-content:center;border-color:var(--accent-blue);color:var(--accent-blue)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
+              Pull Semua Data
+            </button>
           </div>
         </div>
+
+        <!-- Status per-section -->
+        <div id="fb-push-pull-detail" style="display:none;font-size:0.8rem;color:var(--text-muted);background:var(--bg-input);border-radius:8px;padding:0.75rem;line-height:1.8"></div>
+      </div>
+
+      <!-- GAS untuk kirim email saja -->
+      <div class="card-form" style="max-width:600px">
+        <div class="card-form-title">📜 Google Apps Script <span style="font-size:0.72rem;font-weight:400;color:var(--text-muted)">(untuk kirim email saja)</span></div>
+        <p class="text-muted mb-4" style="font-size:0.8rem">GAS hanya dipakai untuk <strong style="color:var(--text-primary)">kirim email via Gmail</strong>. Data sudah disimpan di Firebase, bukan Spreadsheet.</p>
         <div class="form-row">
           <label class="form-label">URL Google Apps Script</label>
           <input type="url" class="form-input" id="sch-gas-url" placeholder="https://script.google.com/macros/s/xxx/exec">
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveScheduler()">Simpan Jadwal</button>
+        <div class="sch-actions-tools">
           <button class="btn btn-outline" onclick="testKoneksi()">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Test Koneksi GAS
+            Test Koneksi
           </button>
-          <button class="btn btn-outline" onclick="setupSheets()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/></svg>
-            Setup Sheets
+          <button class="btn btn-outline" onclick="saveGasUrl()">
+            Simpan URL
           </button>
-          <button class="btn btn-outline" onclick="syncAllFromGAS()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Sync Semua
-          </button>
-          <button class="btn btn-outline" onclick="loadScheduler()">Reset</button>
           <button class="btn btn-outline" onclick="rerunOnboarding()" style="border-color:var(--accent);color:var(--accent)" title="Ulangi wizard setup awal">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Setup Ulang
           </button>
         </div>
-      </div>
-    </div><!-- /page-scheduler -->
-    <div class="page" id="page-monitoring">
-      <div class="stats-grid" style="margin-bottom:1.5rem">
-        <div class="stat-card">
-          <div class="stat-label">Sesi Ini</div>
-          <div class="stat-value blue" id="mon-session">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Berhasil</div>
-          <div class="stat-value green" id="mon-ok">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Gagal</div>
-          <div class="stat-value red" id="mon-fail">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Estimasi Selesai</div>
-          <div class="stat-value" id="mon-eta" style="font-size:1.25rem">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Quota Gmail</div>
-          <div class="stat-value" id="mon-quota" style="font-size:1.25rem">-</div>
+        <div style="margin-top:1rem;padding:0.75rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:0.8rem;color:#ca8a04">
+          <strong>ℹ️ Catatan:</strong> Lampiran sekarang disimpan di Firebase (nama + link Google Drive). Tidak perlu sync ke Spreadsheet lagi.
         </div>
       </div>
-      <!-- Quota Warning Banner -->
-      <div id="quota-warning-bar" style="display:none;margin-bottom:0.75rem;padding:0.65rem 1rem;border-radius:8px;font-size:0.82rem;display:none;align-items:center;gap:0.5rem">
-        <span id="quota-warning-icon">⚠️</span>
-        <span id="quota-warning-text"></span>
-      </div>
-      <div class="log-card">
-        <div class="log-header">
-          <span>Live Monitor</span>
-          <span class="status-chip chip-idle" id="mon-badge">Idle</span>
+    </div><!-- /page-integrasi -->
+
+    <!-- SCHEDULER PAGE (murni jadwal kirim) -->
+    <div class="page" id="page-scheduler">
+      <div class="card-form" style="max-width:640px">
+        <div class="card-form-title">📅 Jadwal Pengiriman Email Lamaran</div>
+
+        <!-- WARNING ANTI-SPAM -->
+        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:0.875rem 1rem;margin-bottom:1.25rem;font-size:0.82rem">
+          <div style="font-weight:600;color:var(--accent-red);margin-bottom:0.4rem">⚠️ Tips Anti-Spam & Anti-Blokir Gmail</div>
+          <div style="color:var(--text-muted);line-height:1.7">
+            <div>• Jangan kirim setiap hari — idealnya <strong style="color:var(--text-primary)">2–3 hari per minggu</strong> dengan jeda antar hari</div>
+            <div>• Batasi maksimal <strong style="color:var(--text-primary)">30–50 email/hari</strong> (Gmail limit: 500/hari, tapi lebih aman lebih sedikit)</div>
+            <div>• Gunakan delay antar email <strong style="color:var(--text-primary)">min. 30–60 detik</strong> agar tidak terdeteksi bot</div>
+            <div>• Variasikan isi email dengan fitur A/B template</div>
+          </div>
         </div>
-        <div class="log-body" id="mon-log">
-          <div class="empty-state">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            <p>Monitoring akan aktif saat pengiriman berjalan</p>
+
+        <!-- BAGIAN 1: HARI AKTIF DALAM SEMINGGU -->
+        <div class="sch-section">
+          <div class="sch-section-title"><span class="sch-step-num">1</span> Hari Aktif Pengiriman</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.875rem">Pilih hari mana saja pengiriman boleh berjalan. Di luar hari ini, pengiriman otomatis dijeda.</div>
+
+          <!-- Day picker -->
+          <div id="day-picker" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+            <button type="button" data-day="1" onclick="toggleDay(this)" class="day-btn day-active">Sen</button>
+            <button type="button" data-day="2" onclick="toggleDay(this)" class="day-btn">Sel</button>
+            <button type="button" data-day="3" onclick="toggleDay(this)" class="day-btn day-active">Rab</button>
+            <button type="button" data-day="4" onclick="toggleDay(this)" class="day-btn">Kam</button>
+            <button type="button" data-day="5" onclick="toggleDay(this)" class="day-btn day-active">Jum</button>
+            <button type="button" data-day="6" onclick="toggleDay(this)" class="day-btn">Sab</button>
+            <button type="button" data-day="0" onclick="toggleDay(this)" class="day-btn">Min</button>
+          </div>
+          <div id="day-summary" style="font-size:0.8rem;color:var(--accent);background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:0.4rem 0.75rem;display:inline-block"></div>
+
+          <!-- Berapa hari per minggu -->
+          <div style="margin-top:1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <div>
+              <label class="form-label" style="margin-bottom:4px">Email per hari aktif</label>
+              <input type="number" class="form-input" id="sch-per-day" value="20" min="1" max="100" style="width:100px" oninput="updateWeeklyEstimate()">
+            </div>
+            <div id="weekly-estimate" style="font-size:0.82rem;color:var(--text-muted);padding:0.5rem 0.875rem;background:var(--bg-input);border-radius:8px;border:1px solid var(--border)">
+              — email/minggu
+            </div>
+          </div>
+        </div>
+
+        <div class="sch-divider"></div>
+
+        <!-- BAGIAN 2: JAM & ATURAN PENGIRIMAN -->
+        <div class="sch-section">
+          <div class="sch-section-title"><span class="sch-step-num">2</span> Jam &amp; Aturan Pengiriman</div>
+          <div class="scheduler-grid">
+            <div class="form-row">
+              <label class="form-label">Jam Mulai Tiap Hari (WIB)</label>
+              <input type="time" class="form-input" id="sch-time" value="08:00">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Jam Berhenti Tiap Hari (WIB)</label>
+              <input type="time" class="form-input" id="sch-time-end" value="17:00">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Delay Antar Email (detik)</label>
+              <input type="number" class="form-input" id="sch-delay" value="45" min="10" max="600"
+                title="Min 30 detik agar tidak terdeteksi bot">
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px">Min. 30 detik (rekomendasi: 45–90 detik)</div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Maks Email per Batch</label>
+              <input type="number" class="form-input" id="sch-batch" value="15" min="1" max="50">
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px">Per sesi sebelum istirahat batch</div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Istirahat Antar Batch (menit)</label>
+              <input type="number" class="form-input" id="sch-rest" value="10" min="1" max="120">
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px">Jeda setelah tiap batch selesai</div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Tanggal Mulai</label>
+              <input type="date" class="form-input" id="sch-date">
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px">Kosongkan = mulai hari ini</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sch-divider"></div>
+
+        <!-- BAGIAN 3: RINGKASAN & ESTIMASI -->
+        <div class="sch-section">
+          <div class="sch-section-title"><span class="sch-step-num">3</span> Ringkasan &amp; Estimasi Selesai</div>
+          <div id="schedule-summary" style="background:var(--bg-input);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:0.83rem;line-height:2">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem 1.5rem">
+              <div style="color:var(--text-muted)">PT Pending</div>
+              <div id="sum-pending" style="font-weight:600">—</div>
+              <div style="color:var(--text-muted)">Hari aktif/minggu</div>
+              <div id="sum-days" style="font-weight:600;color:var(--accent)">—</div>
+              <div style="color:var(--text-muted)">Email/hari</div>
+              <div id="sum-perday" style="font-weight:600">—</div>
+              <div style="color:var(--text-muted)">Estimasi email/minggu</div>
+              <div id="sum-perweek" style="font-weight:600">—</div>
+              <div style="color:var(--text-muted)">Estimasi selesai</div>
+              <div id="sum-eta" style="font-weight:600;color:var(--accent-yellow)">—</div>
+            </div>
+          </div>
+
+          <!-- Aksi utama -->
+          <div class="sch-actions-primary" style="margin-bottom:0.75rem">
+            <button class="btn btn-primary" onclick="saveScheduler()" style="flex:1">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan Jadwal
+            </button>
+            <button class="btn btn-success" onclick="startSendNow()" style="flex:1;background:var(--accent);border-color:var(--accent)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Kirim Sekarang
+            </button>
+          </div>
+
+          <!-- Mode jadwal terjadwal -->
+          <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:0.875rem;font-size:0.82rem;margin-bottom:0.75rem">
+            <div style="font-weight:600;color:var(--accent-blue);margin-bottom:0.5rem">🤖 Mode Jadwal Otomatis</div>
+            <div style="color:var(--text-muted);line-height:1.6">
+              Tekan <strong style="color:var(--text-primary)">Simpan Jadwal</strong> → lalu <strong style="color:var(--text-primary)">Start</strong> di Dashboard.<br>
+              App otomatis kirim di hari &amp; jam yang dipilih, dan berhenti di luar jam tersebut.<br>
+              <span style="color:#60a5fa">⚡ Halaman harus tetap terbuka selama proses berjalan.</span>
+            </div>
+          </div>
+
+          <div class="sch-actions-tools">
+            <button class="btn btn-outline" onclick="loadScheduler()">↺ Reset</button>
+            <a class="btn btn-outline" onclick="showPage('integrasi')" href="#" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">⚙️ Integrasi</a>
           </div>
         </div>
       </div>
+    </div><!-- /page-scheduler -->
+
+    <!-- Hidden compat elements: dipakai oleh updateMonStats() untuk tracking sesi blast,
+         tidak ditampilkan karena sudah digantikan oleh stat Total/Terkirim/Gagal di Dashboard -->
+    <div style="display:none">
+      <span id="mon-session">0</span>
+      <span id="mon-ok">0</span>
+      <span id="mon-fail">0</span>
+      <span id="mon-badge"></span>
+      <span id="mon-log"></span>
     </div>
 
     <!-- LOG PAGE -->
@@ -1193,10 +1604,18 @@ Email: wahyu@gmail.com</textarea>
       </select>
     </div>
     <div class="form-row" style="margin-top:0.5rem">
-      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.85rem;color:var(--text-muted)">
-        <input type="checkbox" id="modal-use-custom" onchange="toggleCustomBody(this.checked)" style="accent-color:var(--accent);width:15px;height:15px">
-        Gunakan body email khusus untuk PT ini
-      </label>
+      <label class="form-label">📧 Sumber Body Email untuk PT Ini</label>
+      <select class="form-select" id="modal-tpl-source" onchange="onTplSourceChange()">
+        <option value="auto">Otomatis (ikut mode A/B di halaman Template)</option>
+        <option value="global">Paksa pakai Template Global</option>
+        <option value="variant">Pilih Variant Tertentu (manual)</option>
+        <option value="custom">Tulis body khusus untuk PT ini</option>
+      </select>
+      <div id="modal-variant-pick-wrap" style="display:none;margin-top:0.5rem">
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Pilih variant spesifik untuk PT ini:</div>
+        <div id="modal-variant-pick" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">💡 Pilih variant manual di sini supaya kamu bisa bandingkan performa tiap variant per PT yang dikirimi.</div>
     </div>
     <div id="modal-custom-section" style="display:none">
       <div class="form-row">
@@ -1356,10 +1775,9 @@ Email: wahyu@gmail.com</textarea>
         <div style="background:var(--bg-input);border-radius:10px;padding:1rem;margin-bottom:1.5rem">
           <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.5rem">Yang akan kamu setup:</div>
           <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.82rem;color:var(--text-muted)">
-            <div>⬜ Koneksi ke Firebase (database realtime)</div>
-            <div>⬜ Koneksi ke Google Apps Script (untuk kirim email)</div>
-            <div>⬜ Buat tabel data otomatis di Spreadsheet</div>
-            <div>⬜ Nama & email pengirim</div>
+            <div>⬜ Koneksi ke Firebase (database realtime — semua data)</div>
+            <div>⬜ Koneksi ke Google Apps Script (kirim email saja)</div>
+            <div>⬜ Nama &amp; email pengirim</div>
           </div>
         </div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem" onclick="obNext()">
@@ -1450,20 +1868,20 @@ Email: wahyu@gmail.com</textarea>
         </div>
       </div>
 
-      <!-- STEP 4: Setup Sheets -->
+      <!-- STEP 4: Verifikasi Firebase (menggantikan setup Spreadsheet) -->
       <div class="ob-step" id="ob-step-4" style="display:none">
-        <div style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">Buat Tabel di Spreadsheet</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">✅ Verifikasi Firebase</div>
         <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
-          MailBlast perlu membuat beberapa sheet di Spreadsheet kamu. Klik tombol di bawah — prosesnya otomatis.
+          Data kamu sekarang disimpan <strong style="color:var(--text-primary)">langsung di Firebase</strong> — tidak perlu Spreadsheet. Semua data (PT, template, lampiran, log) ada di satu tempat.
         </div>
 
-        <div style="background:var(--bg-input);border-radius:8px;padding:0.875rem;margin-bottom:1.25rem;font-size:0.8rem;color:var(--text-muted)">
-          <div style="font-weight:600;color:var(--text-primary);margin-bottom:0.4rem">Sheet yang akan dibuat:</div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div>📋 <strong style="color:var(--text-primary)">PT_List</strong> — backup daftar perusahaan</div>
-            <div>📧 <strong style="color:var(--text-primary)">Template</strong> — backup template email</div>
-            <div>📎 <strong style="color:var(--text-primary)">Lampiran</strong> — backup file lampiran</div>
-            <div>📊 <strong style="color:var(--text-primary)">Log</strong> — riwayat pengiriman</div>
+        <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:0.875rem;margin-bottom:1.25rem;font-size:0.82rem">
+          <div style="font-weight:600;color:var(--accent);margin-bottom:0.5rem">📦 Data yang disimpan di Firebase:</div>
+          <div style="display:flex;flex-direction:column;gap:4px;color:var(--text-muted)">
+            <div>🏢 <strong style="color:var(--text-primary)">PT List</strong> — daftar perusahaan &amp; status kirim</div>
+            <div>📧 <strong style="color:var(--text-primary)">Template</strong> — template email global</div>
+            <div>📎 <strong style="color:var(--text-primary)">Lampiran</strong> — nama &amp; link Google Drive file</div>
+            <div>📊 <strong style="color:var(--text-primary)">Log</strong> — riwayat pengiriman realtime</div>
           </div>
         </div>
 
@@ -1471,13 +1889,9 @@ Email: wahyu@gmail.com</textarea>
 
         <div style="display:flex;gap:8px">
           <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
-          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obSetupSheets()" id="ob-setup-btn">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Buat Sheet Sekarang
+          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obNext()">
+            Lanjut →
           </button>
-        </div>
-        <div style="text-align:center;margin-top:0.75rem">
-          <button onclick="obNext()" style="background:none;border:none;color:var(--text-muted);font-size:0.78rem;cursor:pointer;text-decoration:underline">Lewati langkah ini →</button>
         </div>
       </div>
 
@@ -1522,6 +1936,33 @@ Email: wahyu@gmail.com</textarea>
   </div>
 </div>
 
+<!-- Bottom Sheet: Menu Lainnya (Mobile) -->
+<div class="sheet-backdrop" id="sheet-lainnya" onclick="if(event.target===this) closeLainnyaSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Lainnya</div>
+    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('template')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      <span class="sheet-item-label">Template Email</span>
+    </a>
+    <div class="sheet-divider"></div>
+    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('lampiran')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+      <span class="sheet-item-label">Lampiran</span>
+    </a>
+    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('log')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span class="sheet-item-label">Log Pengiriman</span>
+    </a>
+    <div class="sheet-divider"></div>
+    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('integrasi')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span class="sheet-item-label">Integrasi &amp; Koneksi</span>
+      <span class="sheet-item-badge" id="sheet-fb-badge">Belum terhubung</span>
+    </a>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -1531,7 +1972,10 @@ let state = {
   ptList: [],
   logs: [],
   scheduler: {
-    date: '', time: '08:00', delay: 30, batch: 20, rest: 5,
+    date: '', time: '08:00', timeEnd: '17:00',
+    delay: 45, batch: 15, rest: 10,
+    perDay: 20,
+    activeDays: [1, 3, 5], // Senin, Rabu, Jumat default
     gasUrl: '', template: 'default'
   },
   template: {
@@ -1547,7 +1991,7 @@ let state = {
   ],
   runStatus: 'idle',
   sendInterval: null,
-  monStats: { session: 0, ok: 0, fail: 0, batchCount: 0 },
+  monStats: { session: 0, ok: 0, fail: 0, batchCount: 0, sentToday: 0, lastSendDate: null },
   quotaCache: null,
   offlineQueue: [], // { action, payload, timestamp }
   firebaseConfig: null // { databaseURL, apiKey, projectId, authDomain }
@@ -1735,8 +2179,8 @@ const pageTitles = {
   perusahaan: 'Data Perusahaan',
   template: 'Template Email',
   lampiran: 'Lampiran',
-  scheduler: 'Scheduler',
-  monitoring: 'Monitoring',
+  scheduler: 'Jadwal Kirim',
+  integrasi: 'Integrasi & Koneksi',
   log: 'Log Pengiriman'
 };
 
@@ -1750,17 +2194,24 @@ function showPage(name) {
     }
   });
   // Bottom nav active
+  const lainnyaPages = ['template', 'lampiran', 'log', 'integrasi'];
   document.querySelectorAll('.bottom-nav-item').forEach(n => {
     n.classList.remove('active');
     if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'")) {
       n.classList.add('active');
     }
   });
+  if (lainnyaPages.includes(name)) {
+    const lainnyaBtn = document.querySelector('.bottom-nav-item[onclick="openLainnyaSheet()"]');
+    if (lainnyaBtn) lainnyaBtn.classList.add('active');
+  }
   document.getElementById('topbar-title').textContent = pageTitles[name] || name;
   if (name === 'perusahaan') { renderPTTable(); renderPTCards(); }
   if (name === 'log') renderLogTable();
   if (name === 'lampiran') renderLampiran();
-  if (name === 'scheduler') loadSchedulerForm();
+  if (name === 'template') { validateTplLive(); renderVariantAnalytics(); }
+  if (name === 'scheduler' || name === 'integrasi') loadSchedulerForm();
+  if (name === 'scheduler') updateScheduleSummary();
   closeSidebar();
   closeActionMenu();
 }
@@ -1773,6 +2224,18 @@ function toggleSidebar() {
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay').classList.remove('open');
+}
+
+// ===== BOTTOM SHEET: LAINNYA (mobile) =====
+function openLainnyaSheet() {
+  document.getElementById('sheet-lainnya').classList.add('open');
+  const badge = document.getElementById('sheet-fb-badge');
+  const fbBadge = document.getElementById('fb-conn-badge');
+  if (badge && fbBadge) { badge.textContent = fbBadge.textContent; }
+}
+
+function closeLainnyaSheet() {
+  document.getElementById('sheet-lainnya').classList.remove('open');
 }
 
 // ===== STATS =====
@@ -1808,7 +2271,32 @@ function updateStats() {
   }
 }
 
-// (duplicate definitions removed — see attachFirebaseListeners above)
+// ===== FIREBASE HELPERS =====
+function fbReady() {
+  return window._fbReady && window._fb;
+}
+
+
+
+function fbListenPT(callback) {
+  if (!fbReady()) return;
+  const { ref, onValue } = window._fb;
+  const db = window._fb.db;
+  return onValue(ref(db, 'ptList'), (snap) => {
+    const data = snap.val() || {};
+    const list = Object.entries(data).map(([k, v]) => ({ id: k, ...v }));
+    callback(list);
+  });
+}
+
+function attachFirebaseListeners() {
+  fbListenPT((list) => {
+    state.ptList = list;
+    saveState();
+    updateStats();
+    renderPTTable(document.getElementById('search-pt')?.value || '');
+  });
+}
 
 // ===== PT TABLE =====
 let filteredPT = [];
@@ -1831,12 +2319,18 @@ function renderPTTable(filter = '') {
       <td style="color:var(--accent-blue)">${escHtml(p.email)}</td>
       <td>${escHtml(p.kota||'-')}</td>
       <td>${escHtml(p.posisi||'-')}</td>
-      <td><span class="badge badge-${p.status.toLowerCase()}">${p.status}</span></td>
+      <td>
+        <span class="badge badge-${p.status.toLowerCase()}">${p.status}</span>
+        ${p.templateUsed ? `<div style="font-size:0.62rem;color:var(--text-muted);margin-top:3px;white-space:nowrap" title="Template yang dipakai saat dikirim">${escHtml(templateUsedLabel(p.templateUsed))}</div>` : ''}
+      </td>
       <td>
         <div class="td-actions">
           <button class="icon-btn" onclick="previewEmailPT('${p.id}')" title="Preview Email">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </button>
+          ${p.status === 'Pending' ? `<button class="icon-btn" onclick="sendNowSingle('${p.id}')" title="Kirim Sekarang" style="color:var(--accent)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>` : ''}
           ${p.status === 'Failed' ? `<button class="icon-btn" onclick="retrySingle('${p.id}')" title="Kirim Ulang" style="color:var(--accent-red)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
           </button>` : ''}
@@ -1862,30 +2356,120 @@ const previewState = { list: [], idx: 0 };
 function resolveEmail(pt, ptIndex) {
   const replacements = { '{NAMA_PT}': pt.nama, '{POSISI}': pt.posisi || '', '{EMAIL}': pt.email };
   const fix = s => (s || '').replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
-  const useCustom = !!(pt.customBody);
-  // Priority: custom body → A/B variant → template global
-  let rawBody, rawSubject, source, sourceBg, sourceColor;
-  if (useCustom) {
+  const tplSource = pt.tplSource || (pt.customBody ? 'custom' : 'auto');
+
+  let rawBody, rawSubject, source, sourceBg, sourceColor, templateUsed;
+
+  if (tplSource === 'custom') {
     rawBody = pt.customBody; rawSubject = pt.customSubject;
     source = 'CUSTOM'; sourceBg = 'var(--accent-dim)'; sourceColor = 'var(--accent)';
+    templateUsed = 'custom';
+  } else if (tplSource === 'global') {
+    rawBody = state.template.body; rawSubject = state.template.subject;
+    source = 'TEMPLATE GLOBAL'; sourceBg = 'rgba(100,116,139,0.15)'; sourceColor = 'var(--text-muted)';
+    templateUsed = 'global';
+  } else if (tplSource === 'variant' && typeof pt.forcedVariantIdx === 'number' && state.templates?.[pt.forcedVariantIdx]) {
+    const variant = state.templates[pt.forcedVariantIdx];
+    rawBody = variant.body; rawSubject = variant.subject;
+    const label = 'VARIANT ' + String.fromCharCode(65 + pt.forcedVariantIdx) + ' (manual)';
+    source = label; sourceBg = 'rgba(139,92,246,0.15)'; sourceColor = '#a78bfa';
+    templateUsed = 'variant_' + pt.forcedVariantIdx;
   } else {
+    // auto → ikut mode A/B
     const variant = resolveVariant(ptIndex);
     if (variant) {
       rawBody = variant.body; rawSubject = variant.subject;
-      const vLabel = state.templates ? 'VARIANT ' + String.fromCharCode(65 + state.templates.indexOf(variant)) : 'VARIANT';
+      const idx = state.templates.indexOf(variant);
+      const vLabel = 'VARIANT ' + String.fromCharCode(65 + idx);
       source = vLabel; sourceBg = 'rgba(139,92,246,0.15)'; sourceColor = '#a78bfa';
+      templateUsed = 'variant_' + idx;
     } else {
       rawBody = state.template.body; rawSubject = state.template.subject;
       source = 'TEMPLATE GLOBAL'; sourceBg = 'rgba(100,116,139,0.15)'; sourceColor = 'var(--text-muted)';
+      templateUsed = 'global';
     }
   }
+
   return {
     to: pt.email, nama: pt.nama, posisi: pt.posisi || '-',
     subject: fix(rawSubject || state.template.subject || 'Lamaran Kerja'),
     body: fix(rawBody || state.template.body || ''),
-    source, sourceColor, sourceBg,
+    source, sourceColor, sourceBg, templateUsed,
     isEmpty: !(rawBody || state.template.body || '').trim()
   };
+}
+
+function templateUsedLabel(code) {
+  if (!code) return '-';
+  if (code === 'custom') return 'Custom';
+  if (code === 'global') return 'Template Global';
+  if (code.startsWith('variant_')) {
+    const idx = parseInt(code.split('_')[1]);
+    const t = state.templates?.[idx];
+    return 'Variant ' + String.fromCharCode(65 + idx) + (t?.name ? ' (' + t.name + ')' : '');
+  }
+  return code;
+}
+
+// ===== ANALITIK PER-VARIANT =====
+function computeVariantStats() {
+  const stats = {}; // key: templateUsed code → { sent, failed, label }
+  const ensure = key => { if (!stats[key]) stats[key] = { sent: 0, failed: 0, label: templateUsedLabel(key) }; return stats[key]; };
+
+  state.ptList.forEach(pt => {
+    if (!pt.templateUsed) return; // belum pernah dikirim / belum tercatat
+    const s = ensure(pt.templateUsed);
+    if (pt.status === 'Sent') s.sent++;
+    else if (pt.status === 'Failed') s.failed++;
+  });
+
+  return stats;
+}
+
+function renderVariantAnalytics() {
+  const el = document.getElementById('variant-analytics');
+  if (!el) return;
+  const stats = computeVariantStats();
+  const keys = Object.keys(stats);
+
+  if (keys.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:1.25rem;color:var(--text-muted);font-size:0.82rem">Belum ada data pengiriman. Statistik akan muncul setelah email pertama dikirim.</div>';
+    return;
+  }
+
+  const sorted = keys.sort((a,b) => (stats[b].sent + stats[b].failed) - (stats[a].sent + stats[a].failed));
+  const maxTotal = Math.max(...sorted.map(k => stats[k].sent + stats[k].failed), 1);
+
+  el.innerHTML = sorted.map(key => {
+    const s = stats[key];
+    const total = s.sent + s.failed;
+    const successRate = total > 0 ? Math.round((s.sent / total) * 100) : 0;
+    const barWidth = Math.round((total / maxTotal) * 100);
+    const sentPct = total > 0 ? (s.sent / total) * 100 : 0;
+    const failPct = total > 0 ? (s.failed / total) * 100 : 0;
+    return `
+      <div style="margin-bottom:0.875rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.82rem">
+          <strong style="color:var(--text-primary)">${escHtml(s.label)}</strong>
+          <span style="color:var(--text-muted)">${total} email · <span style="color:${successRate >= 80 ? 'var(--accent)' : successRate >= 50 ? '#ca8a04' : 'var(--accent-red)'}">${successRate}% terkirim</span></span>
+        </div>
+        <div style="background:var(--bg-input);border-radius:6px;height:8px;overflow:hidden;display:flex;width:100%">
+          <div style="width:${barWidth}%;display:flex;height:100%">
+            <div style="width:${sentPct}%;background:var(--accent)"></div>
+            <div style="width:${failPct}%;background:var(--accent-red)"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:3px;font-size:0.7rem;color:var(--text-muted)">
+          <span>✅ ${s.sent} terkirim</span>
+          ${s.failed > 0 ? `<span>❌ ${s.failed} gagal</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('') + `
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border)">
+      💡 Statistik ini menunjukkan tingkat email berhasil terkirim, bukan respons HRD. Untuk tahu variant mana yang benar-benar membuahkan panggilan tes, cek kolom "Template" di halaman Perusahaan untuk lihat PT mana yang membalas, lalu bandingkan dengan variant yang dipakai.
+    </div>
+  `;
 }
 
 function renderPreviewModal() {
@@ -2064,6 +2648,41 @@ function retryFailed() {
   updateRetryButton();
 }
 
+async function sendNowSingle(id) {
+  const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+  if (idx < 0) return;
+  const pt = state.ptList[idx];
+  if (!state.scheduler.gasUrl) { showToast('URL GAS belum diisi', 'error'); return; }
+
+  // Konfirmasi dulu
+  if (!confirm(`Kirim email ke ${pt.nama} (${pt.email}) SEKARANG juga?\n\nIni tidak akan menunggu jadwal yang diatur.`)) return;
+
+  // Cek quota
+  const quota = await fetchQuota();
+  if (quota !== null && quota <= 5) {
+    showToast('🚨 Quota Gmail terlalu rendah (' + quota + ' tersisa)', 'error');
+    return;
+  }
+
+  addLog(pt.nama, pt.email, 'Kirim sekarang...', 'processing');
+  showToast('📤 Mengirim ke ' + pt.nama + '...', 'info');
+
+  const result = await sendEmail(pt, idx);
+  const ok = result.ok;
+  state.ptList[idx].status = ok ? 'Sent' : 'Failed';
+  state.ptList[idx].templateUsed = result.templateUsed;
+  state.ptList[idx].sentAt = new Date().toISOString();
+  
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+  renderPTCards(document.getElementById('search-pt')?.value || '');
+  
+  addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed', result.templateUsed);
+  showToast(ok ? '✅ Email terkirim: ' + pt.nama : '❌ Email gagal: ' + pt.nama, ok ? 'success' : 'error');
+  updateRetryButton();
+}
+
 async function retrySingle(id) {
   const idx = state.ptList.findIndex(p => String(p.id) === String(id));
   if (idx < 0) return;
@@ -2084,13 +2703,16 @@ async function retrySingle(id) {
   addLog(pt.nama, pt.email, 'Retry...', 'processing');
   showToast('Mengirim ulang ke ' + pt.nama + '...', 'info');
 
-  const ok = await sendEmail(state.ptList[idx]);
-  state.ptList[idx].status = ok ? 'Sent' : 'Failed';
+  const result = await sendEmail(state.ptList[idx], idx);
+  state.ptList[idx].status = result.ok ? 'Sent' : 'Failed';
+  state.ptList[idx].templateUsed = result.templateUsed;
+  state.ptList[idx].sentAt = new Date().toISOString();
   saveState();
   updateStats();
   renderPTTable(document.getElementById('search-pt')?.value || '');
-  addLog(pt.nama, pt.email, ok ? 'Retry berhasil ✓' : 'Retry gagal ✗', ok ? 'sent' : 'failed');
-  showToast(ok ? '✅ Retry berhasil: ' + pt.nama : '❌ Retry gagal: ' + pt.nama, ok ? 'success' : 'error');
+  renderPTCards(document.getElementById('search-pt')?.value || '');
+  addLog(pt.nama, pt.email, result.ok ? 'Retry berhasil ✓' : 'Retry gagal ✗', result.ok ? 'sent' : 'failed', result.templateUsed);
+  showToast(result.ok ? '✅ Retry berhasil: ' + pt.nama : '❌ Retry gagal: ' + pt.nama, result.ok ? 'success' : 'error');
   updateRetryButton();
 }
 
@@ -2146,6 +2768,7 @@ function renderPTCards(filter = '') {
       <div class="pt-card-meta">
         <div>Kota <span>${escHtml(p.kota || '-')}</span></div>
         <div>Posisi <span>${escHtml(p.posisi || '-')}</span></div>
+        ${p.templateUsed ? `<div>Template <span>${escHtml(templateUsedLabel(p.templateUsed))}</span></div>` : ''}
       </div>
       <div class="pt-card-actions">
         <button class="btn btn-outline" onclick="previewEmailPT('${p.id}')">
@@ -2215,8 +2838,32 @@ function getCheckedAttachments() {
     .map(cb => parseInt(cb.dataset.attIdx));
 }
 
-function toggleCustomBody(checked) {
-  document.getElementById('modal-custom-section').style.display = checked ? 'block' : 'none';
+function onTplSourceChange() {
+  const val = document.getElementById('modal-tpl-source').value;
+  document.getElementById('modal-custom-section').style.display = val === 'custom' ? 'block' : 'none';
+  document.getElementById('modal-variant-pick-wrap').style.display = val === 'variant' ? 'block' : 'none';
+}
+
+// Render daftar variant sebagai radio button untuk dipilih manual per-PT
+function renderVariantPicker(selectedIdx) {
+  const wrap = document.getElementById('modal-variant-pick');
+  if (!wrap) return;
+  const templates = state.templates || [];
+  if (templates.length === 0) {
+    wrap.innerHTML = '<div style="font-size:0.78rem;color:var(--text-muted)">Belum ada variant. Tambah dulu di halaman Template.</div>';
+    return;
+  }
+  wrap.innerHTML = templates.map((t, i) => `
+    <label style="display:flex;align-items:center;gap:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;cursor:pointer;font-size:0.8rem">
+      <input type="radio" name="modal-variant-radio" value="${i}" ${selectedIdx === i ? 'checked' : ''} style="accent-color:var(--accent)">
+      <span><strong style="color:var(--text-primary)">${String.fromCharCode(65+i)}</strong> — ${escHtml(t.name || 'Variant ' + String.fromCharCode(65+i))}</span>
+    </label>
+  `).join('');
+}
+
+function getSelectedVariantIdx() {
+  const checked = document.querySelector('input[name="modal-variant-radio"]:checked');
+  return checked ? parseInt(checked.value) : null;
 }
 
 function openAddModal() {
@@ -2227,10 +2874,11 @@ function openAddModal() {
   document.getElementById('modal-kota').value = '';
   document.getElementById('modal-posisi').value = '';
   document.getElementById('modal-status').value = 'Pending';
-  document.getElementById('modal-use-custom').checked = false;
+  document.getElementById('modal-tpl-source').value = 'auto';
   document.getElementById('modal-custom-subject').value = '';
   document.getElementById('modal-custom-body').value = '';
-  toggleCustomBody(false);
+  renderVariantPicker(null);
+  onTplSourceChange();
   document.getElementById('modal-use-custom-att').checked = false;
   toggleCustomAttachments(false);
   openModal('modal-pt');
@@ -2246,11 +2894,15 @@ function editPT(id) {
   document.getElementById('modal-kota').value = pt.kota || '';
   document.getElementById('modal-posisi').value = pt.posisi || '';
   document.getElementById('modal-status').value = pt.status;
-  const hasCustom = !!(pt.customBody);
-  document.getElementById('modal-use-custom').checked = hasCustom;
+
+  // Tentukan tplSource dari data PT
+  let tplSource = pt.tplSource || (pt.customBody ? 'custom' : 'auto');
+  document.getElementById('modal-tpl-source').value = tplSource;
   document.getElementById('modal-custom-subject').value = pt.customSubject || '';
   document.getElementById('modal-custom-body').value = pt.customBody || '';
-  toggleCustomBody(hasCustom);
+  renderVariantPicker(typeof pt.forcedVariantIdx === 'number' ? pt.forcedVariantIdx : null);
+  onTplSourceChange();
+
   const hasCustomAtt = Array.isArray(pt.customAttachments);
   document.getElementById('modal-use-custom-att').checked = hasCustomAtt;
   toggleCustomAttachments(false);
@@ -2267,9 +2919,16 @@ async function savePT() {
   const email = document.getElementById('modal-email').value.trim();
   if (!nama || !email) { showToast('Nama PT dan email wajib diisi', 'error'); return; }
 
-  const useCustom = document.getElementById('modal-use-custom').checked;
-  const customBody = useCustom ? document.getElementById('modal-custom-body').value.trim() : '';
-  const customSubject = useCustom ? document.getElementById('modal-custom-subject').value.trim() : '';
+  const tplSource = document.getElementById('modal-tpl-source').value; // auto | global | variant | custom
+  const customBody = tplSource === 'custom' ? document.getElementById('modal-custom-body').value.trim() : '';
+  const customSubject = tplSource === 'custom' ? document.getElementById('modal-custom-subject').value.trim() : '';
+  const forcedVariantIdx = tplSource === 'variant' ? getSelectedVariantIdx() : null;
+
+  if (tplSource === 'variant' && forcedVariantIdx === null) {
+    showToast('Pilih salah satu variant terlebih dahulu, atau ganti ke mode lain', 'error');
+    return;
+  }
+
   const useCustomAtt = document.getElementById('modal-use-custom-att').checked;
   const customAttachments = useCustomAtt ? getCheckedAttachments() : null;
 
@@ -2279,13 +2938,13 @@ async function savePT() {
         kota: document.getElementById('modal-kota').value,
         posisi: document.getElementById('modal-posisi').value,
         status: document.getElementById('modal-status').value,
-        customBody, customSubject, customAttachments }
+        tplSource, customBody, customSubject, forcedVariantIdx, customAttachments }
     : { id: String(Date.now()), nama, email,
         kota: document.getElementById('modal-kota').value,
         posisi: document.getElementById('modal-posisi').value,
         status: 'Pending',
         addedAt: new Date().toISOString(),
-        customBody, customSubject, customAttachments };
+        tplSource, customBody, customSubject, forcedVariantIdx, customAttachments };
 
   const saveBtn = document.querySelector('#modal-pt .btn-primary');
   const origText = saveBtn?.innerHTML;
@@ -2599,71 +3258,168 @@ async function saveTemplate() {
   state.template.body = document.getElementById('tpl-body').value;
   saveState();
 
+  const btn = document.querySelector('#page-template .btn-primary');
+  const origHtml = btn ? btn.innerHTML : '';
+
   // Prioritas 1: Firebase
   if (fbReady()) {
     try {
+      if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Menyimpan...'; }
       await fbSaveTemplate(state.template);
+      if (btn) { btn.innerHTML = '✅ Tersimpan ke Firebase!'; btn.style.background = '#059669'; }
+      setTimeout(() => { if (btn) { btn.innerHTML = origHtml; btn.style.background = ''; btn.disabled = false; } }, 2500);
       showToast('Template disimpan ke Firebase ✓', 'success');
       return;
-    } catch(e) { /* fallback ke GAS */ }
+    } catch(e) { /* fallback */ }
   }
 
-  // Prioritas 2: GAS
-  if (state.scheduler.gasUrl) {
-    try {
-      const resp = await gasPost({ action: 'saveTemplate', ...state.template });
-      if (resp.status === 'ok') showToast('Template disimpan ke Spreadsheet ✓', 'success');
-      else showToast('Disimpan lokal. GAS: ' + resp.message, 'info');
-    } catch(e) { showToast('Disimpan lokal saja (GAS tidak terhubung)', 'info'); }
-  } else {
-    showToast('Template disimpan lokal', 'success');
-  }
+  // Prioritas 2: Lokal saja
+  if (btn) { btn.innerHTML = '✅ Tersimpan Lokal'; btn.style.background = '#ca8a04'; }
+  setTimeout(() => { if (btn) { btn.innerHTML = origHtml; btn.style.background = ''; btn.disabled = false; } }, 2000);
+  showToast(fbReady() ? 'Template disimpan lokal (Firebase error)' : 'Template disimpan lokal', 'info');
 }
 
-async function loadTemplateFromGAS() {
-  if (!state.scheduler.gasUrl) return;
+async function loadTemplateFromFirebase() {
+  if (!fbReady()) {
+    showToast('Firebase belum terhubung. Hubungkan di halaman Integrasi.', 'error');
+    return;
+  }
   try {
-    const data = await gasGet('template');
-    if (data.status === 'ok' && data.data) {
-      state.template = { ...state.template, ...data.data };
+    const { get } = window._fb;
+    const snap = await get(fbRef('mailblast/template'));
+    const data = snap.val();
+    if (data) {
+      state.template = { ...state.template, ...data };
       saveState();
       document.getElementById('tpl-name').value = state.template.name || '';
       document.getElementById('tpl-subject').value = state.template.subject || '';
       document.getElementById('tpl-body').value = state.template.body || '';
-      showToast('Template dimuat dari Spreadsheet ✓', 'success');
+      validateTplLive();
+      showToast('✅ Template dimuat dari Firebase', 'success');
+    } else {
+      showToast('Belum ada template tersimpan di Firebase. Klik "Simpan Template Global" dulu.', 'info');
     }
-  } catch(e) {}
+  } catch(e) {
+    showToast('❌ Gagal muat template: ' + e.message, 'error');
+  }
 }
 
+// ===== TEMPLATE GUIDE TOGGLE =====
+function toggleTplGuide() {
+  const body = document.getElementById('tpl-guide-body');
+  const chevron = document.getElementById('tpl-guide-chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+// ===== LIVE VALIDATION CHECKLIST =====
+function validateTplLive() {
+  const subject = document.getElementById('tpl-subject')?.value || '';
+  const body = document.getElementById('tpl-body')?.value || '';
+  const wordCount = body.trim().split(/\s+/).filter(Boolean).length;
+
+  const wcEl = document.getElementById('tpl-word-count');
+  if (wcEl) {
+    let color = 'var(--text-muted)';
+    let label = wordCount + ' kata';
+    if (wordCount > 0 && wordCount < 60) { color = '#ca8a04'; label += ' (terlalu pendek)'; }
+    else if (wordCount > 220) { color = 'var(--accent-red)'; label += ' (terlalu panjang)'; }
+    else if (wordCount >= 60) { color = 'var(--accent)'; label += ' ✓ ideal'; }
+    wcEl.style.color = color;
+    wcEl.textContent = label;
+  }
+
+  const checks = [
+    { ok: subject.includes('{POSISI}'), label: 'Subject menyebut {POSISI}' },
+    { ok: body.includes('{POSISI}'), label: 'Body menyebut {POSISI} (posisi yang dilamar)' },
+    { ok: body.includes('{NAMA_PT}'), label: 'Body menyebut {NAMA_PT} (personalisasi PT)' },
+    { ok: /\b08\d{2,3}[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b|email[:\s]/i.test(body), label: 'Ada kontak (HP/email) di body' },
+    { ok: wordCount >= 60 && wordCount <= 220, label: 'Panjang body ideal (60–220 kata)' },
+    { ok: subject.trim().length > 0, label: 'Subject tidak kosong' },
+  ];
+
+  const el = document.getElementById('tpl-checklist');
+  if (el) {
+    el.innerHTML = checks.map(c => `
+      <div style="display:flex;align-items:center;gap:6px;color:${c.ok ? 'var(--accent)' : 'var(--text-muted)'}">
+        <span>${c.ok ? '✅' : '⬜'}</span><span>${c.label}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ===== PREVIEW EMAIL (MODAL) =====
 function previewTemplate() {
-  const body = document.getElementById('tpl-body').value.replace('{NAMA_PT}', 'PT Contoh Indonesia');
-  alert('PREVIEW EMAIL\n\nSubject: ' + document.getElementById('tpl-subject').value + '\n\n' + body);
+  const rawSubject = document.getElementById('tpl-subject').value;
+  const rawBody = document.getElementById('tpl-body').value;
+  const sample = { '{NAMA_PT}': 'Contoh Indonesia', '{POSISI}': 'Staff Admin', '{EMAIL}': 'hrd@contohindonesia.com' };
+  const fix = s => (s || '').replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => sample[m] || m);
+
+  document.getElementById('prev-to').textContent = sample['{EMAIL}'];
+  document.getElementById('prev-subject').textContent = fix(rawSubject) || '(Subject kosong)';
+  document.getElementById('prev-body').textContent = fix(rawBody) || '(Body kosong)';
+
+  // Render lampiran aktif sebagai chip simulasi
+  const attEl = document.getElementById('prev-attachments');
+  const activeAtt = (state.lampiranList || []).filter(l => l.aktif && l.nama);
+  if (activeAtt.length > 0) {
+    attEl.innerHTML = activeAtt.map(l => `
+      <span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:var(--text-muted)">
+        📎 ${escHtml(l.nama)}
+      </span>
+    `).join('');
+  } else {
+    attEl.innerHTML = '<span style="font-size:0.75rem;color:var(--accent-red)">⚠️ Belum ada lampiran aktif — atur di halaman Lampiran</span>';
+  }
+
+  document.getElementById('modal-preview-email').classList.add('open');
+}
+
+function closePreviewEmailModal() {
+  document.getElementById('modal-preview-email').classList.remove('open');
 }
 
 // ===== LAMPIRAN =====
 function renderLampiran() {
   const el = document.getElementById('lampiran-list');
+  if (!el) return;
+  if (!state.lampiranList || state.lampiranList.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:0.85rem">Belum ada lampiran. Klik "Tambah Lampiran" untuk mulai.</div>';
+    return;
+  }
   el.innerHTML = state.lampiranList.map((l, i) => `
-    <div class="card-form" style="margin-bottom:0.75rem;padding:1rem">
+    <div class="card-form" style="margin-bottom:0.75rem;padding:1rem;position:relative">
+      <div style="position:absolute;top:0.5rem;right:0.5rem;font-size:0.65rem;color:var(--text-muted)">📎 #${i+1}</div>
       <div class="form-grid">
         <div class="form-row" style="margin-bottom:0">
           <label class="form-label">Nama File</label>
-          <input type="text" class="form-input" value="${escHtml(l.nama)}" onchange="state.lampiranList[${i}].nama=this.value;saveState()">
+          <input type="text" class="form-input" value="${escHtml(l.nama)}" placeholder="Contoh: CV_Wahyu.pdf"
+            onchange="state.lampiranList[${i}].nama=this.value;saveState();showLampiranUnsaved()">
         </div>
         <div class="form-row" style="margin-bottom:0">
           <label class="form-label">Link Google Drive</label>
-          <input type="url" class="form-input" value="${escHtml(l.link)}" placeholder="https://drive.google.com/..." onchange="state.lampiranList[${i}].link=this.value;saveState()">
+          <input type="url" class="form-input" value="${escHtml(l.link)}" placeholder="https://drive.google.com/..."
+            onchange="state.lampiranList[${i}].link=this.value;saveState();showLampiranUnsaved()">
         </div>
       </div>
       <div class="flex items-center gap-2" style="margin-top:0.75rem;justify-content:space-between">
         <label style="display:flex;align-items:center;gap:6px;font-size:0.8125rem;cursor:pointer">
-          <input type="checkbox" ${l.aktif ? 'checked' : ''} onchange="state.lampiranList[${i}].aktif=this.checked;saveState()">
-          Aktif
+          <input type="checkbox" ${l.aktif ? 'checked' : ''} onchange="state.lampiranList[${i}].aktif=this.checked;saveState();showLampiranUnsaved()">
+          Aktif (ikut dikirim)
         </label>
         <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="removeLampiran(${i})">Hapus</button>
       </div>
     </div>
   `).join('');
+}
+
+function showLampiranUnsaved() {
+  const el = document.getElementById('lampiran-save-status');
+  if (!el) return;
+  el.style.display = 'inline';
+  el.style.cssText = 'display:inline;background:rgba(245,158,11,0.15);color:#ca8a04;padding:2px 8px;border-radius:10px;font-size:0.72rem';
+  el.textContent = '⚠️ Belum tersimpan ke Firebase';
 }
 
 function addLampiran() {
@@ -2680,27 +3436,65 @@ function removeLampiran(i) {
 // ===== SCHEDULER =====
 function loadSchedulerForm() {
   const s = state.scheduler;
-  document.getElementById('sch-date').value = s.date;
-  document.getElementById('sch-time').value = s.time;
-  document.getElementById('sch-delay').value = s.delay;
-  document.getElementById('sch-batch').value = s.batch;
-  document.getElementById('sch-rest').value = s.rest;
-  document.getElementById('sch-gas-url').value = s.gasUrl;
+  const el = id => document.getElementById(id);
+  if (el('sch-date'))     el('sch-date').value     = s.date || '';
+  if (el('sch-time'))     el('sch-time').value     = s.time || '08:00';
+  if (el('sch-time-end')) el('sch-time-end').value = s.timeEnd || '17:00';
+  if (el('sch-delay'))    el('sch-delay').value    = s.delay || 45;
+  if (el('sch-batch'))    el('sch-batch').value    = s.batch || 15;
+  if (el('sch-rest'))     el('sch-rest').value     = s.rest  || 10;
+  if (el('sch-per-day'))  el('sch-per-day').value  = s.perDay || 20;
+  if (el('sch-gas-url'))  el('sch-gas-url').value  = s.gasUrl || '';
+  // Restore active days
+  const activeDays = s.activeDays || [1, 3, 5];
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    const day = parseInt(btn.dataset.day);
+    btn.classList.toggle('day-active', activeDays.includes(day));
+  });
+  updateDaySummary();
+  updateWeeklyEstimate();
   loadFirebaseConfigForm();
 }
 
 function saveScheduler() {
+  const activeDays = Array.from(document.querySelectorAll('.day-btn.day-active'))
+    .map(b => parseInt(b.dataset.day));
+
+  if (activeDays.length === 0) {
+    showToast('Pilih minimal 1 hari aktif pengiriman', 'error');
+    return;
+  }
+
+  const delay = parseInt(document.getElementById('sch-delay').value) || 45;
+  if (delay < 30) {
+    showToast('⚠️ Delay terlalu pendek! Min. 30 detik untuk menghindari spam.', 'error');
+    return;
+  }
+
   state.scheduler = {
-    date: document.getElementById('sch-date').value,
-    time: document.getElementById('sch-time').value,
-    delay: parseInt(document.getElementById('sch-delay').value),
-    batch: parseInt(document.getElementById('sch-batch').value),
-    rest: parseInt(document.getElementById('sch-rest').value),
-    gasUrl: document.getElementById('sch-gas-url').value.trim(),
-    template: 'default'
+    ...state.scheduler,
+    date:      document.getElementById('sch-date').value,
+    time:      document.getElementById('sch-time').value,
+    timeEnd:   document.getElementById('sch-time-end').value,
+    delay,
+    batch:     parseInt(document.getElementById('sch-batch').value) || 15,
+    rest:      parseInt(document.getElementById('sch-rest').value)  || 10,
+    perDay:    parseInt(document.getElementById('sch-per-day').value) || 20,
+    activeDays,
+    gasUrl:    document.getElementById('sch-gas-url').value.trim(),
+    template:  'default'
   };
   saveState();
-  showToast('Jadwal disimpan', 'success');
+  updateScheduleSummary();
+
+  const btn = document.querySelector('#page-scheduler .btn-primary');
+  const orig = btn?.innerHTML;
+  if (btn) { btn.innerHTML = '✅ Jadwal Tersimpan!'; btn.style.background = '#059669'; btn.disabled = true; }
+  setTimeout(() => { if (btn) { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; } }, 2000);
+
+  const dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const dayLabels = activeDays.sort((a,b)=>a-b).map(d => dayNames[d]).join(', ');
+  showToast(`✅ Jadwal disimpan — aktif tiap: ${dayLabels}`, 'success');
 }
 
 function loadScheduler() { loadSchedulerForm(); }
@@ -2747,7 +3541,8 @@ function setRunStatus(status) {
     idle: ['chip-idle', 'Idle'],
     running: ['chip-running', 'Berjalan'],
     paused: ['chip-paused', 'Dijeda'],
-    stopped: ['chip-stopped', 'Dihentikan']
+    stopped: ['chip-stopped', 'Dihentikan'],
+    scheduled: ['chip-paused', '⏰ Terjadwal']
   };
   badge.className = 'status-chip ' + (map[status]?.[0] || 'chip-idle');
   badge.textContent = map[status]?.[1] || status;
@@ -2757,39 +3552,141 @@ function setRunStatus(status) {
   }
 }
 
+function startSendNow() {
+  const pending = state.ptList.filter(p => p.status === 'Pending');
+  if (pending.length === 0) { showToast('Tidak ada perusahaan Pending', 'error'); return; }
+  if (!state.scheduler.gasUrl) { showToast('URL Google Apps Script belum diisi', 'error'); return; }
+  if (state.runStatus === 'running' || state.runStatus === 'scheduled') { showToast('Pengiriman sudah aktif', 'info'); return; }
+
+  if (!confirm(`Kirim ${pending.length} email SEKARANG juga, tanpa mengikuti jadwal hari/jam yang diatur?\n\nIni akan mengabaikan pengaturan jadwal mingguan.`)) return;
+  state._scheduleWeeklyMode = false;
+  executeSendNow(pending);
+}
+
 function startSend() {
   const pending = state.ptList.filter(p => p.status === 'Pending');
   if (pending.length === 0) { showToast('Tidak ada perusahaan Pending', 'error'); return; }
-  if (!state.scheduler.gasUrl) { showToast('URL Google Apps Script belum diisi di Scheduler', 'error'); return; }
-  if (state.runStatus === 'running') { showToast('Pengiriman sudah berjalan', 'info'); return; }
-  state.monStats = { session: 0, ok: 0, fail: 0, batchCount: 0 };
+  if (!state.scheduler.gasUrl) { showToast('URL Google Apps Script belum diisi di halaman Integrasi', 'error'); return; }
+  if (state.runStatus === 'running' || state.runStatus === 'scheduled') { showToast('Pengiriman sudah aktif', 'info'); return; }
+
+  const activeDays = state.scheduler.activeDays || [];
+  if (activeDays.length === 0) {
+    showToast('⚠️ Belum ada hari aktif dipilih. Atur jadwal dulu di menu Jadwal.', 'error');
+    return;
+  }
+
+  state._scheduleWeeklyMode = true;
+  // SELALU tunggu jadwal berikutnya, bahkan jika klik "Mulai" pas sedang dalam window jadwal
+  // Ini mencegah bug: klik "Mulai BLAS" → email langsung terkirim tanpa menunggu jadwal
+  const waitMs = msUntilNextWindow();
+  if (waitMs === null) {
+    showToast('Tidak bisa menghitung jadwal berikutnya. Cek pengaturan hari aktif.', 'error');
+    return;
+  }
+  
+  const windowCheck = isWithinScheduleWindow();
+  if (windowCheck.ok && waitMs < 1000) {
+    // Jika sekarang sudah masuk jendela dan waktu tunggu sangat singkat (< 1 detik), langsung jalan
+    showToast(`✓ Waktu kirim sekarang! Memulai pengiriman...`, 'success');
+    executeSendNow(pending);
+  } else {
+    // Tunggu jadwal berikutnya
+    const hours = Math.floor(waitMs / (1000 * 3600));
+    const mins = Math.floor((waitMs % (1000 * 3600)) / (1000 * 60));
+    showToast(`⏰ Menunggu jadwal (${hours}j ${mins}m lagi)...`, 'info');
+    scheduleAutoSendWeekly(pending);
+  }
+}
+
+function executeSendNow(pending) {
+  state.monStats = {
+    session: 0, ok: 0, fail: 0, batchCount: 0,
+    sentToday: state.monStats?.sentToday || 0,
+    lastSendDate: state.monStats?.lastSendDate || null
+  };
   state.quotaCache = null;
   setRunStatus('running');
-  showToast('Pengiriman dimulai. ' + pending.length + ' PT dalam antrian.', 'success');
-  addLog('Sistem', '-', 'Pengiriman dimulai', 'processing');
+  showToast('📤 Pengiriman dimulai. ' + pending.length + ' PT dalam antrian.', 'success');
+  addLog('Sistem', '-', 'Pengiriman dimulai (' + pending.length + ' PT)', 'processing');
   runQueue();
 }
 
+// Mode jadwal mingguan: cek tiap detik apakah sudah masuk window (hari+jam) berikutnya
+function scheduleAutoSendWeekly(pending) {
+  const countdownInterval = setInterval(() => {
+    const windowCheck = isWithinScheduleWindow();
+    if (windowCheck.ok) {
+      clearInterval(countdownInterval);
+      showToast('⏰ Waktu kirim tiba! Memulai pengiriman...', 'success');
+      executeSendNow(pending);
+      return;
+    }
+    const waitMs = msUntilNextWindow();
+    if (waitMs === null) return;
+    const hours = Math.floor(waitMs / (1000 * 3600));
+    const mins = Math.floor((waitMs % (1000 * 3600)) / (1000 * 60));
+    const secs = Math.floor((waitMs % (1000 * 60)) / 1000);
+
+    const badge = document.getElementById('run-status-badge');
+    if (badge) badge.textContent = `⏰ Terjadwal (${hours}j ${mins}m)`;
+    const monBadge = document.getElementById('mon-badge');
+    if (monBadge) monBadge.textContent = `⏰ Terjadwal (${hours}j ${mins}m)`;
+  }, 1000);
+
+  state.sendInterval = countdownInterval;
+  setRunStatus('scheduled');
+}
+
+// Dipertahankan untuk kompatibilitas lama (one-time date/time scheduling), tidak dipakai lagi oleh UI utama
+function scheduleAutoSend(targetTime, pending) {
+  const countdownInterval = setInterval(() => {
+    const now = new Date();
+    if (now >= targetTime) {
+      clearInterval(countdownInterval);
+      showToast('⏰ Waktu kirim tiba! Memulai pengiriman...', 'success');
+      executeSendNow(pending);
+    } else {
+      const timeDiff = targetTime - now;
+      const hours = Math.floor(timeDiff / (1000 * 3600));
+      const mins = Math.floor((timeDiff % (1000 * 3600)) / (1000 * 60));
+      const secs = Math.floor((timeDiff % (1000 * 60)) / 1000);
+      const badge = document.getElementById('run-status-badge');
+      if (badge) badge.textContent = `Scheduled (${hours}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')})`;
+    }
+  }, 1000);
+
+  state.sendInterval = countdownInterval;
+  setRunStatus('scheduled');
+}
+
+
 function pauseSend() {
-  if (state.runStatus !== 'running') return;
-  if (state.sendInterval) clearTimeout(state.sendInterval);
-  setRunStatus('paused');
-  showToast('Pengiriman dijeda', 'info');
-  addLog('Sistem', '-', 'Pengiriman dijeda', 'pending');
+  if (state.runStatus !== 'running' && state.runStatus !== 'scheduled') return;
+  if (state.sendInterval) clearInterval(state.sendInterval);
+  
+  if (state.runStatus === 'scheduled') {
+    setRunStatus('idle');
+    showToast('⏹️ Jadwal pengiriman dibatalkan', 'info');
+    addLog('Sistem', '-', 'Jadwal pengiriman dibatalkan', 'pending');
+  } else {
+    setRunStatus('paused');
+    showToast('⏸ Pengiriman dijeda', 'info');
+    addLog('Sistem', '-', 'Pengiriman dijeda', 'pending');
+  }
 }
 
 function resumeSend() {
   if (state.runStatus !== 'paused') return;
   setRunStatus('running');
-  showToast('Pengiriman dilanjutkan', 'success');
+  showToast('▶️ Pengiriman dilanjutkan', 'success');
   addLog('Sistem', '-', 'Pengiriman dilanjutkan', 'processing');
   runQueue();
 }
 
 function stopSend() {
-  if (state.sendInterval) clearTimeout(state.sendInterval);
-  setRunStatus('stopped');
-  showToast('Pengiriman dihentikan', 'info');
+  if (state.sendInterval) clearInterval(state.sendInterval);
+  setRunStatus('idle');
+  showToast('⏹️ Pengiriman dihentikan', 'info');
   addLog('Sistem', '-', 'Pengiriman dihentikan', 'failed');
 }
 
@@ -2847,6 +3744,36 @@ async function runQueue() {
     return;
   }
 
+  // --- Cek apakah sudah keluar dari jendela jadwal (jam berhenti / hari berganti) ---
+  // Hanya berlaku jika mode jadwal mingguan aktif (ditandai via _scheduleWeeklyMode)
+  if (state._scheduleWeeklyMode) {
+    const win = isWithinScheduleWindow();
+    if (!win.ok) {
+      addLog('Sistem', '-', 'Auto-pause: ' + win.reason, 'pending');
+      showToast('⏸️ ' + win.reason + ' — menunggu jadwal berikutnya', 'info');
+      scheduleAutoSendWeekly(pending);
+      return;
+    }
+  }
+
+  // --- Cek limit email per hari (anti-spam) ---
+  const perDayLimit = state.scheduler.perDay || 20;
+  const today = new Date().toDateString();
+  if (state.monStats.lastSendDate !== today) {
+    state.monStats.sentToday = 0;
+    state.monStats.lastSendDate = today;
+  }
+  if (state.monStats.sentToday >= perDayLimit) {
+    addLog('Sistem', '-', `Limit harian tercapai (${perDayLimit} email) — anti-spam`, 'pending');
+    showToast(`⏸️ Limit ${perDayLimit} email/hari tercapai. Lanjut hari aktif berikutnya.`, 'info');
+    if (state._scheduleWeeklyMode) {
+      scheduleAutoSendWeekly(pending);
+    } else {
+      setRunStatus('idle');
+    }
+    return;
+  }
+
   // --- Cek quota sebelum kirim ---
   const quota = await fetchQuota();
   const QUOTA_CRITICAL = 5;
@@ -2892,20 +3819,27 @@ async function runQueue() {
 
   // --- Kirim email ---
   const pt = pending[0];
+  const ptIndex = state.ptList.findIndex(p => String(p.id) === String(pt.id));
   addLog(pt.nama, pt.email, 'Mengirim...', 'processing');
-  const ok = await sendEmail(pt);
+  const result = await sendEmail(pt, ptIndex);
+  const ok = result.ok;
   const status = ok ? 'Sent' : 'Failed';
   const idx = state.ptList.findIndex(p => String(p.id) === String(pt.id));
-  if (idx >= 0) state.ptList[idx].status = status;
+  if (idx >= 0) {
+    state.ptList[idx].status = status;
+    state.ptList[idx].templateUsed = result.templateUsed;
+    state.ptList[idx].sentAt = new Date().toISOString();
+  }
   state.monStats.session++;
   state.monStats.batchCount++;
+  state.monStats.sentToday = (state.monStats.sentToday || 0) + 1;
   if (ok) state.monStats.ok++; else state.monStats.fail++;
 
   // Invalidasi cache quota setelah kirim agar nilai diperbarui
   if (state.quotaCache) state.quotaCache.ts = 0;
 
   updateMonStats();
-  addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed');
+  addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed', result.templateUsed);
   saveState(); updateStats();
 
   if (state.runStatus === 'running') {
@@ -2914,28 +3848,14 @@ async function runQueue() {
   }
 }
 
-async function sendEmail(pt) {
+async function sendEmail(pt, ptIndex) {
   try {
     const gasUrl = state.scheduler.gasUrl;
-    if (!gasUrl) return false;
+    if (!gasUrl) return { ok: false, templateUsed: null };
 
-    // Pakai custom body jika ada → variant A/B → fallback ke template global
-    let rawBody, rawSubject;
-    if (pt.customBody) {
-      rawBody = pt.customBody;
-      rawSubject = pt.customSubject;
-    } else {
-      const variant = resolveVariant();
-      rawBody = variant ? variant.body : state.template.body;
-      rawSubject = variant ? variant.subject : state.template.subject;
-    }
-    rawBody = rawBody || state.template.body || '';
-    rawSubject = rawSubject || state.template.subject || 'Lamaran Kerja';
-
-    // Replace placeholders
-    const replacements = { '{NAMA_PT}': pt.nama, '{POSISI}': pt.posisi || '', '{EMAIL}': pt.email };
-    const body = rawBody.replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
-    const subject = rawSubject.replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => replacements[m] || m);
+    // Single source of truth: resolveEmail (sama persis logikanya dengan preview)
+    const resolved = resolveEmail(pt, ptIndex);
+    const { subject, body, templateUsed } = resolved;
 
     // Resolve lampiran: custom per PT → semua yang aktif global
     let attachments;
@@ -2970,13 +3890,13 @@ async function sendEmail(pt) {
 
     const text = await resp.text();
     let data;
-    try { data = JSON.parse(text); } catch(e) { console.error('GAS response bukan JSON:', text); return false; }
+    try { data = JSON.parse(text); } catch(e) { console.error('GAS response bukan JSON:', text); return { ok: false, templateUsed }; }
     if (data.status !== 'ok') console.warn('GAS error:', data.message);
-    return data.status === 'ok';
+    return { ok: data.status === 'ok', templateUsed };
 
   } catch(e) {
     console.error('sendEmail error:', e.message || e);
-    return false;
+    return { ok: false, templateUsed: null };
   }
 }
 
@@ -3005,14 +3925,13 @@ function updateMonStats() {
 }
 
 // ===== LOG =====
-function addLog(nama, email, keterangan, status) {
+function addLog(nama, email, keterangan, status, templateUsed) {
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const entry = { waktu: timeStr, waktuFull: now.toLocaleString('id-ID'), nama, email, keterangan, status };
+  const entry = { waktu: timeStr, waktuFull: now.toLocaleString('id-ID'), nama, email, keterangan, status, templateUsed: templateUsed || null };
   state.logs.unshift(entry);
   if (state.logs.length > 500) state.logs.pop();
   renderLiveLog();
-  renderMonLog(entry);
   // Push ke Firebase async (tidak blocking)
   if (fbReady()) fbAddLog(entry).catch(() => {});
 }
@@ -3031,20 +3950,6 @@ function renderLiveLog() {
       <span class="log-status ${l.status}">${escHtml(l.keterangan)}</span>
     </div>
   `).join('');
-}
-
-function renderMonLog(entry) {
-  const el = document.getElementById('mon-log');
-  if (el.querySelector('.empty-state')) el.innerHTML = '';
-  const div = document.createElement('div');
-  div.className = 'log-item';
-  div.innerHTML = `
-    <span class="log-time">${entry.waktu}</span>
-    <span class="dot ${entry.status}"></span>
-    <span class="log-pt">${escHtml(entry.nama)}</span>
-    <span class="log-status ${entry.status}">${escHtml(entry.keterangan)}</span>
-  `;
-  el.prepend(div);
 }
 
 function renderLogTable() {
@@ -3114,7 +4019,7 @@ async function setupSheets() {
 
 async function syncAllFromGAS() {
   const url = state.scheduler.gasUrl;
-  if (!url) { showToast('URL GAS belum diisi di halaman Scheduler', 'error'); return; }
+  if (!url) { showToast('URL GAS belum diisi di halaman Integrasi', 'error'); return; }
   showToast('Memuat data dari GAS...', 'info');
   let errors = [];
 
@@ -3206,7 +4111,7 @@ async function loadLampiranFromGAS() {
   }
 }
 
-// ===== FIREBASE CONFIG MANAGEMENT (dari halaman Scheduler) =====
+// ===== FIREBASE CONFIG MANAGEMENT (dari halaman Integrasi) =====
 function loadFirebaseConfigForm() {
   const cfg = state.firebaseConfig || {};
   const el = id => document.getElementById(id);
@@ -3244,6 +4149,9 @@ async function saveFirebaseConfig() {
   state.firebaseConfig = { databaseURL: dburl, apiKey, projectId, authDomain: authDomain || projectId + '.firebaseapp.com' };
   saveState();
 
+  const btn = document.querySelector('#page-integrasi .btn-primary');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Menghubungkan...'; }
+
   // Tunggu ESM module siap
   await new Promise(resolve => {
     if (window._fbModuleReady) { resolve(); }
@@ -3261,11 +4169,21 @@ async function saveFirebaseConfig() {
       attachFirebaseListeners();
       updateConnStatus(true, 'Firebase');
       loadFirebaseConfigForm();
+      // Update status panel
+      showSyncStatus('firebase-sync-status', 'success', '🔥 Firebase terhubung! Realtime sync aktif. ' + new Date().toLocaleTimeString('id-ID'));
+      const detail = document.getElementById('fb-push-pull-detail');
+      if (detail) { detail.style.display = 'block'; detail.textContent = 'Firebase terhubung — gunakan tombol Push/Pull di atas untuk sinkronisasi data.'; }
+      if (btn) { btn.innerHTML = '✅ Terhubung!'; btn.style.background = '#059669'; }
+      setTimeout(() => { if (btn) { btn.innerHTML = 'Simpan &amp; Hubungkan'; btn.style.background = ''; btn.disabled = false; } }, 2500);
       showToast('✅ Firebase tersimpan dan terhubung! Realtime sync aktif.', 'success');
     } else {
+      loadFirebaseConfigForm();
+      if (btn) { btn.innerHTML = '❌ Gagal Terhubung'; btn.style.background = 'var(--accent-red)'; }
+      setTimeout(() => { if (btn) { btn.innerHTML = 'Simpan &amp; Hubungkan'; btn.style.background = ''; btn.disabled = false; } }, 2500);
       showToast('⚠️ Config disimpan, tapi Firebase belum bisa terhubung. Cek Database URL dan Security Rules.', 'error');
     }
   } else {
+    if (btn) { btn.innerHTML = 'Simpan &amp; Hubungkan'; btn.style.background = ''; btn.disabled = false; }
     showToast('⚠️ Firebase SDK belum siap. Coba refresh halaman.', 'error');
   }
 }
@@ -3288,6 +4206,321 @@ async function testFirebaseConfig() {
   } catch(e) {
     showToast('❌ Tidak bisa terhubung ke Firebase. Cek Database URL.', 'error');
   }
+}
+
+// ===== FIREBASE PUSH / PULL SEMUA DATA =====
+
+function showSyncStatus(elId, type, msg) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const colors = {
+    success: { bg: 'rgba(16,185,129,0.1)', border: 'var(--accent)', color: 'var(--accent)' },
+    error:   { bg: 'rgba(239,68,68,0.1)',  border: 'var(--accent-red)', color: 'var(--accent-red)' },
+    info:    { bg: 'rgba(59,130,246,0.1)', border: 'var(--accent-blue)', color: 'var(--accent-blue)' }
+  };
+  const c = colors[type] || colors.info;
+  el.style.cssText = `display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-radius:8px;font-size:0.82rem;background:${c.bg};border:1px solid ${c.border};color:${c.color}`;
+  el.innerHTML = msg;
+}
+
+async function pushAllToFirebase() {
+  if (!fbReady()) {
+    showToast('Firebase belum terhubung. Hubungkan dulu di halaman Integrasi.', 'error');
+    return;
+  }
+  if (!confirm('Push semua data lokal ke Firebase?\n\nIni akan menimpa data di Firebase dengan data yang ada di aplikasi sekarang.')) return;
+
+  const detail = document.getElementById('fb-push-pull-detail');
+  if (detail) { detail.style.display = 'block'; detail.innerHTML = '⏳ Sedang push data...'; }
+  showSyncStatus('firebase-sync-status', 'info', '⏳ Sedang push semua data ke Firebase...');
+
+  let results = [];
+  const { set } = window._fb;
+
+  // 1. Push PT List
+  try {
+    const ptObj = {};
+    state.ptList.forEach(p => { ptObj[p.id] = p; });
+    await set(fbRef('mailblast/pt_list'), ptObj);
+    results.push('✅ PT List (' + state.ptList.length + ' data)');
+  } catch(e) { results.push('❌ PT List: ' + e.message); }
+
+  // 2. Push Template
+  try {
+    await set(fbRef('mailblast/template'), state.template);
+    results.push('✅ Template');
+  } catch(e) { results.push('❌ Template: ' + e.message); }
+
+  // 3. Push Lampiran
+  try {
+    const lamObj = {};
+    state.lampiranList.forEach((l, i) => { lamObj['item_' + i] = l; });
+    await set(fbRef('mailblast/lampiran'), lamObj);
+    results.push('✅ Lampiran (' + state.lampiranList.length + ' file)');
+  } catch(e) { results.push('❌ Lampiran: ' + e.message); }
+
+  const allOk = results.every(r => r.startsWith('✅'));
+  if (detail) { detail.style.display = 'block'; detail.innerHTML = results.join('<br>'); }
+  showSyncStatus('firebase-sync-status', allOk ? 'success' : 'error',
+    allOk ? '✅ Push berhasil! Semua data tersimpan di Firebase. ' + new Date().toLocaleTimeString('id-ID')
+           : '⚠️ Push selesai dengan sebagian error. Lihat detail di bawah.');
+  showToast(allOk ? '✅ Semua data berhasil di-push ke Firebase!' : '⚠️ Push selesai, ada error', allOk ? 'success' : 'error');
+}
+
+async function pullAllFromFirebase() {
+  if (!fbReady()) {
+    showToast('Firebase belum terhubung. Hubungkan dulu di halaman Integrasi.', 'error');
+    return;
+  }
+  if (!confirm('Pull semua data dari Firebase?\n\nIni akan menimpa data lokal dengan data dari Firebase.')) return;
+
+  const detail = document.getElementById('fb-push-pull-detail');
+  if (detail) { detail.style.display = 'block'; detail.innerHTML = '⏳ Sedang pull data dari Firebase...'; }
+  showSyncStatus('firebase-sync-status', 'info', '⏳ Sedang mengambil data dari Firebase...');
+
+  const { get } = window._fb;
+  let results = [];
+
+  // 1. Pull PT List
+  try {
+    const snap = await get(fbRef('mailblast/pt_list'));
+    const raw = snap.val() || {};
+    state.ptList = Object.values(raw).filter(Boolean);
+    results.push('✅ PT List (' + state.ptList.length + ' data)');
+  } catch(e) { results.push('❌ PT List: ' + e.message); }
+
+  // 2. Pull Template
+  try {
+    const snap = await get(fbRef('mailblast/template'));
+    const data = snap.val();
+    if (data) {
+      state.template = { ...state.template, ...data };
+      const body = document.getElementById('tpl-body');
+      const subj = document.getElementById('tpl-subject');
+      const name = document.getElementById('tpl-name');
+      if (body && data.body) body.value = data.body;
+      if (subj && data.subject) subj.value = data.subject;
+      if (name && data.name) name.value = data.name;
+    }
+    results.push('✅ Template');
+  } catch(e) { results.push('❌ Template: ' + e.message); }
+
+  // 3. Pull Lampiran
+  try {
+    const snap = await get(fbRef('mailblast/lampiran'));
+    const raw = snap.val() || {};
+    const arr = Object.values(raw).filter(Boolean);
+    if (arr.length > 0) {
+      state.lampiranList = arr;
+      renderLampiran();
+    }
+    results.push('✅ Lampiran (' + arr.length + ' file)');
+  } catch(e) { results.push('❌ Lampiran: ' + e.message); }
+
+  saveState();
+  updateStats();
+  renderPTTable(document.getElementById('search-pt')?.value || '');
+
+  const allOk = results.every(r => r.startsWith('✅'));
+  if (detail) { detail.style.display = 'block'; detail.innerHTML = results.join('<br>'); }
+  showSyncStatus('firebase-sync-status', allOk ? 'success' : 'error',
+    allOk ? '✅ Pull berhasil! Data diperbarui dari Firebase. ' + new Date().toLocaleTimeString('id-ID')
+           : '⚠️ Pull selesai dengan sebagian error. Lihat detail di bawah.');
+  showToast(allOk ? '✅ Semua data berhasil di-pull dari Firebase!' : '⚠️ Pull selesai, ada error', allOk ? 'success' : 'error');
+}
+
+// ===== LAMPIRAN → FIREBASE =====
+async function saveLampiranToFirebase() {
+  const statusEl = document.getElementById('lampiran-fb-status');
+  const badgeEl = document.getElementById('lampiran-save-status');
+  if (!fbReady()) {
+    if (statusEl) {
+      statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(239,68,68,0.1);border:1px solid var(--accent-red);color:var(--accent-red)';
+      statusEl.textContent = '❌ Firebase belum terhubung. Hubungkan di halaman Integrasi.';
+    }
+    showToast('Firebase belum terhubung', 'error');
+    return;
+  }
+  // Simpan lokal dulu
+  saveState();
+  try {
+    await fbSaveLampiran(state.lampiranList);
+    if (statusEl) {
+      statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(16,185,129,0.1);border:1px solid var(--accent);color:var(--accent)';
+      statusEl.textContent = '✅ ' + state.lampiranList.length + ' lampiran tersimpan ke Firebase — ' + new Date().toLocaleTimeString('id-ID');
+    }
+    if (badgeEl) {
+      badgeEl.style.cssText = 'display:inline;background:rgba(16,185,129,0.15);color:var(--accent);padding:2px 8px;border-radius:10px';
+      badgeEl.textContent = '✅ Tersimpan ' + new Date().toLocaleTimeString('id-ID');
+    }
+    showToast('✅ Lampiran tersimpan ke Firebase!', 'success');
+  } catch(e) {
+    if (statusEl) {
+      statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(239,68,68,0.1);border:1px solid var(--accent-red);color:var(--accent-red)';
+      statusEl.textContent = '❌ Gagal simpan: ' + e.message;
+    }
+    showToast('❌ Gagal simpan lampiran: ' + e.message, 'error');
+  }
+}
+
+async function loadLampiranFromFirebase() {
+  const statusEl = document.getElementById('lampiran-fb-status');
+  if (!fbReady()) {
+    if (statusEl) {
+      statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(239,68,68,0.1);border:1px solid var(--accent-red);color:var(--accent-red)';
+      statusEl.textContent = '❌ Firebase belum terhubung. Hubungkan di halaman Integrasi.';
+    }
+    showToast('Firebase belum terhubung', 'error');
+    return;
+  }
+  try {
+    const { get } = window._fb;
+    const snap = await get(fbRef('mailblast/lampiran'));
+    const raw = snap.val() || {};
+    const arr = Object.values(raw).filter(Boolean);
+    if (arr.length > 0) {
+      state.lampiranList = arr;
+      saveState();
+      renderLampiran();
+      if (statusEl) {
+        statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(16,185,129,0.1);border:1px solid var(--accent);color:var(--accent)';
+        statusEl.textContent = '✅ ' + arr.length + ' lampiran dimuat dari Firebase — ' + new Date().toLocaleTimeString('id-ID');
+      }
+      showToast('✅ ' + arr.length + ' lampiran dimuat dari Firebase!', 'success');
+    } else {
+      if (statusEl) {
+        statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(245,158,11,0.1);border:1px solid #ca8a04;color:#ca8a04';
+        statusEl.textContent = '⚠️ Tidak ada lampiran di Firebase. Push data dulu.';
+      }
+      showToast('Tidak ada lampiran di Firebase', 'info');
+    }
+  } catch(e) {
+    if (statusEl) {
+      statusEl.style.cssText = 'display:block;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;background:rgba(239,68,68,0.1);border:1px solid var(--accent-red);color:var(--accent-red)';
+      statusEl.textContent = '❌ Gagal muat: ' + e.message;
+    }
+    showToast('❌ Gagal muat lampiran: ' + e.message, 'error');
+  }
+}
+
+// ===== SAVE GAS URL =====
+function saveGasUrl() {
+  const url = document.getElementById('sch-gas-url').value.trim();
+  state.scheduler.gasUrl = url;
+  saveState();
+  showToast(url ? '✅ URL GAS disimpan' : 'URL GAS dihapus', url ? 'success' : 'info');
+}
+
+// ===== DAY PICKER =====
+const DAY_NAMES_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+
+function toggleDay(btn) {
+  btn.classList.toggle('day-active');
+  updateDaySummary();
+  updateWeeklyEstimate();
+  updateScheduleSummary();
+}
+
+function getActiveDays() {
+  return Array.from(document.querySelectorAll('.day-btn.day-active'))
+    .map(b => parseInt(b.dataset.day));
+}
+
+function updateDaySummary() {
+  const days = getActiveDays().sort((a,b) => a - b);
+  const el = document.getElementById('day-summary');
+  if (!el) return;
+  if (days.length === 0) {
+    el.textContent = '⚠️ Tidak ada hari dipilih — pengiriman tidak akan berjalan';
+    el.style.color = 'var(--accent-red)';
+    el.style.background = 'rgba(239,68,68,0.08)';
+    el.style.borderColor = 'rgba(239,68,68,0.3)';
+  } else {
+    const labels = days.map(d => DAY_NAMES_ID[d]).join(', ');
+    el.textContent = `✅ Aktif ${days.length} hari/minggu: ${labels}`;
+    el.style.color = 'var(--accent)';
+    el.style.background = 'rgba(16,185,129,0.08)';
+    el.style.borderColor = 'rgba(16,185,129,0.2)';
+  }
+}
+
+function updateWeeklyEstimate() {
+  const days = getActiveDays();
+  const perDay = parseInt(document.getElementById('sch-per-day')?.value) || 20;
+  const weekly = days.length * perDay;
+  const el = document.getElementById('weekly-estimate');
+  if (el) el.textContent = `≈ ${weekly} email/minggu`;
+  updateScheduleSummary();
+}
+
+function updateScheduleSummary() {
+  const days = getActiveDays();
+  const perDay = parseInt(document.getElementById('sch-per-day')?.value) || 20;
+  const weekly = days.length * perDay;
+  const pending = state.ptList.filter(p => p.status === 'Pending').length;
+
+  const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  set('sum-pending', pending + ' PT');
+  set('sum-days', days.length + ' hari/minggu (' + days.sort((a,b)=>a-b).map(d=>DAY_NAMES_ID[d].slice(0,3)).join(', ') + ')');
+  set('sum-perday', perDay + ' email/hari');
+  set('sum-perweek', weekly + ' email/minggu');
+
+  if (weekly > 0 && pending > 0) {
+    const weeks = pending / weekly;
+    if (weeks < 1) {
+      set('sum-eta', `< 1 minggu (${Math.ceil(pending / perDay)} hari aktif)`);
+    } else {
+      const w = Math.floor(weeks);
+      const extraDays = Math.ceil((weeks - w) * days.length);
+      set('sum-eta', extraDays > 0 ? `±${w} minggu ${extraDays} hari` : `±${w} minggu`);
+    }
+  } else {
+    set('sum-eta', pending === 0 ? 'Tidak ada PT pending' : '—');
+  }
+}
+
+// Cek apakah sekarang adalah jam dan hari yang diizinkan untuk kirim
+function isWithinScheduleWindow() {
+  const s = state.scheduler;
+  const now = new Date();
+  const todayDay = now.getDay(); // 0=Minggu, 1=Senin, ...
+  const activeDays = s.activeDays || [1, 3, 5];
+
+  // Cek hari
+  if (!activeDays.includes(todayDay)) return { ok: false, reason: `Hari ini (${DAY_NAMES_ID[todayDay]}) bukan hari aktif pengiriman` };
+
+  // Cek jam
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const [startH, startM] = (s.time || '08:00').split(':').map(Number);
+  const [endH, endM] = (s.timeEnd || '17:00').split(':').map(Number);
+  const startMins = startH * 60 + startM;
+  const endMins   = endH * 60 + endM;
+
+  if (nowMins < startMins) return { ok: false, reason: `Belum jam mulai (mulai jam ${s.time})` };
+  if (nowMins >= endMins)  return { ok: false, reason: `Sudah lewat jam berhenti (berhenti jam ${s.timeEnd})` };
+
+  return { ok: true };
+}
+
+// Hitung berapa milidetik sampai window jadwal berikutnya
+function msUntilNextWindow() {
+  const s = state.scheduler;
+  const now = new Date();
+  const activeDays = (s.activeDays || [1, 3, 5]).slice().sort((a,b) => a-b);
+  if (activeDays.length === 0) return null;
+
+  const [startH, startM] = (s.time || '08:00').split(':').map(Number);
+
+  // Cari hari aktif berikutnya
+  for (let offset = 1; offset <= 7; offset++) {
+    const nextDate = new Date(now);
+    nextDate.setDate(now.getDate() + offset);
+    nextDate.setHours(startH, startM, 0, 0);
+    if (activeDays.includes(nextDate.getDay())) {
+      return nextDate - now;
+    }
+  }
+  return null;
 }
 
 // ===== GAS HELPERS =====
@@ -3789,17 +5022,13 @@ function skipLoading() {
     PT
     <span class="bnav-badge" id="bnav-pending" style="display:none">0</span>
   </a>
-  <a class="bottom-nav-item" onclick="showPage('monitoring')" href="#">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-    Blast
-  </a>
-  <a class="bottom-nav-item" onclick="showPage('template')" href="#">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-    Template
-  </a>
   <a class="bottom-nav-item" onclick="showPage('scheduler')" href="#">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    Setting
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Jadwal
+  </a>
+  <a class="bottom-nav-item" onclick="openLainnyaSheet()" href="#">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    Lainnya
   </a>
 </nav>
 
