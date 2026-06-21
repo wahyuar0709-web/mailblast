@@ -3113,7 +3113,7 @@ function importExcel() {
         const cols = row.split(',');
         if (cols[0] && cols[1]) {
           state.ptList.push({
-            id: Date.now() + Math.random(),
+            id: String(Date.now()) + String(Math.floor(Math.random() * 100000)),
             nama: cols[0]?.trim().replace(/"/g,''),
             email: cols[1]?.trim().replace(/"/g,''),
             kota: cols[2]?.trim().replace(/"/g,'') || '',
@@ -4042,7 +4042,7 @@ async function syncAllFromGAS() {
     const ptData = await gasGet('ptlist');
     if (ptData.status === 'ok' && Array.isArray(ptData.rows)) {
       state.ptList = ptData.rows.map(r => ({
-        id: String(r.id || r[0] || Date.now() + Math.random()),
+        id: String(r.id || r[0] || (String(Date.now()) + String(Math.floor(Math.random() * 100000)))),
         nama: r.nama || r[1] || '',
         email: r.email || r[2] || '',
         kota: r.kota || r[3] || '',
@@ -4965,7 +4965,7 @@ function skipLoading() {
     const ptData = await gasGet('ptlist');
     if (ptData.status === 'ok' && Array.isArray(ptData.rows)) {
       state.ptList = ptData.rows.map(r => ({
-        id: String(r.id || r[0] || Date.now() + Math.random()),
+        id: String(r.id || r[0] || (String(Date.now()) + String(Math.floor(Math.random() * 100000)))),
         nama: r.nama || r[1] || '',
         email: r.email || r[2] || '',
         kota: r.kota || r[3] || '',
