@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast PRO v32 - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast PRO v34 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- Firebase SDK v10 (modular via CDN) -->
@@ -826,7 +826,7 @@
 <div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
   <div style="text-align:center">
     <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
-    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v32</span></div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v34</span></div>
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Memuat aplikasi...</div>
   </div>
 
@@ -881,7 +881,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">✉ MailBlast</div>
-    <div class="logo-sub">v32 PRO · Sistem Kirim Lamaran Otomatis</div>
+    <div class="logo-sub">v34 PRO · Sistem Kirim Lamaran Otomatis</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
@@ -941,7 +941,7 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v32</span>
+      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v34</span>
     </div>
     <div class="topbar-actions">
       <!-- Connection status chip -->
@@ -3586,8 +3586,8 @@ function saveScheduler() {
   }
 
   const delay = parseInt(document.getElementById('sch-delay').value) || 5;
-  if (delay < 30) {
-    showToast('⚠️ Delay terlalu pendek! Min. 30 detik untuk menghindari spam.', 'error');
+  if (delay < 1) {
+    showToast('⚠️ Delay minimal 1 detik', 'error');
     return;
   }
 
@@ -3718,6 +3718,7 @@ function startSend() {
 
 function executeSendNow(pending) {
   state.monStats = {
+    session: 0, ok: 0, fail: 0,
     sentToday: state.monStats?.sentToday || 0,
     lastSendDate: state.monStats?.lastSendDate || null
   };
