@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast PRO v34 - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast PRO v38 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- Firebase SDK v10 (modular via CDN) -->
@@ -826,7 +826,7 @@
 <div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
   <div style="text-align:center">
     <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
-    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v34</span></div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v38</span></div>
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Memuat aplikasi...</div>
   </div>
 
@@ -881,7 +881,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">✉ MailBlast</div>
-    <div class="logo-sub">v34 PRO · Sistem Kirim Lamaran Otomatis</div>
+    <div class="logo-sub">v38 PRO · Sistem Kirim Lamaran Otomatis</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
@@ -941,7 +941,7 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v34</span>
+      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v38</span>
     </div>
     <div class="topbar-actions">
       <!-- Connection status chip -->
@@ -2095,11 +2095,11 @@ function loadState() {
       state.monStats    = Object.assign({}, state.monStats, parsed.monStats || {});
       // Scalar / array fields — overwrite directly
       const scalarKeys = ['ptList','logs','templates','abMode','lampiranList',
-                          'offlineQueue','firebaseConfig','onboardingDone','quotaCache','lastReplyScan'];
+                          'offlineQueue','firebaseConfig','onboardingDone','quotaCache',
+                          'lastReplyScan','runStatus','_scheduleWeeklyMode'];
       scalarKeys.forEach(k => { if (parsed[k] !== undefined) state[k] = parsed[k]; });
       // Safety resets
-      state.runStatus    = 'idle';
-      state.sendInterval = null;
+      state.sendInterval = null; // interval tidak bisa di-serialize, selalu null
       if (!Array.isArray(state.ptList))       state.ptList = [];
       if (!Array.isArray(state.logs))         state.logs = [];
       if (!Array.isArray(state.offlineQueue)) state.offlineQueue = [];
@@ -3653,6 +3653,7 @@ async function testKoneksi() {
 // ===== SEND CONTROL =====
 function setRunStatus(status) {
   state.runStatus = status;
+  saveState(); // persist agar resume setelah refresh
   const badge = document.getElementById('run-status-badge');
   const monBadge = document.getElementById('mon-badge');
   const map = {
@@ -3717,11 +3718,13 @@ function startSend() {
 }
 
 function executeSendNow(pending) {
-  state.monStats = {
-    session: 0, ok: 0, fail: 0,
-    sentToday: state.monStats?.sentToday || 0,
-    lastSendDate: state.monStats?.lastSendDate || null
-  };
+  // Reset sentToday jika sudah ganti hari
+  const todayStr = new Date().toDateString();
+  if (state.monStats.lastSendDate !== todayStr) {
+    state.monStats.sentToday = 0;
+    state.monStats.lastSendDate = todayStr;
+  }
+  state.monStats.session = 0; state.monStats.ok = 0; state.monStats.fail = 0;
   state.quotaCache = null;
   setRunStatus('running');
   showToast('📤 Pengiriman dimulai. ' + pending.length + ' PT dalam antrian.', 'success');
@@ -3875,14 +3878,10 @@ async function runQueue() {
 
   // --- Cek limit email per hari ---
   const perDayLimit = state.scheduler.perDay || 500;
-  const today = new Date().toDateString();
-  if (state.monStats.lastSendDate !== today) {
-    state.monStats.sentToday = 0;
-    state.monStats.lastSendDate = today;
-  }
   if (state.monStats.sentToday >= perDayLimit) {
-    addLog('Sistem', '-', `Limit harian tercapai (${perDayLimit} email) — auto-jadwal ke hari aktif berikutnya`, 'pending');
-    showToast(`⏸️ Limit ${perDayLimit}/hari tercapai. Lanjut besok otomatis.`, 'info');
+    const msg = `⏸️ Kuota ${perDayLimit}/hari tercapai — ${pending.length} email tersisa, lanjut besok otomatis.`;
+    addLog('Sistem', '-', msg, 'pending');
+    showToast(msg, 'info');
     state._scheduleWeeklyMode = true;
     scheduleAutoSendWeekly(pending);
     return;
@@ -4779,6 +4778,34 @@ async function deleteRepliedPT(id, nama) {
   }
 }
 
+// ===== AUTO-RESUME SETELAH REFRESH =====
+function resumeBlastIfNeeded() {
+  const pending = state.ptList.filter(p => p.status === 'Pending');
+  if (pending.length === 0) return;
+
+  const wasRunning   = state.runStatus === 'running';
+  const wasScheduled = state.runStatus === 'scheduled' || state._scheduleWeeklyMode;
+
+  if (!wasRunning && !wasScheduled) return;
+
+  const gasUrl = state.scheduler?.gasUrl;
+  if (!gasUrl) return; // tidak bisa kirim tanpa GAS
+
+  if (wasRunning) {
+    // Blast sedang aktif saat refresh — resume langsung
+    showToast('🔄 Blast dilanjutkan otomatis setelah refresh (' + pending.length + ' PT tersisa)', 'info');
+    addLog('Sistem', '-', 'Auto-resume setelah refresh — ' + pending.length + ' PT tersisa', 'processing');
+    setTimeout(() => executeSendNow(pending), 1500); // delay kecil beri waktu UI render
+  } else if (wasScheduled) {
+    // Blast terjadwal ke hari berikutnya — resume timer jadwal
+    showToast('⏰ Jadwal blast dilanjutkan setelah refresh — menunggu window berikutnya', 'info');
+    addLog('Sistem', '-', 'Auto-resume jadwal setelah refresh — ' + pending.length + ' PT tersisa', 'pending');
+    state._scheduleWeeklyMode = true;
+    setRunStatus('scheduled');
+    setTimeout(() => scheduleAutoSendWeekly(pending), 1500);
+  }
+}
+
 // ===== HELPERS =====
 function escHtml(str) {
   return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -5065,6 +5092,7 @@ function hideLoading() {
 }
 function skipLoading() {
   hideLoading();
+      resumeBlastIfNeeded();
   showPage('dashboard');
   showToast('Melanjutkan dengan data lokal', 'info');
 }
@@ -5131,8 +5159,10 @@ function skipLoading() {
       await new Promise(r => setTimeout(r, 400));
       clearTimeout(skipTimer);
       hideLoading();
+      resumeBlastIfNeeded();
       showPage('dashboard');
       updateOfflineBanner();
+      resumeBlastIfNeeded();
       return;
     } else {
       lstepFail(2);
@@ -5150,6 +5180,7 @@ function skipLoading() {
     await new Promise(r => setTimeout(r, 800));
     clearTimeout(skipTimer);
     hideLoading();
+      resumeBlastIfNeeded();
     showPage('dashboard');
     updateOfflineBanner();
     return;
@@ -5172,6 +5203,7 @@ function skipLoading() {
     await new Promise(r => setTimeout(r, 1200));
     clearTimeout(skipTimer);
     hideLoading();
+      resumeBlastIfNeeded();
     showPage('dashboard');
     updateOfflineBanner();
     showToast('⚠️ GAS offline — data lokal ditampilkan', 'info');
@@ -5238,6 +5270,7 @@ function skipLoading() {
   await new Promise(r => setTimeout(r, 600));
   clearTimeout(skipTimer);
   hideLoading();
+      resumeBlastIfNeeded();
   showPage('dashboard');
   updateOfflineBanner();
 
