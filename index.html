@@ -1,5 +1,17 @@
 <!--
-  MailBlast PRO — v44.3
+  MailBlast PRO — v46.0
+  Changelog v46.0 (Bug fix — jadwal & log, non-breaking):
+  - Fix msUntilNextWindow(): jadwal terjadwal sebelumnya SELALU lompat ke
+    hari aktif berikutnya (minimal besok), walau hari ini masih termasuk
+    hari aktif dan jam mulai belum lewat. Sekarang cek "hari ini, nanti"
+    dulu sebelum lompat ke minggu depan.
+  - Fix addLog(): catch kosong saat push log ke Firebase diganti
+    console.warn, supaya kegagalan sync log ke Firebase tidak lagi diam-diam.
+  - Tambah listener mailblast/run_control di client: sebelumnya app hanya
+    MENULIS status ke Firebase, tidak pernah membacanya balik — badge
+    status & tombol Jeda/Lanjutkan sekarang selalu sinkron dengan status
+    yang sesungguhnya dipakai server (GAS ScheduledQueue).
+
   Changelog v44.3 (Live Log — detail tanggal & jam, additive):
   - Live Log (dashboard) sekarang tampil 2 baris per kolom waktu:
     tanggal (DD/MM) di atas, jam:menit:detik di bawah — sebelumnya
@@ -55,7 +67,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast PRO v44.3 - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast PRO v46.0 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- SheetJS untuk parsing Excel (.xlsx/.xls) -->
@@ -1153,7 +1165,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">✉ MailBlast</div>
-    <div class="logo-sub">v44.3 PRO · Sistem Kirim Lamaran Otomatis</div>
+    <div class="logo-sub">v46.0 PRO · Sistem Kirim Lamaran Otomatis</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
@@ -1217,7 +1229,7 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v44.3</span>
+      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v46.0</span>
     </div>
     <div class="topbar-actions">
       <!-- Connection status chip -->
@@ -2781,6 +2793,27 @@ function attachFirebaseListeners() {
       renderLampiran();
     }
   }, onFbListenerError('lampiran')));
+
+  // Listener run_control — FIX: sebelumnya client HANYA menulis run_control, tidak
+  // pernah membacanya balik. Akibatnya state.runStatus lokal bisa beda dari yang
+  // sesungguhnya dipakai GAS untuk cek boleh/tidaknya kirim (mis. tombol Jeda/Lanjutkan
+  // jadi kelihatan tidak berefek karena guard-nya cek state lokal yang sudah basi).
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/run_control'), snapshot => {
+    const rc = snapshot.val();
+    if (rc && rc.status && rc.status !== state.runStatus) {
+      state.runStatus = rc.status;
+      saveState();
+      const badge = document.getElementById('run-status-badge');
+      const monBadge = document.getElementById('mon-badge');
+      const map = {
+        idle: ['chip-idle', 'Idle'], running: ['chip-running', 'Berjalan'],
+        paused: ['chip-paused', 'Dijeda'], stopped: ['chip-stopped', 'Dihentikan'],
+        scheduled: ['chip-paused', '⏰ Terjadwal']
+      };
+      if (badge) { badge.className = 'status-chip ' + (map[rc.status]?.[0] || 'chip-idle'); badge.textContent = map[rc.status]?.[1] || rc.status; }
+      if (monBadge) { monBadge.className = 'status-chip ' + (map[rc.status]?.[0] || 'chip-idle'); monBadge.textContent = map[rc.status]?.[1] || rc.status; }
+    }
+  }, onFbListenerError('run_control')));
 
   // Listener log
   _fbUnsubscribers.push(onValue(fbRef('mailblast/log'), snapshot => {
@@ -4858,7 +4891,7 @@ function addLog(nama, email, keterangan, status, templateUsed) {
   if (state.logs.length > 500) state.logs.pop();
   renderLiveLog();
   // Push ke Firebase async (tidak blocking)
-  if (fbReady()) fbAddLog(entry).catch(() => {});
+  if (fbReady()) fbAddLog(entry).catch(e => console.warn('⚠️ Gagal push log ke Firebase:', e.message || e));
 }
 
 function renderLiveLog() {
@@ -5490,7 +5523,16 @@ function msUntilNextWindow() {
 
   const [startH, startM] = (s.time || '08:00').split(':').map(Number);
 
-  // Cari hari aktif berikutnya
+  // FIX: cek dulu apakah "hari ini, nanti" masih valid (jam mulai belum lewat).
+  // Sebelumnya loop di bawah selalu mulai dari besok (offset=1), jadi kalau hari ini
+  // termasuk hari aktif dan jam mulai belum lewat, jadwal malah lompat ke minggu depan.
+  if (activeDays.includes(now.getDay())) {
+    const todayStart = new Date(now);
+    todayStart.setHours(startH, startM, 0, 0);
+    if (todayStart > now) return todayStart - now;
+  }
+
+  // Kalau hari ini sudah lewat jam mulai (atau bukan hari aktif), baru cari hari aktif berikutnya mulai besok
   for (let offset = 1; offset <= 7; offset++) {
     const nextDate = new Date(now);
     nextDate.setDate(now.getDate() + offset);
