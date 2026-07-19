@@ -1,5 +1,27 @@
 <!--
-  MailBlast PRO — v46.0
+  MailBlast PRO — v46.1
+  Changelog v46.1 (Bug fix — sinkronisasi Firebase & pause/stop server, non-breaking):
+  - Fix sqRunSendLoop_() di GAS: run_control sebelumnya hanya dicek SEKALI
+    sebelum loop kirim dimulai. Klik Pause/Stop dari app saat server sedang
+    mengirim (mode jadwal) tidak berefek sampai run itu habis sendiri
+    (bisa sampai 4.5 menit). Sekarang status dibaca ulang tiap iterasi.
+  - Fix syncAllFromGAS(): hasil sync log dari Sheets legacy sebelumnya
+    ditulis ke field "state.log" (typo, singular) yang tidak pernah dibaca
+    renderLogTable()/renderLiveLog() ("state.logs", plural) — hasil sync
+    tidak pernah muncul di tabel. Skema field disamakan ke format Firebase.
+  - Fix fbWritePTList(): sebelumnya menulis ke path Firebase mati
+    "mailblast/ptList" (camelCase) yang tidak pernah dibaca listener app
+    maupun GAS scheduler (keduanya pakai "mailblast/pt_list", snake_case).
+    Bulk-ubah-status & Bulk-delete di tabel PT terlihat berhasil di
+    browser tapi tidak pernah tersimpan ke Firebase asli — GAS tetap
+    mengirim ke PT yang sudah di-bulk-delete/diubah statusnya. Sekarang
+    ditulis per-key ke path yang benar, termasuk penghapusan PT yang
+    sudah tidak ada di state lokal.
+  - Fix saveAbMode(): mode A/B (Bergantian/Acak) sebelumnya hanya
+    tersimpan lokal (localStorage), tidak pernah di-push ke Firebase
+    mailblast/config — GAS scheduler selalu fallback ke 'first' walau
+    user memilih mode lain. Sekarang ikut di-push saat disimpan.
+
   Changelog v46.0 (Bug fix — jadwal & log, non-breaking):
   - Fix msUntilNextWindow(): jadwal terjadwal sebelumnya SELALU lompat ke
     hari aktif berikutnya (minimal besok), walau hari ini masih termasuk
@@ -67,7 +89,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast PRO v46.0 - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast PRO v46.1 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- SheetJS untuk parsing Excel (.xlsx/.xls) -->
@@ -1110,7 +1132,7 @@
 <div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:var(--z-loading);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
   <div style="text-align:center">
     <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
-    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v42</span></div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v46.1</span></div>
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Memuat aplikasi...</div>
   </div>
 
@@ -2738,6 +2760,7 @@ function attachFirebaseListeners() {
   _fbUnsubscribers.push(onValue(fbRef('mailblast/pt_list'), snapshot => {
     const raw = snapshot.val() || {};
     state.ptList = Object.values(raw);
+    window._lastKnownPTIds = new Set(Object.keys(raw)); // dipakai fbWritePTList() untuk deteksi bulk-delete
     saveState();
     updateStats();
     refreshPTView();
@@ -4056,6 +4079,14 @@ function initVariantListDelegation() {
 function saveAbMode() {
   state.abMode = UI.abMode.value;
   saveState();
+  // FIX: sebelumnya cuma disimpan lokal (localStorage) — GAS scheduler baca
+  // cfg.abMode dari Firebase mailblast/config, yang tidak pernah diisi field
+  // ini, jadi server SELALU fallback ke 'first' walau user pilih Bergantian/Acak.
+  state.scheduler = { ...state.scheduler, abMode: state.abMode };
+  saveState();
+  if (fbReady()) {
+    window._fb.set(fbRef('mailblast/config'), { ...state.scheduler }).catch(e => console.warn('push abMode ke config:', e));
+  }
   showToast('Mode A/B disimpan: ' + { first: 'Gunakan Pertama', roundrobin: 'Bergantian', random: 'Acak' }[state.abMode], 'success');
 }
 
@@ -5015,12 +5046,18 @@ async function syncAllFromGAS() {
   try {
     const logData = await gasGet('log');
     if (logData.status === 'ok' && Array.isArray(logData.rows)) {
-      state.log = logData.rows.map(r => ({
-        time: r.time || r[0] || '',
-        pt: r.pt || r[1] || '',
+      // FIX: field sebelumnya "state.log" (singular) tidak pernah dibaca oleh
+      // renderLogTable()/renderLiveLog() yang pakai "state.logs" (plural) —
+      // jadi hasil sync tidak pernah muncul di tabel. Skema disamakan ke
+      // format Firebase (waktu/waktuFull/nama/keterangan) agar konsisten.
+      state.logs = logData.rows.map(r => ({
+        waktu: r.time || r[0] || '',
+        waktuFull: r.time || r[0] || '',
+        nama: r.pt || r[1] || '',
         email: r.email || r[2] || '',
         status: r.status || r[3] || '',
-        note: r.note || r[4] || ''
+        keterangan: r.note || r[4] || '',
+        ts: 0
       }));
     }
   } catch (e) { errors.push('Log: ' + e.message); }
@@ -6548,10 +6585,29 @@ function bulkDelete() {
 }
 
 // Patch fbWritePTList — ensure it exists (defensive)
-function fbWritePTList() {
+// FIX: sebelumnya nulis ke path 'mailblast/ptList' (camelCase) — path MATI yang
+// tidak pernah dibaca siapa pun (listener app & GAS scheduler sama-sama pakai
+// 'mailblast/pt_list', snake_case). Akibatnya bulk-ubah-status & bulk-delete
+// kelihatan berhasil di browser tapi tidak pernah tersimpan ke Firebase asli —
+// GAS server tetap mengirim ke PT yang sudah "dihapus"/diubah via bulk action.
+// Sekarang ditulis per-key ke 'mailblast/pt_list/{id}' (update) dan PT yang
+// sudah tidak ada di state.ptList lokal dihapus juga dari Firebase (delete).
+async function fbWritePTList() {
   if (!fbReady()) return;
-  const { set } = window._fb;
-  set(fbRef('mailblast/ptList'), state.ptList);
+  const { set, remove } = window._fb;
+  const localIds = new Set(state.ptList.map(p => String(p.id)));
+  try {
+    // Tulis/update semua PT yang masih ada di state lokal
+    await Promise.all(state.ptList.map(p => set(fbRef('mailblast/pt_list/' + p.id), p)));
+    // Hapus dari Firebase PT yang sebelumnya ada tapi sekarang sudah tidak ada di state lokal
+    // (kasus bulkDelete). _lastKnownPTIds dipelihara oleh listener pt_list di attachFirebaseListeners.
+    if (window._lastKnownPTIds) {
+      const toRemove = [...window._lastKnownPTIds].filter(id => !localIds.has(id));
+      await Promise.all(toRemove.map(id => remove(fbRef('mailblast/pt_list/' + id))));
+    }
+  } catch (e) {
+    console.warn('fbWritePTList error:', e.message);
+  }
 }
 
 // ===== v43: INIT ANALYTICS on updateStats =====
