@@ -1,9 +1,61 @@
+<!--
+  MailBlast PRO — v44.3
+  Changelog v44.3 (Live Log — detail tanggal & jam, additive):
+  - Live Log (dashboard) sekarang tampil 2 baris per kolom waktu:
+    tanggal (DD/MM) di atas, jam:menit:detik di bawah — sebelumnya
+    cuma jam:menit.
+  - Field BARU di tiap log entry: `tanggal`, `jamDetail` (dengan detik).
+    Field lama `waktu`/`waktuFull` TIDAK diubah/dihapus — tabel Log
+    Riwayat, export CSV, dan sync Firebase tetap jalan seperti biasa.
+  - Log lama tanpa field baru otomatis fallback ke `waktu` lama (tidak
+    error/kosong).
+  - CSS `.log-time` diubah jadi 2 baris (58px, sebelumnya 50px 1 baris).
+
+  Changelog dari v44.2 (Phase 5D — Dashboard Restructure, additive):
+  - Reorganisasi URUTAN layer Dashboard sesuai kesepakatan: System Pulse
+    -> Action Zone -> Progress -> Analytics -> Log. Visual TIDAK diubah
+    dari gaya lama (permintaan user) — tidak ada card/box baru.
+  - System Pulse: status chip (#run-status-badge) + Quota Gmail
+    (#mon-quota) dipindah ke posisi paling atas, tapi tetap pakai
+    .stats-grid + .stat-card polos yang sama seperti stat-card lain
+    (bukan komponen visual baru).
+  - #quota-warning-bar tetap di bawah System Pulse — posisi & style
+    inline persis seperti sebelumnya, logic JS tidak disentuh.
+  - Action Zone: blast-btn-wrap + action-bar dipindah ke atas Progress
+    (urutan saja), tanpa bingkai/border pemisah baru. action-bar-label
+    ("Status pengiriman:") dihapus karena status chip sudah pindah ke
+    System Pulse (menghindari duplikasi tampilan status).
+  - Progress: 5 stat-card (Total/Pending/Sent/Failed/ETA) sama persis
+    seperti semula, Quota Gmail sudah pindah ke System Pulse.
+  - Analytics-card & live-log: TIDAK diubah strukturnya sama sekali,
+    hanya dipindah posisi mengikuti urutan layer baru.
+  - Semua id yang dipakai JS (run-status-badge, mon-quota, mon-eta,
+    stat-total/pending/sent/failed, progress-sent, quota-warning-*,
+    analytics-*, donut-*, live-log, action-dropdown, retry-failed-*)
+    dipertahankan persis — 0 perubahan data/logic, verifikasi §17.
+
+  Changelog dari v44.1 (Phase 5B + 5C UX Redesign, additive/non-breaking):
+  - Phase 5B: Design token ditambahkan (color/typography/spacing/radius/
+    shadow/motion/z-index/focus-ring) — var lama tidak diubah/dihapus.
+  - Phase 5C: Button distandarkan ke token + state disabled/focus-visible/
+    active/loading ditambahkan (sebelumnya tidak ada sama sekali).
+  - Bug fix: class "btn-success" (tombol "Kirim Sekarang") sebelumnya tidak
+    punya definisi warna global, diakali inline style — sekarang resmi.
+  - Label diperbaiki: tombol "Start" di action-bar dashboard -> "Mulai
+    Pengiriman" (copy-only, data-action tidak berubah).
+  - Badge/status-chip: warna dikonsolidasi ke token semantik --status-*,
+    termasuk warna "interview" yang sebelumnya hardcode tanpa token.
+  - Card surface (stat-card/log-card/table-card/card-form/action-bar):
+    radius distandarkan ke token, nama class TIDAK diubah (masih dipakai
+    querySelector di JS).
+  - Referensi: PHASE-5A-UX-RESEARCH-IA.md
+-->
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBlast PRO v44.1 - Sistem Kirim Lamaran Otomatis</title>
+<title>MailBlast PRO v44.3 - Sistem Kirim Lamaran Otomatis</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0F172A">
 <!-- SheetJS untuk parsing Excel (.xlsx/.xls) -->
@@ -49,6 +101,127 @@
     --border: #334155;
     --sidebar-w: 220px;
     --font: 'Inter', system-ui, sans-serif;
+
+    /* ================================================================
+       PHASE 5B — DESIGN SYSTEM TOKENS (additive only)
+       Var lama di atas TIDAK diubah/dihapus — dipertahankan sesuai §17
+       (hard constraint: id/var yang sudah dipakai JS/CSS tidak boleh
+       berubah). Token baru di bawah adalah lapisan tambahan yang akan
+       dipakai bertahap mulai Phase 5C (Button→Badge→Card→Modal→Table).
+       ================================================================ */
+
+    /* --- Semantic status color (alias dari accent existing, supaya
+       makna "success/warning/danger/info" eksplisit di nama var,
+       bukan cuma warna) --- */
+    --color-success: var(--accent);
+    --color-success-dim: var(--accent-dim);
+    --color-warning: var(--accent-yellow);
+    --color-danger: var(--accent-red);
+    --color-info: var(--accent-blue);
+
+    /* --- Typography scale (dasar: hasil audit ~30 font-size unik yang
+       sebetulnya cuma niat 8 ukuran. Nama semantik, bukan generik
+       "sm/md/lg" saja, supaya jelas kapan dipakai) --- */
+    --text-2xs: 0.65rem;   /* label mikro, badge kecil, timestamp */
+    --text-xs: 0.72rem;    /* caption, helper text, nav-section label */
+    --text-sm: 0.78rem;    /* body kecil, isi tabel */
+    --text-base: 0.8125rem;/* body default aplikasi */
+    --text-md: 0.875rem;   /* nav-item, label form, tombol */
+    --text-lg: 1rem;       /* judul card, angka stat kecil */
+    --text-xl: 1.25rem;    /* judul halaman/topbar */
+    --text-2xl: 1.5rem;    /* logo / heading utama */
+    --text-display: 2.5rem;/* angka besar di stat-card hero */
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* --- Spacing scale (berbasis grid 4px, mengikuti nilai yang paling
+       sering muncul di kode: 0.5/0.75/1/1.5/2rem) --- */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    /* --- Radius scale (dasar: nilai existing 2/3/4/5/6/8/10/12/16/20px
+       dipetakan ke 5 tingkat semantik supaya konsisten ke depannya) --- */
+    --radius-xs: 3px;   /* chip kecil, checkbox */
+    --radius-sm: 4px;   /* input, badge */
+    --radius-md: 6px;   /* tombol, item nav */
+    --radius-lg: 8px;   /* card kecil (stat-card), modal section */
+    --radius-card: 10px; /* container card utama: log-card, table-card, card-form — nilai dominan #2 di audit (18 pemakaian) */
+    --radius-xl: 12px;  /* card besar, modal container */
+    --radius-full: 999px; /* pill/avatar bulat, pengganti 50% */
+
+    /* --- Elevation / shadow scale (existing app baru punya 1 shadow;
+       dilengkapi jadi skala supaya modal/dropdown/toast konsisten) --- */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.4); /* = shadow existing, dipertahankan persis */
+    --shadow-xl: 0 16px 40px rgba(0,0,0,0.45);
+
+    /* --- Motion tokens (dasar: transisi existing kebanyakan .15s ease
+       untuk warna, .2s untuk transform) --- */
+    --duration-fast: 120ms;
+    --duration-base: 150ms;
+    --duration-slow: 300ms;
+    --duration-chart: 800ms; /* durasi animasi donut/progress existing, dipertahankan */
+    --ease-standard: ease;
+    --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+    /* --- Z-index scale — DIVERIFIKASI ULANG per-konteks (bukan tebakan
+       dari daftar angka mentah). Urutan asli dari rendah ke tinggi:
+       topbar(50) < sidebar-overlay(90) < sidebar(100) <
+       dropdown/modal/sheet(200) < toast/onboarding(500) <
+       offline-banner(900) < app-loading(1000) --- */
+    --z-topbar: 50;
+    --z-sidebar-overlay: 90;
+    --z-sidebar: 100;
+    --z-overlay: 200; /* dropdown menu, modal-backdrop, sheet-backdrop — sengaja 1 layer yang sama */
+    --z-toast: 500;   /* toast-container & onboarding-backdrop */
+    --z-banner: 900;  /* offline-banner (fixed top, di atas semua konten) */
+    --z-loading: 1000; /* app-loading (splash awal, paling atas) */
+
+    /* --- Status semantic tokens (Phase 5C — Badge/Chip). Satu sumber
+       kebenaran warna per makna status, dipakai bersama oleh .status-chip
+       (action-bar/dashboard) dan .badge (tabel PT/log) supaya keduanya
+       tidak bisa "out of sync" lagi. Nilai persis sama dengan yang
+       sebelumnya di-hardcode masing-masing tempat — 0 perubahan visual. */
+    --status-idle-bg: rgba(148,163,184,0.15);
+    --status-idle-fg: var(--text-muted);
+    --status-running-bg: rgba(16,185,129,0.15);
+    --status-running-fg: var(--accent);
+    --status-paused-bg: rgba(245,158,11,0.15);
+    --status-paused-fg: var(--accent-yellow);
+    --status-stopped-bg: rgba(239,68,68,0.15);
+    --status-stopped-fg: var(--accent-red);
+    --status-pending-bg: rgba(245,158,11,0.15);
+    --status-pending-fg: var(--accent-yellow);
+    --status-sent-bg: rgba(16,185,129,0.15);
+    --status-sent-fg: var(--accent);
+    --status-failed-bg: rgba(239,68,68,0.15);
+    --status-failed-fg: var(--accent-red);
+    --status-replied-bg: rgba(59,130,246,0.15);
+    --status-replied-fg: var(--accent-blue);
+    --status-processing-bg: rgba(59,130,246,0.15);
+    --status-processing-fg: var(--accent-blue);
+    /* Interview sebelumnya satu-satunya status dengan warna hardcode
+       (#a78bfa) tanpa var sama sekali — sekarang resmi jadi token. */
+    --color-purple: #a78bfa;
+    --status-interview-bg: rgba(139,92,246,0.2);
+    --status-interview-fg: var(--color-purple);
+
+    /* Focus ring (celah a11y dari §12 — token disiapkan dulu,
+       diterapkan ke komponen di Phase 5F) --- */
+    --focus-ring-color: var(--accent-blue);
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -68,7 +241,7 @@
     flex-direction: column;
     position: fixed;
     top: 0; left: 0; bottom: 0;
-    z-index: 100;
+    z-index: var(--z-sidebar);
     transition: transform .3s;
   }
   .sidebar-logo {
@@ -122,27 +295,35 @@
     justify-content: space-between;
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: var(--z-topbar);
   }
   .topbar-title { font-size: 1rem; font-weight: 600; }
   .topbar-actions { display: flex; gap: 8px; }
   .content { padding: 1.5rem; flex: 1; }
 
-  /* Buttons */
+  /* Buttons — Phase 5C: distandarkan ke token, ditambah state
+     disabled/loading/focus-visible/active yang sebelumnya belum ada
+     sama sekali di source (temuan §10 Component Behavior) */
   .btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
     border: 1px solid transparent;
-    transition: all .15s;
+    transition: background var(--duration-base) var(--ease-standard),
+                border-color var(--duration-base) var(--ease-standard),
+                opacity var(--duration-base) var(--ease-standard),
+                transform var(--duration-fast) var(--ease-standard);
     text-decoration: none;
+    position: relative;
   }
   .btn svg { width: 15px; height: 15px; }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: #059669; }
+
+  /* Varian warna (5 semantik + big = 6 sesuai Component Inventory §15) */
+  .btn-primary, .btn-success { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover, .btn-success:hover { background: #059669; }
   .btn-danger { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
   .btn-danger:hover { background: #DC2626; }
   .btn-warning { background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); }
@@ -153,6 +334,55 @@
   }
   .btn-outline:hover { color: var(--text-primary); border-color: #475569; background: rgba(255,255,255,0.05); }
 
+  /* State: pressed/active — belum ada sebelumnya (§10) */
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+
+  /* State: focus-visible — celah a11y §12, hanya muncul saat navigasi keyboard */
+  .btn:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* State: disabled — sebelumnya ad-hoc per-elemen (opacity inline
+     tidak konsisten), sekarang jadi default global. Aditif murni:
+     elemen yang sudah punya style inline tetap menang (spesifisitas
+     inline > class), jadi tidak ada regresi visual pada yang sudah ada. */
+  .btn:disabled, .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* State: loading — dipicu via atribut data-loading="true" (opt-in,
+     tidak mengubah mekanisme JS manapun). Menyembunyikan label,
+     menampilkan spinner ring memakai warna teks tombol saat ini. */
+  .btn[data-loading="true"] {
+    color: transparent !important;
+    pointer-events: none;
+  }
+  .btn[data-loading="true"]::after {
+    content: "";
+    position: absolute;
+    width: 14px; height: 14px;
+    top: 50%; left: 50%;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    animation: btn-spin 0.6s linear infinite;
+  }
+  .btn-outline[data-loading="true"]::after {
+    border: 2px solid rgba(148,163,184,0.4);
+    border-top-color: var(--text-primary);
+  }
+  @keyframes btn-spin { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn:active:not(:disabled) { transform: none; }
+    .btn[data-loading="true"]::after { animation-duration: 1.2s; }
+  }
+
   /* Pages */
   .page { display: none; }
   .page.active { display: block; }
@@ -162,7 +392,7 @@
   .stat-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     padding: 0.65rem 0.8rem;
   }
   .stat-label { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
@@ -177,7 +407,7 @@
   .action-bar {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-card);
     padding: 1rem 1.25rem;
     display: flex; align-items: center; gap: 10px;
     flex-wrap: wrap;
@@ -186,13 +416,13 @@
   .action-bar-label { font-size: 0.8125rem; color: var(--text-muted); flex: 1; }
   .status-chip {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
   }
-  .chip-idle { background: rgba(148,163,184,0.15); color: var(--text-muted); }
-  .chip-running { background: rgba(16,185,129,0.15); color: var(--accent); }
+  .chip-idle { background: var(--status-idle-bg); color: var(--status-idle-fg); }
+  .chip-running { background: var(--status-running-bg); color: var(--status-running-fg); }
   .chip-running::before {
     content: '';
     width: 7px; height: 7px;
@@ -200,18 +430,31 @@
     background: var(--accent);
     animation: pulse 1.5s infinite;
   }
-  .chip-paused { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
-  .chip-stopped { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .chip-paused { background: var(--status-paused-bg); color: var(--status-paused-fg); }
+  .chip-stopped { background: var(--status-stopped-bg); color: var(--status-stopped-fg); }
   @keyframes pulse {
     0%,100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.4; transform: scale(0.8); }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .chip-running::before { animation: none; }
+  }
+
+  /* ================================================================
+     PHASE 5D — DASHBOARD LAYER HIERARCHY (PHASE-5A-UX-RESEARCH-IA.md §7)
+     Reorganisasi urutan layer saja: System Pulse → Action Zone →
+     Progress → Analytics → Log. Visual TETAP gaya lama (stat-card
+     polos, action-bar tanpa bingkai baru) — permintaan user, tidak
+     pakai card/box baru, cukup .stats-grid + .stat-card existing yang
+     dipakai ulang untuk System Pulse.
+     ================================================================ */
+  #quota-warning-bar { margin-bottom: 0.75rem; }
 
   /* Live log */
   .log-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-card);
     overflow: hidden;
     margin-bottom: 1.5rem;
   }
@@ -229,7 +472,15 @@
     border-bottom: 1px solid rgba(51,65,85,0.4);
   }
   .log-item:last-child { border-bottom: none; }
-  .log-time { color: var(--text-muted); font-size: 0.7rem; width: 50px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .log-time {
+    display: flex; flex-direction: column;
+    color: var(--text-muted);
+    width: 58px; flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+  .log-date { font-size: 0.62rem; opacity: 0.8; }
+  .log-clock { font-size: 0.7rem; color: var(--text-primary); }
   .log-pt { flex: 1; }
   .log-status { font-size: 0.7rem; font-weight: 600; }
   .log-status.sent { color: var(--accent); }
@@ -246,7 +497,7 @@
   .table-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-card);
     overflow: hidden;
     margin-bottom: 1.5rem;
   }
@@ -269,16 +520,26 @@
   }
   .search-box:focus { border-color: var(--accent); }
   table { width: 100%; border-collapse: collapse; }
+  /* Sticky header — celah dari §15 Component Inventory ("Perlu
+     distandarkan: sticky header, skeleton"). Tabel PT/Log dibungkus
+     .table-card yang overflow:hidden (bukan overflow:auto), jadi
+     scroll sebenarnya terjadi di level halaman/.content — sticky
+     top di sini aman karena tidak ada container scroll bersarang
+     yang bisa membuat "double scrollbar". */
   th {
     padding: 0.625rem 1.25rem;
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--text-muted);
     text-align: left;
     border-bottom: 1px solid var(--border);
-    background: rgba(15,23,42,0.5);
+    background: rgba(15,23,42,0.9);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-topbar);
+    backdrop-filter: blur(2px);
   }
   td {
     padding: 0.75rem 1.25rem;
@@ -290,17 +551,17 @@
   .badge {
     display: inline-block;
     padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
+    border-radius: var(--radius-full);
+    font-size: var(--text-2xs);
+    font-weight: var(--font-weight-semibold);
   }
-  .badge-pending { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
-  .badge-sent { background: rgba(16,185,129,0.15); color: var(--accent); }
-  .badge-failed { background: rgba(239,68,68,0.15); color: var(--accent-red); }
-  .badge-replied { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
-  .badge-interview { background: rgba(139,92,246,0.2); color: #a78bfa; }
-  .badge-processing { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
-  .badge-paused { background: rgba(148,163,184,0.15); color: var(--text-muted); }
+  .badge-pending { background: var(--status-pending-bg); color: var(--status-pending-fg); }
+  .badge-sent { background: var(--status-sent-bg); color: var(--status-sent-fg); }
+  .badge-failed { background: var(--status-failed-bg); color: var(--status-failed-fg); }
+  .badge-replied { background: var(--status-replied-bg); color: var(--status-replied-fg); }
+  .badge-interview { background: var(--status-interview-bg); color: var(--status-interview-fg); }
+  .badge-processing { background: var(--status-processing-bg); color: var(--status-processing-fg); }
+  .badge-paused { background: var(--status-paused-bg); color: var(--status-paused-fg); }
   .td-actions { display: flex; gap: 6px; }
   .icon-btn {
     width: 28px; height: 28px;
@@ -339,7 +600,7 @@
   .card-form {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-card);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
   }
@@ -402,7 +663,7 @@
     display: none;
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.5);
-    z-index: 90;
+    z-index: var(--z-sidebar-overlay);
   }
 
   @media (max-width: 768px) {
@@ -477,7 +738,7 @@
       bottom: 0; left: 0; right: 0;
       background: var(--bg-card);
       border-top: 1px solid var(--border);
-      z-index: 100;
+      z-index: var(--z-sidebar);
       height: 64px;
       padding-bottom: env(safe-area-inset-bottom);
     }
@@ -624,11 +885,11 @@
     right: 0; bottom: calc(100% + 6px);
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     min-width: 160px;
-    z-index: 200;
+    z-index: var(--z-overlay);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-lg);
   }
   .action-dropdown-menu.open { display: block; }
   .action-dropdown-menu button {
@@ -679,11 +940,16 @@
   .empty-state svg { width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.3; display: block; }
   .empty-state p { font-size: 0.875rem; }
 
-  /* Modal */
+  /* Modal — Phase 5C: token + focus-visible untuk elemen interaktif
+     di dalamnya sudah tercover lewat .btn/.form-input focus-visible;
+     struktur header/body/footer TIDAK diseragamkan di sini (itu §16
+     langkah risiko-sedang berikutnya, butuh verifikasi manual per
+     modal karena JS binding terbanyak ada di sini — lihat catatan
+     di bawah). Yang aman dilakukan sekarang: token warna/radius/z-index. */
   .modal-backdrop {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.65);
-    z-index: 200;
+    z-index: var(--z-overlay);
     align-items: center; justify-content: center;
     padding: 1rem;
   }
@@ -691,20 +957,20 @@
   .modal {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     padding: 1.5rem;
     width: 100%; max-width: 480px;
     max-height: 90vh;
     overflow-y: auto;
   }
-  .modal-title { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; }
+  .modal-title { font-size: var(--text-lg); font-weight: var(--font-weight-semibold); margin-bottom: 1.25rem; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
 
   /* Bottom Sheet (mobile "Lainnya" menu) */
   .sheet-backdrop {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.65);
-    z-index: 200;
+    z-index: var(--z-overlay);
     align-items: flex-end; justify-content: center;
   }
   .sheet-backdrop.open { display: flex; }
@@ -758,7 +1024,7 @@
   .toast-container {
     position: fixed; bottom: 1.5rem; right: 1.5rem;
     display: flex; flex-direction: column; gap: 8px;
-    z-index: 500;
+    z-index: var(--z-toast);
   }
   .toast {
     background: var(--bg-card);
@@ -821,12 +1087,15 @@
   }
 
   select option { background: #1E293B; }
+
+  .ai-subject-item { background: rgba(139,92,246,0.08); transition: all .15s; }
+  .ai-subject-item:hover { background: rgba(139,92,246,0.18); }
 </style>
 </head>
 <body>
 
 <!-- LOADING SCREEN -->
-<div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
+<div id="app-loading" style="position:fixed;inset:0;background:var(--bg-main);z-index:var(--z-loading);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
   <div style="text-align:center">
     <div style="font-size:2.5rem;margin-bottom:0.5rem">✉️</div>
     <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">MailBlast <span style="font-weight:400;color:var(--text-muted)">PRO</span> <span style="font-size:0.7rem;font-weight:500;color:var(--accent);background:rgba(16,185,129,0.12);padding:2px 7px;border-radius:5px;vertical-align:middle;margin-left:4px">v42</span></div>
@@ -862,7 +1131,7 @@
   </div>
 
   <!-- Fallback button (muncul setelah 6 detik) -->
-  <button id="loading-skip-btn" onclick="skipLoading()" style="display:none;background:none;border:1px solid var(--border);color:var(--text-muted);padding:0.5rem 1.25rem;border-radius:8px;font-size:0.8rem;cursor:pointer">
+  <button id="loading-skip-btn" data-action="skipLoading" style="display:none;background:none;border:1px solid var(--border);color:var(--text-muted);padding:0.5rem 1.25rem;border-radius:8px;font-size:0.8rem;cursor:pointer">
     Lanjut tanpa database →
   </button>
 </div>
@@ -878,53 +1147,53 @@
 </style>
 
 <!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="sidebar-overlay" id="overlay" data-action="closeSidebar"></div>
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">✉ MailBlast</div>
-    <div class="logo-sub">v44.1 PRO · Sistem Kirim Lamaran Otomatis</div>
+    <div class="logo-sub">v44.3 PRO · Sistem Kirim Lamaran Otomatis</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
-    <a class="nav-item active" onclick="showPage('dashboard')" href="#">
+    <a class="nav-item active" data-action="show-page" data-page="dashboard" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
     </a>
     <div class="nav-section">Data &amp; Konten</div>
-    <a class="nav-item" onclick="showPage('perusahaan')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="perusahaan" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3"/></svg>
       Data Perusahaan
     </a>
-    <a class="nav-item" onclick="showPage('template')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="template" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
       Template Email
     </a>
-    <a class="nav-item" onclick="showPage('lampiran')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="lampiran" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
       Lampiran
     </a>
     <div class="nav-section">Pengiriman</div>
-    <a class="nav-item" onclick="showPage('scheduler')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="scheduler" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Jadwal Kirim
     </a>
     <div class="nav-section">Riwayat</div>
-    <a class="nav-item" onclick="showPage('log')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="log" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Log Pengiriman
     </a>
-    <a class="nav-item" onclick="showPage('balasan')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="balasan" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
       Balasan HRD
     </a>
     <div class="nav-section">Sistem</div>
-    <a class="nav-item" onclick="showPage('ai-tools')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="ai-tools" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       AI Tools ✨
     </a>
-    <a class="nav-item" onclick="showPage('integrasi')" href="#">
+    <a class="nav-item" data-action="show-page" data-page="integrasi" href="#">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       Integrasi
     </a>
@@ -944,11 +1213,11 @@
 <main class="main">
   <div class="topbar">
     <div class="flex items-center gap-3">
-      <button class="menu-toggle" onclick="toggleSidebar()">
+      <button class="menu-toggle" data-action="toggleSidebar">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v44.1</span>
+      <span style="font-size:0.65rem;font-weight:600;color:var(--accent);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);padding:1px 6px;border-radius:4px;margin-left:6px">v44.3</span>
     </div>
     <div class="topbar-actions">
       <!-- Connection status chip -->
@@ -963,6 +1232,104 @@
 
     <!-- DASHBOARD PAGE -->
     <div class="page active" id="page-dashboard">
+      <!-- ============================================================
+           LAYER 1 — SYSTEM PULSE
+           Status jalan/berhenti + Kuota Gmail. Cuma dipindah posisi ke
+           urutan paling atas (bukan card/box baru) — dipakai ulang
+           .stats-grid + .stat-card existing sesuai permintaan (gaya
+           lama dipertahankan). run-status-badge & mon-quota adalah
+           elemen LAMA, id/class tidak berubah, JS existing tetap jalan.
+           ============================================================ -->
+      <div class="stats-grid" id="system-pulse-card">
+        <div class="stat-card">
+          <div class="stat-label">Status Pengiriman</div>
+          <span class="status-chip chip-idle" id="run-status-badge">Idle</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Quota Gmail</div>
+          <div class="stat-value" id="mon-quota" style="font-size:1rem">-</div>
+        </div>
+      </div>
+      <!-- Quota Warning Banner -->
+      <div id="quota-warning-bar" style="display:none;margin-bottom:0.75rem;padding:0.65rem 1rem;border-radius:8px;font-size:0.82rem;align-items:center;gap:0.5rem">
+        <span id="quota-warning-icon">⚠️</span>
+        <span id="quota-warning-text"></span>
+      </div>
+
+      <!-- ============================================================
+           LAYER 2 — ACTION ZONE
+           Mobile big-blast-button + action-bar, gaya lama (tanpa
+           bingkai/border pemisah baru) — hanya posisinya yang pindah
+           ke atas Progress sesuai urutan layer yang disepakati.
+           ============================================================ -->
+      <!-- Mobile: Big blast button -->
+      <div class="blast-btn-wrap">
+        <button class="btn btn-primary blast-btn-big" data-action="startSend">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          START BLAST
+        </button>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-outline" data-action="previewAllPT" title="Preview semua email sebelum blast">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          Preview Semua
+        </button>
+        <button class="btn btn-primary" data-action="startSend">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Mulai Pengiriman
+        </button>
+        <!-- Desktop: semua tombol tampil -->
+        <span class="desktop-actions" style="display:contents">
+          <button class="btn btn-warning" data-action="pauseSend">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            Pause
+          </button>
+          <button class="btn btn-outline" data-action="resumeSend">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+            Resume
+          </button>
+          <button class="btn btn-danger" data-action="stopSend">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            Stop
+          </button>
+        </span>
+        <!-- Mobile: dropdown menu -->
+        <div class="action-dropdown" id="action-dropdown">
+          <button class="btn btn-outline" data-action="toggleActionMenu" style="padding:0.5rem 0.75rem">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+          <div class="action-dropdown-menu" id="action-dropdown-menu">
+            <button data-action="pauseSend" data-close-menu="1">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              Pause
+            </button>
+            <button data-action="resumeSend" data-close-menu="1">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+              Resume
+            </button>
+            <button data-action="stopSend" data-close-menu="1">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Stop
+            </button>
+            <button data-action="retryFailed" data-close-menu="1" id="dropdown-retry" style="display:none;color:var(--accent-red)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Kirim Ulang Failed (<span id="retry-failed-count-dropdown">0</span>)
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-outline" data-action="retryFailed" id="btn-retry-failed" style="display:none;border-color:var(--accent-red);color:var(--accent-red)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Kirim Ulang Failed (<span id="retry-failed-count">0</span>)
+        </button>
+      </div>
+
+      <!-- ============================================================
+           LAYER 3 — TODAY'S PROGRESS
+           Pending/Sent/Failed/ETA — grid stat-card sama persis seperti
+           semula (gaya lama, tanpa label eyebrow baru). Quota Gmail
+           sudah pindah ke Layer 1, tidak diduplikasi di sini.
+           ============================================================ -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Perusahaan</div>
@@ -989,24 +1356,19 @@
           <div class="stat-label">Estimasi Selesai</div>
           <div class="stat-value" id="mon-eta" style="font-size:1rem">-</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Quota Gmail</div>
-          <div class="stat-value" id="mon-quota" style="font-size:1rem">-</div>
-        </div>
-      </div>
-      <!-- Quota Warning Banner -->
-      <div id="quota-warning-bar" style="display:none;margin-bottom:0.75rem;padding:0.65rem 1rem;border-radius:8px;font-size:0.82rem;align-items:center;gap:0.5rem">
-        <span id="quota-warning-icon">⚠️</span>
-        <span id="quota-warning-text"></span>
       </div>
 
-      <!-- v43: Analytics Mini Chart -->
+      <!-- ============================================================
+           LAYER 4 — OUTCOME ANALYTICS (v43, tidak diubah internalnya)
+           Reflektif, boleh di bawah fold di mobile — toggle
+           "Sembunyikan" existing dipertahankan persis.
+           ============================================================ -->
       <div class="log-card" style="margin-bottom:1rem" id="analytics-card">
         <div class="log-header">
           <span>📊 Visualisasi Status</span>
           <div style="display:flex;gap:6px;align-items:center">
             <span id="analytics-pct" style="font-size:0.75rem;color:var(--accent)"></span>
-            <button class="btn btn-outline" style="padding:0.25rem 0.6rem;font-size:0.72rem" onclick="toggleAnalyticsCard()">Sembunyikan</button>
+            <button class="btn btn-outline" style="padding:0.25rem 0.6rem;font-size:0.72rem" data-action="toggleAnalyticsCard">Sembunyikan</button>
           </div>
         </div>
         <div id="analytics-body" style="padding:0.875rem 1.25rem">
@@ -1040,76 +1402,15 @@
         </div>
       </div>
 
-      <!-- Mobile: Big blast button -->
-      <div class="blast-btn-wrap">
-        <button class="btn btn-primary blast-btn-big" onclick="startSend()">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          START BLAST
-        </button>
-      </div>
-
-      <div class="action-bar">
-        <span class="action-bar-label">
-          Status pengiriman:
-          <span class="status-chip chip-idle" id="run-status-badge">Idle</span>
-        </span>
-        <button class="btn btn-outline" onclick="previewAllPT()" title="Preview semua email sebelum blast">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          Preview Semua
-        </button>
-        <button class="btn btn-primary" onclick="startSend()">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Start
-        </button>
-        <!-- Desktop: semua tombol tampil -->
-        <span class="desktop-actions" style="display:contents">
-          <button class="btn btn-warning" onclick="pauseSend()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            Pause
-          </button>
-          <button class="btn btn-outline" onclick="resumeSend()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
-            Resume
-          </button>
-          <button class="btn btn-danger" onclick="stopSend()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            Stop
-          </button>
-        </span>
-        <!-- Mobile: dropdown menu -->
-        <div class="action-dropdown" id="action-dropdown">
-          <button class="btn btn-outline" onclick="toggleActionMenu()" style="padding:0.5rem 0.75rem">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-          </button>
-          <div class="action-dropdown-menu" id="action-dropdown-menu">
-            <button onclick="pauseSend();closeActionMenu()">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              Pause
-            </button>
-            <button onclick="resumeSend();closeActionMenu()">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l15 8-15 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
-              Resume
-            </button>
-            <button onclick="stopSend();closeActionMenu()">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-              Stop
-            </button>
-            <button onclick="retryFailed();closeActionMenu()" id="dropdown-retry" style="display:none;color:var(--accent-red)">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-              Kirim Ulang Failed (<span id="retry-failed-count-dropdown">0</span>)
-            </button>
-          </div>
-        </div>
-        <button class="btn btn-outline" onclick="retryFailed()" id="btn-retry-failed" style="display:none;border-color:var(--accent-red);color:var(--accent-red)">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-          Kirim Ulang Failed (<span id="retry-failed-count">0</span>)
-        </button>
-      </div>
-
+      <!-- ============================================================
+           LAYER 5 — LIVE DETAIL
+           Log granular per-email, paling bawah — dicek setelah Layer
+           1/3 menunjukkan ada anomali.
+           ============================================================ -->
       <div class="log-card">
         <div class="log-header">
           <span>Live Log</span>
-          <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="clearLog()">Clear</button>
+          <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" data-action="clearLog">Clear</button>
         </div>
         <div class="log-body" id="live-log">
           <div class="empty-state">
@@ -1126,12 +1427,12 @@
       <div id="quick-paste-panel" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1.25rem;margin-bottom:1rem;display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
           <span style="font-size:0.85rem;font-weight:600">📋 Paste CSV Cepat</span>
-          <button onclick="closeQuickPaste()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;line-height:1">✕</button>
+          <button data-action="closeQuickPaste" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;line-height:1">✕</button>
         </div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem">Format: <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">Nama PT, Email, Kota, Posisi</code> — satu baris per perusahaan</div>
         <textarea id="quick-paste-input" class="form-textarea" rows="5" placeholder="PT Maju Bersama, hrd@majubersama.com, Jakarta, Staff Admin&#10;PT Teknologi Indonesia, hrd@teknindo.co.id, Bandung, IT Support&#10;..." style="font-size:0.8rem;min-height:90px;font-family:monospace"></textarea>
         <div style="display:flex;gap:6px;margin-top:0.5rem;align-items:center">
-          <button class="btn btn-primary" onclick="processQuickPaste()" style="flex:1;justify-content:center">
+          <button class="btn btn-primary" data-action="processQuickPaste" style="flex:1;justify-content:center">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Import ke Daftar
           </button>
@@ -1142,24 +1443,24 @@
       <!-- v43: Bulk Action Bar -->
       <div id="bulk-bar" style="display:none;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:0.5rem 1rem;margin-bottom:0.75rem;align-items:center;gap:0.75rem;flex-wrap:wrap">
         <span id="bulk-count" style="font-size:0.85rem;font-weight:600;color:var(--accent)">0 dipilih</span>
-        <button class="btn btn-outline" onclick="bulkSetStatus('Pending')" style="font-size:0.78rem;padding:0.3rem 0.75rem">Set Pending</button>
-        <button class="btn btn-outline" onclick="bulkSetStatus('Sent')" style="font-size:0.78rem;padding:0.3rem 0.75rem">Set Sent</button>
-        <button class="btn btn-outline" style="font-size:0.78rem;padding:0.3rem 0.75rem;color:var(--accent-red);border-color:var(--accent-red)" onclick="bulkDelete()">Hapus</button>
-        <button onclick="clearBulkSelect()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.78rem;margin-left:auto">Batalkan</button>
+        <button class="btn btn-outline" data-action="bulk-set-status" data-status="Pending" style="font-size:0.78rem;padding:0.3rem 0.75rem">Set Pending</button>
+        <button class="btn btn-outline" data-action="bulk-set-status" data-status="Sent" style="font-size:0.78rem;padding:0.3rem 0.75rem">Set Sent</button>
+        <button class="btn btn-outline" style="font-size:0.78rem;padding:0.3rem 0.75rem;color:var(--accent-red);border-color:var(--accent-red)" data-action="bulkDelete">Hapus</button>
+        <button data-action="clearBulkSelect" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.78rem;margin-left:auto">Batalkan</button>
       </div>
 
       <div class="table-card">
         <div class="table-header">
           <span class="table-title">Daftar Perusahaan</span>
           <input type="text" class="search-box" placeholder="Cari perusahaan..." oninput="filterTable(this.value)" id="search-pt">
-          <button class="btn btn-outline" onclick="importExcel()">
+          <button class="btn btn-outline" data-action="importExcel">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Import CSV
           </button>
-          <button class="btn btn-outline" onclick="toggleQuickPaste()" title="Paste CSV langsung dari clipboard">
+          <button class="btn btn-outline" data-action="toggleQuickPaste" title="Paste CSV langsung dari clipboard">
             📋 Paste
           </button>
-          <button class="btn btn-primary" onclick="openAddModal()">
+          <button class="btn btn-primary" data-action="openAddModal">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah
           </button>
@@ -1193,7 +1494,7 @@
 
       <!-- PANDUAN: Apa yang bikin email lamaran dilirik HRD -->
       <div class="card-form form-section" style="margin-bottom:0.75rem;border-color:rgba(59,130,246,0.3)">
-        <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="toggleTplGuide()">
+        <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" data-action="toggleTplGuide">
           💡 Panduan: Email Lamaran yang Dilirik HRD
           <svg id="tpl-guide-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-left:auto;transition:transform .2s">
             <polyline points="6 9 12 15 18 9"/>
@@ -1248,7 +1549,7 @@
               <option value="roundrobin">Bergantian (Round-robin)</option>
               <option value="random">Acak</option>
             </select>
-            <button class="btn btn-primary" onclick="addVariant()" style="padding:0.35rem 0.75rem;font-size:0.82rem">
+            <button class="btn btn-primary" data-action="addVariant" style="padding:0.35rem 0.75rem;font-size:0.82rem">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Tambah Variant
             </button>
@@ -1260,10 +1561,10 @@
           Belum ada variant. Klik "Tambah Variant" atau simpan template di bawah sebagai Variant A.
         </div>
         <div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center">
-          <button class="btn btn-outline" onclick="saveCurrentAsVariant()" style="font-size:0.8rem;padding:0.35rem 0.75rem">
+          <button class="btn btn-outline" data-action="saveCurrentAsVariant" style="font-size:0.8rem;padding:0.35rem 0.75rem">
             Simpan Template Bawah → Jadikan Variant
           </button>
-          <button class="btn btn-outline" onclick="loadTemplateFromFirebase()" style="font-size:0.8rem;padding:0.35rem 0.75rem;border-color:var(--accent);color:var(--accent)">
+          <button class="btn btn-outline" data-action="loadTemplateFromFirebase" style="font-size:0.8rem;padding:0.35rem 0.75rem;border-color:var(--accent);color:var(--accent)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
             📥 Muat dari Firebase
           </button>
@@ -1274,7 +1575,7 @@
       <div class="card-form form-section" style="margin-bottom:0.75rem">
         <div class="card-form-title" style="display:flex;align-items:center;justify-content:space-between">
           📊 Analitik per Template/Variant
-          <button class="btn btn-outline" onclick="renderVariantAnalytics()" style="padding:0.25rem 0.6rem;font-size:0.72rem">↺ Refresh</button>
+          <button class="btn btn-outline" data-action="renderVariantAnalytics" style="padding:0.25rem 0.6rem;font-size:0.72rem">↺ Refresh</button>
         </div>
         <p class="text-muted mb-4" style="font-size:0.8rem">Lihat performa pengiriman tiap variant/template untuk membantu analisa mana yang paling efektif.</p>
         <div id="variant-analytics"></div>
@@ -1293,7 +1594,7 @@
           <label class="form-label">Subject Email</label>
           <div style="display:flex;gap:6px;align-items:flex-start">
             <input type="text" class="form-input" id="tpl-subject" placeholder="Lamaran Kerja - {POSISI} - Nama Kamu" oninput="validateTplLive()" style="flex:1">
-            <button class="btn btn-outline" onclick="aiGenerateSubject()" id="btn-ai-subject" title="Generate subject dengan AI" style="white-space:nowrap;border-color:rgba(139,92,246,0.5);color:#a78bfa;flex-shrink:0">
+            <button class="btn btn-outline" data-action="aiGenerateSubject" id="btn-ai-subject" title="Generate subject dengan AI" style="white-space:nowrap;border-color:rgba(139,92,246,0.5);color:#a78bfa;flex-shrink:0">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
               <span id="btn-ai-subject-txt">✨ AI</span>
             </button>
@@ -1331,8 +1632,8 @@ Email: wahyu@gmail.com</textarea>
         </div>
 
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveTemplate()">Simpan Template Global</button>
-          <button class="btn btn-outline" onclick="previewTemplate()">
+          <button class="btn btn-primary" data-action="saveTemplate">Simpan Template Global</button>
+          <button class="btn btn-outline" data-action="previewTemplate">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             Preview Email
           </button>
@@ -1341,11 +1642,11 @@ Email: wahyu@gmail.com</textarea>
     </div>
 
     <!-- MODAL: PREVIEW EMAIL (mirip tampilan inbox) -->
-    <div class="modal-backdrop" id="modal-preview-email">
+    <div class="modal-backdrop" id="modal-preview-email" data-action="close-modal-if-backdrop" data-modal="modal-preview-email">
       <div class="modal-box" style="max-width:520px">
         <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
           📧 Preview Email
-          <button onclick="closePreviewEmailModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
+          <button data-action="closePreviewEmailModal" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
         </div>
         <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:0.5rem">
           <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border)">
@@ -1361,7 +1662,7 @@ Email: wahyu@gmail.com</textarea>
         </div>
         <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.6rem">📌 Contoh disimulasikan dengan data PT: <strong style="color:var(--text-primary)">PT Contoh Indonesia</strong>, posisi <strong style="color:var(--text-primary)">Staff Admin</strong>.</div>
         <div class="modal-actions" style="margin-top:0.75rem">
-          <button class="btn btn-outline" onclick="closePreviewEmailModal()" style="width:100%;justify-content:center">Tutup</button>
+          <button class="btn btn-outline" data-action="closePreviewEmailModal" style="width:100%;justify-content:center">Tutup</button>
         </div>
       </div>
     </div>
@@ -1375,15 +1676,15 @@ Email: wahyu@gmail.com</textarea>
         <p class="text-muted mb-4">Tambah nama file dan link Google Drive. Data lampiran disimpan ke Firebase.</p>
         <div id="lampiran-list"></div>
         <div class="form-actions" style="margin-top:0.75rem">
-          <button class="btn btn-primary" onclick="addLampiran()">
+          <button class="btn btn-primary" data-action="addLampiran">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah Lampiran
           </button>
-          <button class="btn btn-outline" onclick="saveLampiranToFirebase()" style="border-color:var(--accent);color:var(--accent)">
+          <button class="btn btn-outline" data-action="saveLampiranToFirebase" style="border-color:var(--accent);color:var(--accent)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z" transform="scale(1,-1) translate(0,-24)"/></svg>
             📤 Simpan ke Firebase
           </button>
-          <button class="btn btn-outline" onclick="loadLampiranFromFirebase()">
+          <button class="btn btn-outline" data-action="loadLampiranFromFirebase">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
             📥 Muat dari Firebase
           </button>
@@ -1422,11 +1723,11 @@ Email: wahyu@gmail.com</textarea>
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveFirebaseConfig()">
+          <button class="btn btn-primary" data-action="saveFirebaseConfig">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Simpan &amp; Hubungkan
           </button>
-          <button class="btn btn-outline" onclick="testFirebaseConfig()">Test Koneksi</button>
+          <button class="btn btn-outline" data-action="testFirebaseConfig">Test Koneksi</button>
         </div>
       </div>
 
@@ -1443,7 +1744,7 @@ Email: wahyu@gmail.com</textarea>
           <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:1rem">
             <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.4rem;color:var(--accent)">📤 PUSH ke Firebase</div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5">Kirim semua data lokal (PT, template, lampiran) ke Firebase. Timpa data lama di server.</div>
-            <button class="btn btn-primary" onclick="pushAllToFirebase()" style="width:100%;justify-content:center">
+            <button class="btn btn-primary" data-action="pushAllToFirebase" style="width:100%;justify-content:center">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" transform="scale(1,-1) translate(0,-24)"/></svg>
               Push Semua Data
             </button>
@@ -1452,7 +1753,7 @@ Email: wahyu@gmail.com</textarea>
           <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:1rem">
             <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.4rem;color:var(--accent-blue)">📥 PULL dari Firebase</div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5">Ambil semua data dari Firebase ke aplikasi. Timpa data lokal dengan data server.</div>
-            <button class="btn btn-outline" onclick="pullAllFromFirebase()" style="width:100%;justify-content:center;border-color:var(--accent-blue);color:var(--accent-blue)">
+            <button class="btn btn-outline" data-action="pullAllFromFirebase" style="width:100%;justify-content:center;border-color:var(--accent-blue);color:var(--accent-blue)">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V7"/></svg>
               Pull Semua Data
             </button>
@@ -1472,14 +1773,14 @@ Email: wahyu@gmail.com</textarea>
           <input type="url" class="form-input" id="sch-gas-url" placeholder="https://script.google.com/macros/s/xxx/exec">
         </div>
         <div class="sch-actions-tools">
-          <button class="btn btn-outline" onclick="testKoneksi()">
+          <button class="btn btn-outline" data-action="testKoneksi">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Test Koneksi
           </button>
-          <button class="btn btn-outline" onclick="saveGasUrl()">
+          <button class="btn btn-outline" data-action="saveGasUrl">
             Simpan URL
           </button>
-          <button class="btn btn-outline" onclick="rerunOnboarding()" style="border-color:var(--accent);color:var(--accent)" title="Ulangi wizard setup awal">
+          <button class="btn btn-outline" data-action="rerunOnboarding" style="border-color:var(--accent);color:var(--accent)" title="Ulangi wizard setup awal">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Setup Ulang
           </button>
@@ -1498,7 +1799,7 @@ Email: wahyu@gmail.com</textarea>
           <input type="password" class="form-input" id="anthropic-api-key" placeholder="sk-ant-...">
         </div>
         <div class="sch-actions-tools">
-          <button class="btn btn-outline" onclick="saveAnthropicApiKey()">
+          <button class="btn btn-outline" data-action="saveAnthropicApiKey">
             Simpan API Key
           </button>
         </div>
@@ -1511,7 +1812,7 @@ Email: wahyu@gmail.com</textarea>
     <!-- SCHEDULER PAGE (murni jadwal kirim) -->
     <div class="page" id="page-scheduler">
       <div class="card-form" style="max-width:640px">
-        <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="togglePanel('antispam-body','antispam-chevron')">
+        <div class="card-form-title" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" data-action="toggle-panel" data-panel="antispam-body" data-chevron="antispam-chevron">
           📅 Jadwal Pengiriman Email Lamaran
           <span style="font-size:0.7rem;font-weight:400;color:var(--text-muted);margin-left:auto;display:flex;align-items:center;gap:4px">⚠️ Tips Anti-Spam
             <svg id="antispam-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1535,13 +1836,13 @@ Email: wahyu@gmail.com</textarea>
 
           <!-- Day picker -->
           <div id="day-picker" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0.6rem">
-            <button type="button" data-day="1" onclick="toggleDay(this)" class="day-btn day-active">Sen</button>
-            <button type="button" data-day="2" onclick="toggleDay(this)" class="day-btn">Sel</button>
-            <button type="button" data-day="3" onclick="toggleDay(this)" class="day-btn day-active">Rab</button>
-            <button type="button" data-day="4" onclick="toggleDay(this)" class="day-btn">Kam</button>
-            <button type="button" data-day="5" onclick="toggleDay(this)" class="day-btn day-active">Jum</button>
-            <button type="button" data-day="6" onclick="toggleDay(this)" class="day-btn">Sab</button>
-            <button type="button" data-day="0" onclick="toggleDay(this)" class="day-btn">Min</button>
+            <button type="button" data-day="1" data-action="toggle-day" class="day-btn day-active">Sen</button>
+            <button type="button" data-day="2" data-action="toggle-day" class="day-btn">Sel</button>
+            <button type="button" data-day="3" data-action="toggle-day" class="day-btn day-active">Rab</button>
+            <button type="button" data-day="4" data-action="toggle-day" class="day-btn">Kam</button>
+            <button type="button" data-day="5" data-action="toggle-day" class="day-btn day-active">Jum</button>
+            <button type="button" data-day="6" data-action="toggle-day" class="day-btn">Sab</button>
+            <button type="button" data-day="0" data-action="toggle-day" class="day-btn">Min</button>
           </div>
           <div id="day-summary" style="font-size:0.8rem;color:var(--accent);background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:0.4rem 0.75rem;display:inline-block"></div>
 
@@ -1556,7 +1857,7 @@ Email: wahyu@gmail.com</textarea>
             </div>
           </div>
           <div style="margin-top:0.6rem">
-            <span style="font-size:0.75rem;color:var(--accent-blue);cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="togglePanel('day-advanced','day-advanced-chevron','flex')">
+            <span style="font-size:0.75rem;color:var(--accent-blue);cursor:pointer;display:inline-flex;align-items:center;gap:4px" data-action="toggle-panel" data-panel="day-advanced" data-chevron="day-advanced-chevron" data-display="flex">
               Pengaturan lanjutan
               <svg id="day-advanced-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -1595,7 +1896,7 @@ Email: wahyu@gmail.com</textarea>
             </div>
           </div>
           <div style="margin-top:0.6rem">
-            <span style="font-size:0.75rem;color:var(--accent-blue);cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="togglePanel('rule-advanced','rule-advanced-chevron')">
+            <span style="font-size:0.75rem;color:var(--accent-blue);cursor:pointer;display:inline-flex;align-items:center;gap:4px" data-action="toggle-panel" data-panel="rule-advanced" data-chevron="rule-advanced-chevron">
               Pengaturan lanjutan
               <svg id="rule-advanced-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -1624,11 +1925,11 @@ Email: wahyu@gmail.com</textarea>
 
           <!-- Aksi utama -->
           <div class="sch-actions-primary" style="margin-bottom:0.75rem">
-            <button class="btn btn-primary" onclick="saveScheduler()" style="flex:1">
+            <button class="btn btn-primary" data-action="saveScheduler" style="flex:1">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               Simpan Jadwal
             </button>
-            <button class="btn btn-success" onclick="startSendNow()" style="flex:1;background:var(--accent);border-color:var(--accent)">
+            <button class="btn btn-success" data-action="startSendNow" style="flex:1">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Kirim Sekarang
             </button>
@@ -1638,15 +1939,15 @@ Email: wahyu@gmail.com</textarea>
           <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:0.875rem;font-size:0.82rem;margin-bottom:0.75rem">
             <div style="font-weight:600;color:var(--accent-blue);margin-bottom:0.5rem">🤖 Mode Jadwal Otomatis</div>
             <div style="color:var(--text-muted);line-height:1.6">
-              Tekan <strong style="color:var(--text-primary)">Simpan Jadwal</strong> → lalu <strong style="color:var(--text-primary)">Start</strong> di Dashboard.<br>
+              Tekan <strong style="color:var(--text-primary)">Simpan Jadwal</strong> → lalu <strong style="color:var(--text-primary)">Mulai Pengiriman</strong> di Dashboard.<br>
               App otomatis kirim di hari &amp; jam yang dipilih, dan berhenti di luar jam tersebut.<br>
               <span style="color:#60a5fa">⚡ Halaman harus tetap terbuka selama proses berjalan.</span>
             </div>
           </div>
 
           <div class="sch-actions-tools">
-            <button class="btn btn-outline" onclick="loadScheduler()">↺ Reset</button>
-            <a class="btn btn-outline" onclick="showPage('integrasi')" href="#" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">⚙️ Integrasi</a>
+            <button class="btn btn-outline" data-action="loadScheduler">↺ Reset</button>
+            <a class="btn btn-outline" data-action="show-page" data-page="integrasi" href="#" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">⚙️ Integrasi</a>
           </div>
         </div>
       </div>
@@ -1667,7 +1968,7 @@ Email: wahyu@gmail.com</textarea>
       <div class="table-card">
         <div class="table-header">
           <span class="table-title">Log Pengiriman</span>
-          <button class="btn btn-outline" onclick="exportLog()">
+          <button class="btn btn-outline" data-action="exportLog">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             Export CSV
           </button>
@@ -1700,7 +2001,7 @@ Email: wahyu@gmail.com</textarea>
           Balasan dideteksi berdasarkan email pengirim. Tandai status atau hapus dari daftar PT langsung di sini.
         </div>
         <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem">
-          <button class="btn btn-primary" onclick="checkReplies()" id="btn-check-replies">
+          <button class="btn btn-primary" data-action="checkReplies" id="btn-check-replies">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
             Scan Balasan
           </button>
@@ -1708,7 +2009,7 @@ Email: wahyu@gmail.com</textarea>
         </div>
         <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.8rem;color:var(--text-muted)">
           <strong style="color:var(--accent-blue)">ℹ️ Syarat:</strong> GAS kamu harus sudah memiliki fungsi <code style="background:rgba(59,130,246,0.1);padding:1px 5px;border-radius:3px">checkReplies</code>.&nbsp;
-          <span style="cursor:pointer;color:var(--accent-blue);text-decoration:underline" onclick="togglePanel('gas-reply-code','gas-reply-chevron')">Lihat kode GAS
+          <span style="cursor:pointer;color:var(--accent-blue);text-decoration:underline" data-action="toggle-panel" data-panel="gas-reply-code" data-chevron="gas-reply-chevron">Lihat kode GAS
             <svg id="gas-reply-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;vertical-align:middle;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
           <div id="gas-reply-code" style="display:none;margin-top:0.75rem">
@@ -1735,15 +2036,16 @@ Email: wahyu@gmail.com</textarea>
 // case 'checkReplies':
 //   var r = checkReplies(JSON.parse(e.postData.contents).emails);
 //   return out({status:'ok', replies: r});</pre>
-            <button class="btn btn-outline" style="margin-top:6px;font-size:0.75rem" onclick="navigator.clipboard.writeText(document.getElementById('gas-code-pre').textContent);showToast('Kode disalin!','success')">📋 Salin Kode</button>
+            <button class="btn btn-outline" style="margin-top:6px;font-size:0.75rem" data-action="copyGasCode">📋 Salin Kode</button>
           </div>
         </div>
         <div id="reply-results-wrap" style="display:none">
           <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.75rem;color:var(--text-primary)" id="reply-results-title"></div>
           <div id="reply-list"></div>
         </div>
-        <div id="reply-empty" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);font-size:0.85rem">
-          ✅ Tidak ada balasan baru ditemukan dari PT yang sudah dikirim.
+        <div id="reply-empty" class="empty-state" style="display:none">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 13l4 4L19 7"/></svg>
+          <p>Tidak ada balasan baru ditemukan dari PT yang sudah dikirim.</p>
         </div>
       </div>
     </div>
@@ -1771,7 +2073,7 @@ Email: wahyu@gmail.com</textarea>
           </select>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="aiGenerateSubjectBatch()" id="btn-ai-batch">
+          <button class="btn btn-primary" data-action="aiGenerateSubjectBatch" id="btn-ai-batch">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
             <span id="ai-batch-txt">Generate 5 Subject</span>
           </button>
@@ -1805,7 +2107,7 @@ Email: wahyu@gmail.com</textarea>
           <input type="text" class="form-input" id="ai-skills" placeholder="Excel, Python, komunikasi, analisis data...">
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="aiWriteBody()" id="btn-ai-body">
+          <button class="btn btn-primary" data-action="aiWriteBody" id="btn-ai-body">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/></svg>
             <span id="ai-body-txt">Tulis Email</span>
           </button>
@@ -1814,8 +2116,8 @@ Email: wahyu@gmail.com</textarea>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px">Hasil AI — klik "Gunakan" untuk memakai di template global:</div>
           <pre id="ai-body-pre" style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:0.875rem;font-size:0.8rem;line-height:1.6;white-space:pre-wrap;max-height:320px;overflow-y:auto;font-family:inherit;color:var(--text-primary)"></pre>
           <div style="display:flex;gap:6px;margin-top:8px">
-            <button class="btn btn-primary" onclick="useAIBody()" style="flex:1;justify-content:center">✓ Gunakan sebagai Template Global</button>
-            <button class="btn btn-outline" onclick="aiWriteBody()" style="padding:0.4rem 0.75rem">↺ Regenerate</button>
+            <button class="btn btn-primary" data-action="useAIBody" style="flex:1;justify-content:center">✓ Gunakan sebagai Template Global</button>
+            <button class="btn btn-outline" data-action="aiWriteBody" style="padding:0.4rem 0.75rem">↺ Regenerate</button>
           </div>
         </div>
       </div>
@@ -1898,28 +2200,28 @@ Email: wahyu@gmail.com</textarea>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-pt')">Batal</button>
-      <button class="btn btn-primary" onclick="savePT()">Simpan</button>
+      <button class="btn btn-outline" data-action="close-modal" data-modal="modal-pt">Batal</button>
+      <button class="btn btn-primary" data-action="savePT">Simpan</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL PREVIEW EMAIL -->
-<div class="modal-backdrop" id="modal-preview">
+<div class="modal-backdrop" id="modal-preview" data-action="close-modal-if-backdrop" data-modal="modal-preview">
   <div class="modal" style="max-width:600px">
     <!-- Tabs (visible on mobile) -->
     <div class="preview-tabs" id="preview-tabs">
-      <button class="preview-tab active" onclick="switchPreviewTab('info',this)">Info</button>
-      <button class="preview-tab" onclick="switchPreviewTab('subject',this)">Subject</button>
-      <button class="preview-tab" onclick="switchPreviewTab('body',this)">Body</button>
+      <button class="preview-tab active" data-action="switch-preview-tab" data-tab="info">Info</button>
+      <button class="preview-tab" data-action="switch-preview-tab" data-tab="subject">Subject</button>
+      <button class="preview-tab" data-action="switch-preview-tab" data-tab="body">Body</button>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
       <div class="modal-title" style="margin-bottom:0">Preview Email</div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-outline" id="preview-prev" onclick="previewNav(-1)" style="padding:4px 10px;font-size:0.8rem">‹ Prev</button>
+        <button class="btn btn-outline" id="preview-prev" data-action="preview-nav" data-dir="-1" style="padding:4px 10px;font-size:0.8rem">‹ Prev</button>
         <span id="preview-counter" style="font-size:0.8rem;color:var(--text-muted)">1 / 1</span>
-        <button class="btn btn-outline" id="preview-next" onclick="previewNav(1)" style="padding:4px 10px;font-size:0.8rem">Next ›</button>
+        <button class="btn btn-outline" id="preview-next" data-action="preview-nav" data-dir="1" style="padding:4px 10px;font-size:0.8rem">Next ›</button>
       </div>
     </div>
 
@@ -1965,8 +2267,8 @@ Email: wahyu@gmail.com</textarea>
       ⚠️ Body email kosong! PT ini akan dilewati saat blast atau terkirim tanpa isi.
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-preview')">Tutup</button>
-      <button class="btn btn-outline" onclick="editPTFromPreview()">
+      <button class="btn btn-outline" data-action="close-modal" data-modal="modal-preview">Tutup</button>
+      <button class="btn btn-outline" data-action="editPTFromPreview">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         Edit PT Ini
       </button>
@@ -1993,14 +2295,14 @@ Email: wahyu@gmail.com</textarea>
       <textarea class="form-input" id="modal-variant-body" rows="10" style="resize:vertical;font-size:0.82rem;line-height:1.55"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-variant')">Batal</button>
-      <button class="btn btn-primary" onclick="saveVariant()">Simpan Variant</button>
+      <button class="btn btn-outline" data-action="close-modal" data-modal="modal-variant">Batal</button>
+      <button class="btn btn-primary" data-action="saveVariant">Simpan Variant</button>
     </div>
   </div>
 </div>
 
 <!-- ONBOARDING WIZARD -->
-<div id="onboarding-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:center;justify-content:center;padding:1rem">
+<div id="onboarding-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:var(--z-toast);align-items:center;justify-content:center;padding:1rem">
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;overflow:hidden">
 
     <!-- Progress bar -->
@@ -2034,7 +2336,7 @@ Email: wahyu@gmail.com</textarea>
             <div>⬜ Nama &amp; email pengirim</div>
           </div>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem" onclick="obNext()">
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem" data-action="obNext">
           Mulai Setup →
         </button>
       </div>
@@ -2077,15 +2379,15 @@ Email: wahyu@gmail.com</textarea>
         <div id="ob-fb-result" style="display:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;margin-bottom:0.75rem"></div>
 
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
-          <button class="btn btn-outline" style="justify-content:center;padding:0.5rem 1rem" onclick="obTestFirebase()" id="ob-fb-test-btn">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" data-action="obPrev">← Kembali</button>
+          <button class="btn btn-outline" style="justify-content:center;padding:0.5rem 1rem" data-action="obTestFirebase" id="ob-fb-test-btn">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Test
           </button>
-          <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="obNextFromStep2()">Lanjut →</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="obNextFromStep2">Lanjut →</button>
         </div>
         <div style="text-align:center;margin-top:0.75rem">
-          <button onclick="obSkipFirebase()" style="background:none;border:none;color:var(--text-muted);font-size:0.78rem;cursor:pointer;text-decoration:underline">Lewati — pakai GAS saja →</button>
+          <button data-action="obSkipFirebase" style="background:none;border:none;color:var(--text-muted);font-size:0.78rem;cursor:pointer;text-decoration:underline">Lewati — pakai GAS saja →</button>
         </div>
       </div>
 
@@ -2113,12 +2415,12 @@ Email: wahyu@gmail.com</textarea>
         <div id="ob-test-result" style="display:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;margin-bottom:0.75rem"></div>
 
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
-          <button class="btn btn-outline" style="justify-content:center;padding:0.5rem 1rem" onclick="obTestKoneksi()" id="ob-test-btn">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" data-action="obPrev">← Kembali</button>
+          <button class="btn btn-outline" style="justify-content:center;padding:0.5rem 1rem" data-action="obTestKoneksi" id="ob-test-btn">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Test
           </button>
-          <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="obNextFromStep3()">Lanjut →</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="obNextFromStep3">Lanjut →</button>
         </div>
       </div>
 
@@ -2142,8 +2444,8 @@ Email: wahyu@gmail.com</textarea>
         <div id="ob-setup-result" style="display:none;padding:0.5rem 0.75rem;border-radius:6px;font-size:0.8rem;margin-bottom:0.75rem"></div>
 
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
-          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obNext()">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" data-action="obPrev">← Kembali</button>
+          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" data-action="obNext">
             Lanjut →
           </button>
         </div>
@@ -2170,8 +2472,8 @@ Email: wahyu@gmail.com</textarea>
         </div>
 
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="obPrev()">← Kembali</button>
-          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" onclick="obFinish()">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" data-action="obPrev">← Kembali</button>
+          <button class="btn btn-primary" style="flex:2;justify-content:center;padding:0.75rem" data-action="obFinish">
             ✓ Selesai, Mulai Pakai!
           </button>
         </div>
@@ -2182,42 +2484,42 @@ Email: wahyu@gmail.com</textarea>
 </div>
 
 <!-- OFFLINE BANNER -->
-<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:900;background:#92400e;color:#fef3c7;padding:0.5rem 1rem;font-size:0.8rem;align-items:center;justify-content:space-between;gap:0.5rem">
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:var(--z-banner);background:#92400e;color:#fef3c7;padding:0.5rem 1rem;font-size:0.8rem;align-items:center;justify-content:space-between;gap:0.5rem">
   <span>📡 Tidak ada koneksi — perubahan disimpan lokal dan akan disync otomatis</span>
   <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
     <span id="offline-queue-count" style="background:rgba(0,0,0,0.2);padding:1px 8px;border-radius:10px;font-size:0.75rem;white-space:nowrap"></span>
-    <button onclick="flushOfflineQueue()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fef3c7;padding:2px 10px;border-radius:5px;font-size:0.75rem;cursor:pointer;white-space:nowrap">Sync</button>
+    <button data-action="flushOfflineQueue" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fef3c7;padding:2px 10px;border-radius:5px;font-size:0.75rem;cursor:pointer;white-space:nowrap">Sync</button>
   </div>
 </div>
 
 <!-- Bottom Sheet: Menu Lainnya (Mobile) -->
-<div class="sheet-backdrop" id="sheet-lainnya" onclick="if(event.target===this) closeLainnyaSheet()">
+<div class="sheet-backdrop" id="sheet-lainnya" data-action="close-if-backdrop">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Lainnya</div>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('template')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="template">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
       <span class="sheet-item-label">Template Email</span>
     </a>
     <div class="sheet-divider"></div>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('lampiran')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="lampiran">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
       <span class="sheet-item-label">Lampiran</span>
     </a>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('scheduler')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="scheduler">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span class="sheet-item-label">Jadwal Pengiriman</span>
     </a>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('log')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="log">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       <span class="sheet-item-label">Log Pengiriman</span>
     </a>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('balasan')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="balasan">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
       <span class="sheet-item-label">Balasan HRD</span>
     </a>
     <div class="sheet-divider"></div>
-    <a class="sheet-item" href="#" onclick="closeLainnyaSheet(); showPage('integrasi')">
+    <a class="sheet-item" href="#" data-action="close-lainnya-show-page" data-page="integrasi">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       <span class="sheet-item-label">Integrasi &amp; Koneksi</span>
       <span class="sheet-item-badge" id="sheet-fb-badge">Belum terhubung</span>
@@ -2229,6 +2531,34 @@ Email: wahyu@gmail.com</textarea>
 <div class="toast-container" id="toast-container"></div>
 
 <script>
+// ===== DOM CACHE =====
+// Elemen statis yang di-query berulang (>=3x) di banyak fungsi berbeda — dicache sekali
+// di sini, bukan document.getElementById() dipanggil ulang tiap kali dibutuhkan.
+// Aman dipakai karena semua elemen ini sudah ada di HTML sebelum <script> ini berjalan
+// (bukan hasil innerHTML/render() yang bisa hilang-muncul, seperti isi tabel PT).
+// Elemen yang berkaitan dengan Scheduler/monitoring pengiriman (mon-*, sch-*, run-status-badge)
+// sengaja TIDAK dicache di sini, sesuai batasan "jangan mengubah Scheduler".
+const UI = {
+  tplSubject: document.getElementById('tpl-subject'),
+  tplBody: document.getElementById('tpl-body'),
+  tplName: document.getElementById('tpl-name'),
+  modalTplSource: document.getElementById('modal-tpl-source'),
+  modalPosisi: document.getElementById('modal-posisi'),
+  modalKota: document.getElementById('modal-kota'),
+  searchPt: document.getElementById('search-pt'),
+  quickPasteInput: document.getElementById('quick-paste-input'),
+  modalUseCustomAtt: document.getElementById('modal-use-custom-att'),
+  modalStatus: document.getElementById('modal-status'),
+  modalPtId: document.getElementById('modal-pt-id'),
+  modalNama: document.getElementById('modal-nama'),
+  modalEmail: document.getElementById('modal-email'),
+  modalCustomSubject: document.getElementById('modal-custom-subject'),
+  modalCustomBody: document.getElementById('modal-custom-body'),
+  fbPushPullDetail: document.getElementById('fb-push-pull-detail'),
+  aiSubjectSuggestions: document.getElementById('ai-subject-suggestions'),
+  abMode: document.getElementById('ab-mode'),
+};
+
 // ===== STATE =====
 let state = {
   ptList: [],
@@ -2254,7 +2584,8 @@ let state = {
   runStatus: 'idle',
   sendInterval: null,
   quotaCache: null,
-  offlineQueue: [], // { action, payload, timestamp }
+  offlineQueue: [], // { action, payload, timestamp, attempts }
+  offlineQueueFailed: [], // dead-letter: item yang gagal permanen setelah OFFLINE_QUEUE_MAX_ATTEMPTS kali percobaan
   firebaseConfig: null, // { databaseURL, apiKey, projectId, authDomain }
   anthropicApiKey: '' // API key untuk fitur AI Subject Generator (disimpan lokal)
 };
@@ -2271,24 +2602,32 @@ function loadState() {
       state.monStats    = Object.assign({}, state.monStats, parsed.monStats || {});
       // Scalar / array fields — overwrite directly
       const scalarKeys = ['ptList','logs','templates','abMode','lampiranList',
-                          'offlineQueue','firebaseConfig','onboardingDone','quotaCache',
+                          'offlineQueue','offlineQueueFailed','firebaseConfig','onboardingDone','quotaCache',
                           'lastReplyScan','runStatus','_scheduleWeeklyMode','anthropicApiKey'];
       scalarKeys.forEach(k => { if (parsed[k] !== undefined) state[k] = parsed[k]; });
       // Safety resets
       state.sendInterval = null; // interval tidak bisa di-serialize, selalu null
       if (!Array.isArray(state.ptList))       state.ptList = [];
       if (!Array.isArray(state.logs))         state.logs = [];
+      if (!Array.isArray(state.offlineQueueFailed)) state.offlineQueueFailed = [];
       if (!Array.isArray(state.offlineQueue)) state.offlineQueue = [];
       if (!Array.isArray(state.lampiranList)) state.lampiranList = [];
     }
   } catch(e) { console.warn('loadState error:', e); }
 }
 
+let _saveStateWarned = false; // cegah toast berulang kalau localStorage terus gagal (mis. quota penuh)
 function saveState() {
   try {
     const toSave = {...state, sendInterval: null};
     localStorage.setItem('mailblast_state', JSON.stringify(toSave));
-  } catch(e) {}
+  } catch(e) {
+    console.warn('saveState error:', e);
+    if (!_saveStateWarned) {
+      _saveStateWarned = true;
+      showToast('⚠️ Gagal menyimpan cache lokal (storage penuh?). Data cloud tetap aman.', 'error');
+    }
+  }
 }
 
 // ===== FIREBASE REALTIME HELPERS =====
@@ -2296,6 +2635,7 @@ function saveState() {
 // GAS tetap dipakai hanya untuk sendEmail.
 
 let _fbListenerAttached = false;
+let _fbUnsubscribers = []; // simpan fungsi unsubscribe dari tiap onValue() agar bisa dilepas saat re-init
 
 function fbReady() {
   return window._fbReady && window._fb;
@@ -2354,7 +2694,26 @@ async function releaseBlastLock() {
     if (lock && lock.sessionId === mySessionId) {
       await window._fb.remove(fbRef('mailblast/blast_lock'));
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('releaseBlastLock error:', e.message);
+  }
+}
+
+// Lepas semua listener realtime yang aktif. WAJIB dipanggil sebelum re-attach
+// (misal saat user menyimpan ulang config Firebase) agar listener tidak menumpuk.
+function detachFirebaseListeners() {
+  _fbUnsubscribers.forEach(unsub => { try { unsub(); } catch (e) { console.warn('Gagal unsubscribe listener Firebase:', e); } });
+  _fbUnsubscribers = [];
+  _fbListenerAttached = false;
+}
+
+// Helper generik: log + toast ringan saat sebuah listener realtime gagal,
+// supaya kegagalan tidak pernah senyap (silent failure).
+function onFbListenerError(label) {
+  return err => {
+    console.warn(`Firebase ${label} listener error:`, err);
+    showToast(`⚠️ Gagal sync ${label} dari cloud`, 'error');
+  };
 }
 
 // Attach realtime listener ke pt_list — dipanggil sekali setelah Firebase init
@@ -2364,50 +2723,56 @@ function attachFirebaseListeners() {
   const { onValue } = window._fb;
 
   // Listener PT list — fire otomatis saat attach (pull awal) + setiap ada perubahan data
-  onValue(fbRef('mailblast/pt_list'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/pt_list'), snapshot => {
     const raw = snapshot.val() || {};
     state.ptList = Object.values(raw);
     saveState();
     updateStats();
-    renderPTTable(document.getElementById('search-pt')?.value || '');
+    refreshPTView();
     updateConnStatus(true);
-  }, err => {
-    console.warn('Firebase pt_list listener error:', err);
-    showToast('⚠️ Gagal memuat data PT dari cloud', 'error');
-  });
+
+    // Deteksi selesai: kalau browser masih 'scheduled'/'running' (menunggu/memantau GAS trigger)
+    // tapi ternyata sudah tidak ada PT Pending lagi, berarti server sudah selesaikan semuanya.
+    if ((state.runStatus === 'scheduled' || state.runStatus === 'running') &&
+        !state.ptList.some(p => p.status === 'Pending')) {
+      if (state.sendInterval) { clearInterval(state.sendInterval); state.sendInterval = null; }
+      setRunStatus('idle');
+      showToast('✅ Semua email selesai dikirim (server)!', 'success');
+    }
+  }, onFbListenerError('data PT')));
 
   // Listener template tunggal (legacy)
-  onValue(fbRef('mailblast/template'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/template'), snapshot => {
     const data = snapshot.val();
     if (data) {
       state.template = { ...state.template, ...data };
       saveState();
-      const body = document.getElementById('tpl-body');
-      const subj = document.getElementById('tpl-subject');
-      const name = document.getElementById('tpl-name');
+      const body = UI.tplBody;
+      const subj = UI.tplSubject;
+      const name = UI.tplName;
       if (body && data.body) body.value = data.body;
       if (subj && data.subject) subj.value = data.subject;
       if (name && data.name) name.value = data.name;
     }
-  });
+  }, onFbListenerError('template')));
 
   // Listener templates A/B (multi-template)
-  onValue(fbRef('mailblast/templates'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/templates'), snapshot => {
     const raw = snapshot.val();
     if (raw) {
       const arr = Object.values(raw).filter(Boolean);
       if (arr.length > 0) { state.templates = arr; saveState(); renderVariantList(); }
     }
-  });
+  }, onFbListenerError('templates A/B')));
 
   // Listener config scheduler
-  onValue(fbRef('mailblast/config'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/config'), snapshot => {
     const cfg = snapshot.val();
     if (cfg) { state.scheduler = { ...state.scheduler, ...cfg }; saveState(); loadSchedulerSettings(); }
-  });
+  }, onFbListenerError('config scheduler')));
 
   // Listener lampiran
-  onValue(fbRef('mailblast/lampiran'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/lampiran'), snapshot => {
     const raw = snapshot.val() || {};
     const arr = Object.values(raw);
     if (arr.length > 0) {
@@ -2415,10 +2780,10 @@ function attachFirebaseListeners() {
       saveState();
       renderLampiran();
     }
-  });
+  }, onFbListenerError('lampiran')));
 
   // Listener log
-  onValue(fbRef('mailblast/log'), snapshot => {
+  _fbUnsubscribers.push(onValue(fbRef('mailblast/log'), snapshot => {
     const raw = snapshot.val() || {};
     const arr = Object.values(raw)
       .sort((a, b) => (b.ts || 0) - (a.ts || 0));
@@ -2428,7 +2793,7 @@ function attachFirebaseListeners() {
       renderLiveLog();
       renderLogTable();
     }
-  });
+  }, onFbListenerError('log')));
 
   showToast('🔥 Firebase terhubung — realtime sync aktif', 'success');
 }
@@ -2535,7 +2900,7 @@ function showPage(name) {
     }
   });
   if (lainnyaPages.includes(name)) {
-    const lainnyaBtn = document.querySelector('.bottom-nav-item[onclick="openLainnyaSheet()"]');
+    const lainnyaBtn = document.querySelector('.bottom-nav-item[data-action="openLainnyaSheet"]');
     if (lainnyaBtn) lainnyaBtn.classList.add('active');
   }
   document.getElementById('topbar-title').textContent = pageTitles[name] || name;
@@ -2599,7 +2964,7 @@ function updateStats() {
   if (unsynced > 0 && state.scheduler.gasUrl) {
     banner.style.display = 'flex';
     banner.innerHTML = `<span>⚠️ ${unsynced} PT belum tersync ke Spreadsheet</span>
-      <button onclick="syncUnsyncedPT()" style="background:none;border:1px solid #ca8a04;color:#ca8a04;padding:3px 10px;border-radius:5px;font-size:0.78rem;cursor:pointer;white-space:nowrap">Sync Sekarang</button>`;
+      <button data-action="syncUnsyncedPT" style="background:none;border:1px solid #ca8a04;color:#ca8a04;padding:3px 10px;border-radius:5px;font-size:0.78rem;cursor:pointer;white-space:nowrap">Sync Sekarang</button>`;
   } else {
     banner.style.display = 'none';
   }
@@ -2609,6 +2974,13 @@ function updateStats() {
 // ===== PT TABLE =====
 let filteredPT = [];
 
+// Helper reusable — sebelumnya pola `renderPTTable(document.getElementById('search-pt')?.value || '')`
+// ditulis ulang identik di 19 tempat berbeda. renderPTTable sendiri sudah memanggil
+// renderPTCards di akhir, jadi cukup panggil salah satu lewat helper ini.
+function refreshPTView() {
+  renderPTTable(UI.searchPt?.value || '');
+}
+
 function renderPTTable(filter = '') {
   const tbody = document.getElementById('pt-tbody');
   const list = filter
@@ -2616,7 +2988,7 @@ function renderPTTable(filter = '') {
     : state.ptList;
   filteredPT = list;
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">Belum ada data perusahaan</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:0"><div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H2m3 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"/></svg><p>Belum ada data perusahaan</p></div></td></tr>';
     renderPTCards(filter);
     return;
   }
@@ -2624,7 +2996,7 @@ function renderPTTable(filter = '') {
     const realIdx = state.ptList.findIndex(x => String(x.id) === String(p.id));
     return `
     <tr data-pt-id="${escHtml(String(p.id))}">
-      <td style="width:30px;text-align:center"><input type="checkbox" class="pt-row-check" style="accent-color:var(--accent);cursor:pointer" onchange="toggleRowSelect('${escHtml(String(p.id))}',this.checked)"></td>
+      <td style="width:30px;text-align:center"><input type="checkbox" class="pt-row-check" style="accent-color:var(--accent);cursor:pointer"></td>
       <td><strong>${escHtml(p.nama)}</strong>${p.customBody ? ' <span title="Punya body email khusus" style="display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px">CUSTOM</span>' : ''}${Array.isArray(p.customAttachments) ? ' <span title="Punya lampiran khusus" style="display:inline-block;background:rgba(139,92,246,0.15);color:#a78bfa;font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px">ATT</span>' : ''}${p._unsynced ? ' <span title="Belum tersync ke Spreadsheet" style="display:inline-block;background:rgba(234,179,8,0.15);color:#ca8a04;font-size:0.65rem;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px">⚠ LOKAL</span>' : ''}</td>
       <td style="color:var(--accent-blue)">${escHtml(p.email)}</td>
       <td>${escHtml(p.kota||'-')}</td>
@@ -2635,21 +3007,21 @@ function renderPTTable(filter = '') {
       </td>
       <td>
         <div class="td-actions">
-          <button class="icon-btn" onclick="movePT(${realIdx},-1)" title="Naik" ${realIdx===0?'disabled style="opacity:.3"':''}>▲</button>
-          <button class="icon-btn" onclick="movePT(${realIdx},1)" title="Turun" ${realIdx===state.ptList.length-1?'disabled style="opacity:.3"':''}>▼</button>
-          <button class="icon-btn" onclick="previewEmailPT('${escHtml(String(p.id))}')" title="Preview Email">
+          <button class="icon-btn" data-action="move-up" title="Naik" ${realIdx===0?'disabled style="opacity:.3"':''}>▲</button>
+          <button class="icon-btn" data-action="move-down" title="Turun" ${realIdx===state.ptList.length-1?'disabled style="opacity:.3"':''}>▼</button>
+          <button class="icon-btn" data-action="preview" title="Preview Email">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </button>
-          ${p.status === 'Pending' ? `<button class="icon-btn" onclick="sendNowSingle('${p.id}')" title="Kirim Sekarang" style="color:var(--accent)">
+          ${p.status === 'Pending' ? `<button class="icon-btn" data-action="send-now" title="Kirim Sekarang" style="color:var(--accent)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           </button>` : ''}
-          ${p.status === 'Failed' ? `<button class="icon-btn" onclick="retrySingle('${p.id}')" title="Kirim Ulang" style="color:var(--accent-red)">
+          ${p.status === 'Failed' ? `<button class="icon-btn" data-action="retry" title="Kirim Ulang" style="color:var(--accent-red)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
           </button>` : ''}
-          <button class="icon-btn" onclick="editPT('${p.id}')" title="Edit">
+          <button class="icon-btn" data-action="edit" title="Edit">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
           </button>
-          <button class="icon-btn danger" onclick="deletePT('${p.id}')" title="Hapus">
+          <button class="icon-btn danger" data-action="delete" title="Hapus">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           </button>
         </div>
@@ -2657,6 +3029,42 @@ function renderPTTable(filter = '') {
     </tr>`;
   }).join('');
   renderPTCards(filter);
+  initPTTableDelegation();
+}
+
+// Delegated click/change handler untuk tabel PT — menggantikan onclick inline di tiap tombol.
+// Data (id PT) diambil dari atribut data-pt-id di <tr>, bukan disisipkan ke string JS,
+// sehingga kelas bug "string breakout" yang mungkin muncul dari escHtml/escJs tidak relevan lagi di sini.
+function initPTTableDelegation() {
+  const tbody = document.getElementById('pt-tbody');
+  if (!tbody || tbody.dataset.delegated) return; // idempotent guard
+  tbody.dataset.delegated = '1';
+
+  tbody.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn || btn.disabled) return;
+    const tr = btn.closest('tr[data-pt-id]');
+    if (!tr) return;
+    const id = tr.dataset.ptId;
+    const realIdx = state.ptList.findIndex(x => String(x.id) === String(id));
+    switch (btn.dataset.action) {
+      case 'move-up': movePT(realIdx, -1); break;
+      case 'move-down': movePT(realIdx, 1); break;
+      case 'preview': previewEmailPT(id); break;
+      case 'send-now': sendNowSingle(id); break;
+      case 'retry': retrySingle(id); break;
+      case 'edit': editPT(id); break;
+      case 'delete': deletePT(id); break;
+    }
+  });
+
+  tbody.addEventListener('change', e => {
+    const cb = e.target.closest('.pt-row-check');
+    if (!cb) return;
+    const tr = cb.closest('tr[data-pt-id]');
+    if (!tr) return;
+    toggleRowSelect(tr.dataset.ptId, cb.checked);
+  });
 }
 
 function filterTable(val) { renderPTTable(val); renderPTCards(val); }
@@ -2804,7 +3212,7 @@ function renderPreviewModal() {
 }
 
 function previewEmailPT(id) {
-  const pt = state.ptList.find(p => String(p.id) === String(id));
+  const pt = findPT(id);
   if (!pt) return;
   previewState.list = [resolveEmail(pt)];
   previewState.idx = 0;
@@ -2853,7 +3261,7 @@ async function syncUnsyncedPT() {
     } catch(e) { fail++; }
   }
   saveState(); updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   if (fail === 0) showToast('✅ Semua PT berhasil disync ke Spreadsheet', 'success');
   else showToast(`⚠️ ${ok} berhasil, ${fail} masih gagal`, 'error');
 }
@@ -2876,16 +3284,18 @@ function updateOfflineBanner() {
 
 function enqueueOffline(action, payload) {
   if (!state.offlineQueue) state.offlineQueue = [];
-  state.offlineQueue.push({ action, payload, timestamp: Date.now() });
+  state.offlineQueue.push({ action, payload, timestamp: Date.now(), attempts: 0 });
   saveState();
   updateOfflineBanner();
 }
+
+const OFFLINE_QUEUE_MAX_ATTEMPTS = 5; // setelah ini, item dianggap gagal permanen dan dipindah ke dead-letter
 
 async function flushOfflineQueue() {
   if (!state.offlineQueue || state.offlineQueue.length === 0) return;
   if (!state.scheduler.gasUrl) return;
   const queue = [...state.offlineQueue];
-  let flushed = 0, failed = [];
+  let flushed = 0, failed = [], deadLettered = 0;
   showToast('Menyync ' + queue.length + ' aksi yang tertunda...', 'info');
   for (const item of queue) {
     try {
@@ -2900,17 +3310,31 @@ async function flushOfflineQueue() {
       }
       flushed++;
     } catch(e) {
-      failed.push(item);
+      const attempts = (item.attempts || 0) + 1;
+      if (attempts >= OFFLINE_QUEUE_MAX_ATTEMPTS) {
+        // Dead-letter: berhenti dicoba otomatis, pindah ke daftar terpisah supaya user bisa lihat & putuskan manual
+        if (!state.offlineQueueFailed) state.offlineQueueFailed = [];
+        state.offlineQueueFailed.push({ ...item, attempts, lastError: e.message });
+        state.offlineQueue = state.offlineQueue.filter(q => q.timestamp !== item.timestamp);
+        deadLettered++;
+      } else {
+        const idx = state.offlineQueue.findIndex(q => q.timestamp === item.timestamp);
+        if (idx >= 0) state.offlineQueue[idx].attempts = attempts;
+        failed.push(item);
+      }
     }
   }
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   updateOfflineBanner();
-  if (failed.length === 0) {
+  if (failed.length === 0 && deadLettered === 0) {
     showToast('✅ Semua aksi berhasil disync ke Spreadsheet', 'success');
   } else {
-    showToast(`⚠️ ${flushed} berhasil, ${failed.length} masih gagal`, 'error');
+    let msg = `⚠️ ${flushed} berhasil, ${failed.length} masih gagal`;
+    if (deadLettered > 0) msg += `, ${deadLettered} dihentikan (gagal permanen — cek Pengaturan)`;
+    showToast(msg, 'error');
+    if (deadLettered > 0) addLog('Sistem', '-', `${deadLettered} aksi offline gagal permanen setelah ${OFFLINE_QUEUE_MAX_ATTEMPTS}x percobaan`, 'failed');
   }
 }
 
@@ -2954,20 +3378,23 @@ function retryFailed() {
   state.ptList.forEach(p => { if (p.status === 'Failed') p.status = 'Pending'; });
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   addLog('Sistem', '-', `${failedCount} PT direset ke Pending untuk retry`, 'processing');
   showToast(`${failedCount} PT direset. Tekan Start untuk kirim ulang.`, 'success');
   updateRetryButton();
 }
 
 async function sendNowSingle(id) {
-  const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+  const idx = findPTIndex(id);
   if (idx < 0) return;
   const pt = state.ptList[idx];
   if (!state.scheduler.gasUrl) { showToast('URL GAS belum diisi', 'error'); return; }
+  const _ptKey = String(pt.id);
+  if (_sendingInFlight.has(_ptKey)) { showToast('⏳ ' + pt.nama + ' sedang diproses, tunggu sebentar', 'info'); return; }
 
   // Konfirmasi dulu
   if (!confirm(`Kirim email ke ${pt.nama} (${pt.email}) SEKARANG juga?\n\nIni tidak akan menunggu jadwal yang diatur.`)) return;
+  if (_sendingInFlight.has(_ptKey)) { showToast('⏳ ' + pt.nama + ' sedang diproses, tunggu sebentar', 'info'); return; }
 
   // Cek quota
   const quota = await fetchQuota();
@@ -2979,7 +3406,13 @@ async function sendNowSingle(id) {
   addLog(pt.nama, pt.email, 'Kirim sekarang...', 'processing');
   showToast('📤 Mengirim ke ' + pt.nama + '...', 'info');
 
-  const result = await sendEmail(pt, idx);
+  _sendingInFlight.add(_ptKey);
+  let result;
+  try {
+    result = await sendEmail(pt, idx);
+  } finally {
+    _sendingInFlight.delete(_ptKey);
+  }
   const ok = result.ok;
   state.ptList[idx].status = ok ? 'Sent' : 'Failed';
   state.ptList[idx].templateUsed = result.templateUsed;
@@ -2988,8 +3421,7 @@ async function sendNowSingle(id) {
   
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
-  renderPTCards(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   
   addLog(pt.nama, pt.email, ok ? 'Terkirim ✓' : 'Gagal ✗', ok ? 'sent' : 'failed', result.templateUsed);
   showToast(ok ? '✅ Email terkirim: ' + pt.nama : '❌ Email gagal: ' + pt.nama, ok ? 'success' : 'error');
@@ -2997,10 +3429,12 @@ async function sendNowSingle(id) {
 }
 
 async function retrySingle(id) {
-  const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+  const idx = findPTIndex(id);
   if (idx < 0) return;
   const pt = state.ptList[idx];
   if (!state.scheduler.gasUrl) { showToast('URL GAS belum diisi', 'error'); return; }
+  const _ptKey = String(pt.id);
+  if (_sendingInFlight.has(_ptKey)) { showToast('⏳ ' + pt.nama + ' sedang diproses, tunggu sebentar', 'info'); return; }
 
   // Cek quota dulu
   const quota = await fetchQuota();
@@ -3012,19 +3446,24 @@ async function retrySingle(id) {
   state.ptList[idx].status = 'Pending';
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   addLog(pt.nama, pt.email, 'Retry...', 'processing');
   showToast('Mengirim ulang ke ' + pt.nama + '...', 'info');
 
-  const result = await sendEmail(state.ptList[idx], idx);
+  _sendingInFlight.add(_ptKey);
+  let result;
+  try {
+    result = await sendEmail(state.ptList[idx], idx);
+  } finally {
+    _sendingInFlight.delete(_ptKey);
+  }
   state.ptList[idx].status = result.ok ? 'Sent' : 'Failed';
   state.ptList[idx].templateUsed = result.templateUsed;
   state.ptList[idx].sentAt = new Date().toISOString();
   if (fbReady()) fbUpdatePT(state.ptList[idx]).catch(e => console.warn('fbUpdatePT retry:', e));
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
-  renderPTCards(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   addLog(pt.nama, pt.email, result.ok ? 'Retry berhasil ✓' : 'Retry gagal ✗', result.ok ? 'sent' : 'failed', result.templateUsed);
   showToast(result.ok ? '✅ Retry berhasil: ' + pt.nama : '❌ Retry gagal: ' + pt.nama, result.ok ? 'success' : 'error');
   updateRetryButton();
@@ -3062,14 +3501,13 @@ function renderPTCards(filter = '') {
         (p.kota || '').toLowerCase().includes(filter.toLowerCase()))
     : state.ptList;
   if (!list.length) {
-    wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.85rem">Belum ada data perusahaan</div>';
+    wrap.innerHTML = '<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H2m3 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"/></svg><p>Belum ada data perusahaan</p></div>';
     return;
   }
   wrap.innerHTML = list.map((p, i) => {
     const realIdx = state.ptList.findIndex(x => String(x.id) === String(p.id));
-    const cardId = 'ptcard-' + p.id;
     return `
-    <div class="pt-card" id="${cardId}" onclick="togglePTCard('${cardId}')">
+    <div class="pt-card" data-pt-id="${escHtml(String(p.id))}" data-action="toggle-card">
       <div class="pt-card-head">
         <div style="min-width:0;flex:1;overflow:hidden">
           <div class="pt-card-name">${escHtml(p.nama)}${p.customBody?'<span style="font-size:0.58rem;background:var(--accent-dim);color:var(--accent);padding:0 3px;border-radius:2px;margin-left:3px;vertical-align:middle">C</span>':''}${Array.isArray(p.customAttachments)?'<span style="font-size:0.58rem;background:rgba(139,92,246,0.15);color:#a78bfa;padding:0 3px;border-radius:2px;margin-left:2px;vertical-align:middle">A</span>':''}</div>
@@ -3084,22 +3522,53 @@ function renderPTCards(filter = '') {
         <div>Kota <span>${escHtml(p.kota||'-')}</span></div>
         <div>Posisi <span>${escHtml(p.posisi||'-')}</span></div>
       </div>
-      <div class="pt-card-actions" onclick="event.stopPropagation()">
-        ${p.status==='Pending'?`<button class="btn btn-primary" onclick="sendNowSingle('${p.id}')" style="flex-basis:100%;min-height:32px">▶ Kirim Sekarang</button>`:''}
-        ${p.status==='Failed'?`<button class="btn btn-warning" onclick="retrySingle('${p.id}')" style="flex-basis:100%;min-height:32px">↺ Kirim Ulang</button>`:''}
-        <button class="btn btn-outline" onclick="previewEmailPT('${escHtml(String(p.id))}')">👁 Preview</button>
-        <button class="btn btn-outline" onclick="editPT('${p.id}')">✎ Edit</button>
-        <button class="btn btn-outline" onclick="movePT(${realIdx},-1)" ${realIdx===0?'disabled style="opacity:.35"':''}>▲</button>
-        <button class="btn btn-outline" onclick="movePT(${realIdx},1)" ${realIdx===state.ptList.length-1?'disabled style="opacity:.35"':''}>▼</button>
-        <button class="btn btn-outline" onclick="deletePT('${p.id}')" style="color:var(--accent-red);border-color:var(--accent-red)">🗑</button>
+      <div class="pt-card-actions" data-action="stop-propagation">
+        ${p.status==='Pending'?`<button class="btn btn-primary" data-action="send-now" style="flex-basis:100%;min-height:32px">▶ Kirim Sekarang</button>`:''}
+        ${p.status==='Failed'?`<button class="btn btn-warning" data-action="retry" style="flex-basis:100%;min-height:32px">↺ Kirim Ulang</button>`:''}
+        <button class="btn btn-outline" data-action="preview">👁 Preview</button>
+        <button class="btn btn-outline" data-action="edit">✎ Edit</button>
+        <button class="btn btn-outline" data-action="move-up" ${realIdx===0?'disabled style="opacity:.35"':''}>▲</button>
+        <button class="btn btn-outline" data-action="move-down" ${realIdx===state.ptList.length-1?'disabled style="opacity:.35"':''}>▼</button>
+        <button class="btn btn-outline" data-action="delete" style="color:var(--accent-red);border-color:var(--accent-red)">🗑</button>
       </div>
     </div>
   `;
   }).join('');
+  initPTCardDelegation();
 }
 
-function togglePTCard(cardId) {
-  document.getElementById(cardId)?.classList.toggle('expanded');
+// Delegated handler untuk kartu PT (mobile view) — sama seperti tabel, id diambil dari data-pt-id.
+function initPTCardDelegation() {
+  const wrap = document.getElementById('pt-card-wrap');
+  if (!wrap || wrap.dataset.delegated) return;
+  wrap.dataset.delegated = '1';
+
+  wrap.addEventListener('click', e => {
+    const actionsBar = e.target.closest('[data-action="stop-propagation"]');
+    const btn = e.target.closest('button[data-action]');
+    const card = e.target.closest('.pt-card[data-pt-id]');
+    if (!card) return;
+    const id = card.dataset.ptId;
+
+    if (btn) {
+      // Tombol aksi di dalam card: jangan sampai juga men-trigger toggle-expand di parent
+      e.stopPropagation();
+      const realIdx = state.ptList.findIndex(x => String(x.id) === String(id));
+      switch (btn.dataset.action) {
+        case 'send-now': sendNowSingle(id); break;
+        case 'retry': retrySingle(id); break;
+        case 'preview': previewEmailPT(id); break;
+        case 'edit': editPT(id); break;
+        case 'move-up': movePT(realIdx, -1); break;
+        case 'move-down': movePT(realIdx, 1); break;
+        case 'delete': deletePT(id); break;
+      }
+      return;
+    }
+    if (actionsBar) { e.stopPropagation(); return; } // klik di area tombol tapi bukan tombol — jangan toggle
+    // Klik di badan card (bukan tombol) → toggle expand/collapse
+    card.classList.toggle('expanded');
+  });
 }
 
 // ===== ACTION DROPDOWN =====
@@ -3158,7 +3627,7 @@ function getCheckedAttachments() {
 }
 
 function onTplSourceChange() {
-  const val = document.getElementById('modal-tpl-source').value;
+  const val = UI.modalTplSource.value;
   document.getElementById('modal-custom-section').style.display = val === 'custom' ? 'block' : 'none';
   document.getElementById('modal-variant-pick-wrap').style.display = val === 'variant' ? 'block' : 'none';
 }
@@ -3187,43 +3656,43 @@ function getSelectedVariantIdx() {
 
 function openAddModal() {
   document.getElementById('modal-pt-title').textContent = 'Tambah Perusahaan';
-  document.getElementById('modal-pt-id').value = '';
-  document.getElementById('modal-nama').value = '';
-  document.getElementById('modal-email').value = '';
-  document.getElementById('modal-kota').value = '';
-  document.getElementById('modal-posisi').value = '';
-  document.getElementById('modal-status').value = 'Pending';
-  document.getElementById('modal-tpl-source').value = 'auto';
-  document.getElementById('modal-custom-subject').value = '';
-  document.getElementById('modal-custom-body').value = '';
+  UI.modalPtId.value = '';
+  UI.modalNama.value = '';
+  UI.modalEmail.value = '';
+  UI.modalKota.value = '';
+  UI.modalPosisi.value = '';
+  UI.modalStatus.value = 'Pending';
+  UI.modalTplSource.value = 'auto';
+  UI.modalCustomSubject.value = '';
+  UI.modalCustomBody.value = '';
   renderVariantPicker(null);
   onTplSourceChange();
-  document.getElementById('modal-use-custom-att').checked = false;
+  UI.modalUseCustomAtt.checked = false;
   toggleCustomAttachments(false);
   openModal('modal-pt');
 }
 
 function editPT(id) {
-  const pt = state.ptList.find(p => String(p.id) === String(id));
+  const pt = findPT(id);
   if (!pt) return;
   document.getElementById('modal-pt-title').textContent = 'Edit Perusahaan';
-  document.getElementById('modal-pt-id').value = id;
-  document.getElementById('modal-nama').value = pt.nama;
-  document.getElementById('modal-email').value = pt.email;
-  document.getElementById('modal-kota').value = pt.kota || '';
-  document.getElementById('modal-posisi').value = pt.posisi || '';
-  document.getElementById('modal-status').value = pt.status;
+  UI.modalPtId.value = id;
+  UI.modalNama.value = pt.nama;
+  UI.modalEmail.value = pt.email;
+  UI.modalKota.value = pt.kota || '';
+  UI.modalPosisi.value = pt.posisi || '';
+  UI.modalStatus.value = pt.status;
 
   // Tentukan tplSource dari data PT
   let tplSource = pt.tplSource || (pt.customBody ? 'custom' : 'auto');
-  document.getElementById('modal-tpl-source').value = tplSource;
-  document.getElementById('modal-custom-subject').value = pt.customSubject || '';
-  document.getElementById('modal-custom-body').value = pt.customBody || '';
+  UI.modalTplSource.value = tplSource;
+  UI.modalCustomSubject.value = pt.customSubject || '';
+  UI.modalCustomBody.value = pt.customBody || '';
   renderVariantPicker(typeof pt.forcedVariantIdx === 'number' ? pt.forcedVariantIdx : null);
   onTplSourceChange();
 
   const hasCustomAtt = Array.isArray(pt.customAttachments);
-  document.getElementById('modal-use-custom-att').checked = hasCustomAtt;
+  UI.modalUseCustomAtt.checked = hasCustomAtt;
   toggleCustomAttachments(false);
   if (hasCustomAtt) {
     toggleCustomAttachments(true);
@@ -3233,9 +3702,9 @@ function editPT(id) {
 }
 
 async function savePT() {
-  const id = document.getElementById('modal-pt-id').value;
-  const nama = document.getElementById('modal-nama').value.trim();
-  const email = document.getElementById('modal-email').value.trim();
+  const id = UI.modalPtId.value;
+  const nama = UI.modalNama.value.trim();
+  const email = UI.modalEmail.value.trim();
   if (!nama || !email) { showToast('Nama PT dan email wajib diisi', 'error'); return; }
   if (!isValidEmail(email)) { showToast('Format email tidak valid', 'error'); return; }
 
@@ -3243,9 +3712,9 @@ async function savePT() {
   const dup = state.ptList.find(p => String(p.id) !== String(id) && (p.email || '').trim().toLowerCase() === emailLower);
   if (dup) { showToast(`Email sudah dipakai oleh "${dup.nama}"`, 'error'); return; }
 
-  const tplSource = document.getElementById('modal-tpl-source').value; // auto | global | variant | custom
-  const customBody = tplSource === 'custom' ? document.getElementById('modal-custom-body').value.trim() : '';
-  const customSubject = tplSource === 'custom' ? document.getElementById('modal-custom-subject').value.trim() : '';
+  const tplSource = UI.modalTplSource.value; // auto | global | variant | custom
+  const customBody = tplSource === 'custom' ? UI.modalCustomBody.value.trim() : '';
+  const customSubject = tplSource === 'custom' ? UI.modalCustomSubject.value.trim() : '';
   const forcedVariantIdx = tplSource === 'variant' ? getSelectedVariantIdx() : null;
 
   if (tplSource === 'variant' && forcedVariantIdx === null) {
@@ -3253,19 +3722,19 @@ async function savePT() {
     return;
   }
 
-  const useCustomAtt = document.getElementById('modal-use-custom-att').checked;
+  const useCustomAtt = UI.modalUseCustomAtt.checked;
   const customAttachments = useCustomAtt ? getCheckedAttachments() : null;
 
   const entry = id
-    ? { ...state.ptList.find(p => String(p.id) === String(id)),
+    ? { ...findPT(id),
         nama, email,
-        kota: document.getElementById('modal-kota').value,
-        posisi: document.getElementById('modal-posisi').value,
-        status: document.getElementById('modal-status').value,
+        kota: UI.modalKota.value,
+        posisi: UI.modalPosisi.value,
+        status: UI.modalStatus.value,
         tplSource, customBody, customSubject, forcedVariantIdx, customAttachments }
     : { id: String(Date.now()), nama, email,
-        kota: document.getElementById('modal-kota').value,
-        posisi: document.getElementById('modal-posisi').value,
+        kota: UI.modalKota.value,
+        posisi: UI.modalPosisi.value,
         status: 'Pending',
         addedAt: new Date().toISOString(),
         tplSource, customBody, customSubject, forcedVariantIdx, customAttachments };
@@ -3301,14 +3770,14 @@ async function savePT() {
       const resp = await gasPost({ action, ...entry });
       if (resp.status !== 'ok') throw new Error(resp.message || 'GAS error');
       if (id) {
-        const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+        const idx = findPTIndex(id);
         if (idx >= 0) state.ptList[idx] = entry;
       } else {
         if (resp.id) entry.id = String(resp.id);
         state.ptList.push(entry);
       }
       saveState(); updateStats();
-      renderPTTable(document.getElementById('search-pt')?.value || '');
+      refreshPTView();
       closeModal('modal-pt');
       showToast(id ? '✅ Data diperbarui di Spreadsheet' : '✅ PT berhasil ditambahkan ke Spreadsheet', 'success');
     } catch(e) {
@@ -3316,27 +3785,27 @@ async function savePT() {
       if (!navigator.onLine || e.message === 'OFFLINE') {
         const action = id ? 'updatePT' : 'addPT';
         if (id) {
-          const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+          const idx = findPTIndex(id);
           if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
         } else {
           state.ptList.push({ ...entry, _unsynced: true });
         }
         enqueueOffline(action, entry);
         saveState(); updateStats();
-        renderPTTable(document.getElementById('search-pt')?.value || '');
+        refreshPTView();
         closeModal('modal-pt');
         showToast('📭 Offline — disimpan lokal, akan sync saat online', 'info');
       } else {
         const forceLocal = confirm('❌ Gagal simpan ke Spreadsheet:\n' + e.message + '\n\nSimpan lokal saja?');
         if (forceLocal) {
           if (id) {
-            const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+            const idx = findPTIndex(id);
             if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
           } else {
             state.ptList.push({ ...entry, _unsynced: true });
           }
           saveState(); updateStats();
-          renderPTTable(document.getElementById('search-pt')?.value || '');
+          refreshPTView();
           closeModal('modal-pt');
           showToast('⚠️ Disimpan lokal — belum tersync', 'info');
         }
@@ -3346,13 +3815,13 @@ async function savePT() {
   } else {
     // ====== PRIORITAS 3: Lokal saja ======
     if (id) {
-      const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+      const idx = findPTIndex(id);
       if (idx >= 0) state.ptList[idx] = { ...entry, _unsynced: true };
     } else {
       state.ptList.push({ ...entry, _unsynced: true });
     }
     saveState(); updateStats();
-    renderPTTable(document.getElementById('search-pt')?.value || '');
+    refreshPTView();
     closeModal('modal-pt');
     showToast('⚠️ Tersimpan lokal — Firebase & GAS belum dikonfigurasi', 'info');
   }
@@ -3362,7 +3831,7 @@ async function savePT() {
 
 async function deletePT(id) {
   if (!confirm('Hapus perusahaan ini?')) return;
-  const pt = state.ptList.find(p => String(p.id) === String(id));
+  const pt = findPT(id);
 
   // ====== PRIORITAS 1: Firebase ======
   if (fbReady()) {
@@ -3383,7 +3852,7 @@ async function deletePT(id) {
       state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
       enqueueOffline('deletePT', { id: String(id) });
       saveState(); updateStats();
-      renderPTTable(document.getElementById('search-pt')?.value || '');
+      refreshPTView();
       showToast('📡 Offline — dihapus lokal, akan disync saat online', 'info');
       return;
     }
@@ -3393,14 +3862,14 @@ async function deletePT(id) {
       if (resp.status !== 'ok') throw new Error(resp.message || 'GAS error');
       state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
       saveState(); updateStats();
-      renderPTTable(document.getElementById('search-pt')?.value || '');
+      refreshPTView();
       showToast('✅ ' + (pt?.nama || 'PT') + ' dihapus dari Spreadsheet', 'info');
     } catch(e) {
       const forceLocal = confirm('❌ Gagal hapus dari Spreadsheet:\n' + e.message + '\n\nHapus dari lokal saja?');
       if (forceLocal) {
         state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
         saveState(); updateStats();
-        renderPTTable(document.getElementById('search-pt')?.value || '');
+        refreshPTView();
         showToast('⚠️ Dihapus lokal — Spreadsheet belum diupdate', 'info');
       }
     }
@@ -3408,7 +3877,7 @@ async function deletePT(id) {
     // Lokal saja
     state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
     saveState(); updateStats();
-    renderPTTable(document.getElementById('search-pt')?.value || '');
+    refreshPTView();
     showToast('Dihapus lokal', 'info');
   }
 }
@@ -3421,7 +3890,7 @@ function movePT(idx, dir) {
   state.ptList[idx] = state.ptList[newIdx];
   state.ptList[newIdx] = tmp;
   saveState();
-  const q = document.getElementById('search-pt')?.value || '';
+  const q = UI.searchPt?.value || '';
   renderPTTable(q);
   renderPTCards(q);
   if (fbReady()) {
@@ -3518,21 +3987,41 @@ function renderVariantList() {
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml((t.body || '').slice(0, 80))}${t.body && t.body.length > 80 ? '...' : ''}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button class="btn btn-outline" onclick="editVariant(${i})" style="padding:4px 10px;font-size:0.75rem">Edit</button>
-        <button class="btn btn-outline" onclick="previewVariant(${i})" style="padding:4px 10px;font-size:0.75rem">Preview</button>
-        <button class="icon-btn danger" onclick="deleteVariant(${i})" title="Hapus variant ini">
+        <button class="btn btn-outline" data-action="edit-variant" data-idx="${i}" style="padding:4px 10px;font-size:0.75rem">Edit</button>
+        <button class="btn btn-outline" data-action="preview-variant" data-idx="${i}" style="padding:4px 10px;font-size:0.75rem">Preview</button>
+        <button class="icon-btn danger" data-action="delete-variant" data-idx="${i}" title="Hapus variant ini">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
         </button>
       </div>
     </div>
   `).join('');
   // Set ab-mode select
-  const sel = document.getElementById('ab-mode');
+  const sel = UI.abMode;
   if (sel) sel.value = state.abMode || 'first';
+  initVariantListDelegation();
+}
+
+// Delegated click handler untuk list variant template — menggantikan onclick inline
+// yang tadinya menyisipkan index langsung ke string JS (editVariant(${i}), dst).
+// Idx sekarang diambil dari atribut data-idx, sama seperti pola initPTTableDelegation.
+function initVariantListDelegation() {
+  const list = document.getElementById('variant-list');
+  if (!list || list.dataset.delegated) return;
+  list.dataset.delegated = '1';
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    if (isNaN(idx)) return;
+    if (btn.dataset.action === 'edit-variant') editVariant(idx);
+    else if (btn.dataset.action === 'preview-variant') previewVariant(idx);
+    else if (btn.dataset.action === 'delete-variant') deleteVariant(idx);
+  });
 }
 
 function saveAbMode() {
-  state.abMode = document.getElementById('ab-mode').value;
+  state.abMode = UI.abMode.value;
   saveState();
   showToast('Mode A/B disimpan: ' + { first: 'Gunakan Pertama', roundrobin: 'Bergantian', random: 'Acak' }[state.abMode], 'success');
 }
@@ -3592,9 +4081,9 @@ function previewVariant(idx) {
 }
 
 function saveCurrentAsVariant() {
-  const name = document.getElementById('tpl-name').value.trim() || 'Variant';
-  const subject = document.getElementById('tpl-subject').value;
-  const body = document.getElementById('tpl-body').value;
+  const name = UI.tplName.value.trim() || 'Variant';
+  const subject = UI.tplSubject.value;
+  const body = UI.tplBody.value;
   if (!body.trim()) { showToast('Isi body template dulu sebelum dijadikan variant', 'error'); return; }
   if (!state.templates) state.templates = [];
   state.templates.push({ id: String(Date.now()), name, subject, body });
@@ -3618,9 +4107,9 @@ function resolveVariant(ptIndex) {
 }
 
 async function saveTemplate() {
-  state.template.name = document.getElementById('tpl-name').value;
-  state.template.subject = document.getElementById('tpl-subject').value;
-  state.template.body = document.getElementById('tpl-body').value;
+  state.template.name = UI.tplName.value;
+  state.template.subject = UI.tplSubject.value;
+  state.template.body = UI.tplBody.value;
   saveState();
 
   const btn = document.querySelector('#page-template .btn-primary');
@@ -3656,9 +4145,9 @@ async function loadTemplateFromFirebase() {
     if (data) {
       state.template = { ...state.template, ...data };
       saveState();
-      document.getElementById('tpl-name').value = state.template.name || '';
-      document.getElementById('tpl-subject').value = state.template.subject || '';
-      document.getElementById('tpl-body').value = state.template.body || '';
+      UI.tplName.value = state.template.name || '';
+      UI.tplSubject.value = state.template.subject || '';
+      UI.tplBody.value = state.template.body || '';
       validateTplLive();
       showToast('✅ Template dimuat dari Firebase', 'success');
     } else {
@@ -3689,8 +4178,8 @@ function togglePanel(bodyId, chevronId, displayType) {
 
 // ===== LIVE VALIDATION CHECKLIST =====
 function validateTplLive() {
-  const subject = document.getElementById('tpl-subject')?.value || '';
-  const body = document.getElementById('tpl-body')?.value || '';
+  const subject = UI.tplSubject?.value || '';
+  const body = UI.tplBody?.value || '';
   const wordCount = body.trim().split(/\s+/).filter(Boolean).length;
 
   const wcEl = document.getElementById('tpl-word-count');
@@ -3725,8 +4214,8 @@ function validateTplLive() {
 
 // ===== PREVIEW EMAIL (MODAL) =====
 function previewTemplate() {
-  const rawSubject = document.getElementById('tpl-subject').value;
-  const rawBody = document.getElementById('tpl-body').value;
+  const rawSubject = UI.tplSubject.value;
+  const rawBody = UI.tplBody.value;
   const sample = { '{NAMA_PT}': 'Contoh Indonesia', '{POSISI}': 'Staff Admin', '{EMAIL}': 'hrd@contohindonesia.com' };
   const fix = s => (s || '').replace(/\{NAMA_PT\}|\{POSISI\}|\{EMAIL\}/g, m => sample[m] || m);
 
@@ -3769,23 +4258,50 @@ function renderLampiran() {
         <div class="form-row" style="margin-bottom:0">
           <label class="form-label">Nama File</label>
           <input type="text" class="form-input" value="${escHtml(l.nama)}" placeholder="Contoh: CV_Wahyu.pdf"
-            onchange="state.lampiranList[${i}].nama=this.value;saveState();showLampiranUnsaved()">
+            data-idx="${i}" data-field="nama">
         </div>
         <div class="form-row" style="margin-bottom:0">
           <label class="form-label">Link Google Drive</label>
           <input type="url" class="form-input" value="${escHtml(l.link)}" placeholder="https://drive.google.com/..."
-            onchange="state.lampiranList[${i}].link=this.value;saveState();showLampiranUnsaved()">
+            data-idx="${i}" data-field="link">
         </div>
       </div>
       <div class="flex items-center gap-2" style="margin-top:0.75rem;justify-content:space-between">
         <label style="display:flex;align-items:center;gap:6px;font-size:0.8125rem;cursor:pointer">
-          <input type="checkbox" ${l.aktif ? 'checked' : ''} onchange="state.lampiranList[${i}].aktif=this.checked;saveState();showLampiranUnsaved()">
+          <input type="checkbox" ${l.aktif ? 'checked' : ''} data-idx="${i}" data-field="aktif">
           Aktif (ikut dikirim)
         </label>
-        <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="removeLampiran(${i})">Hapus</button>
+        <button class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem" data-action="remove-lampiran" data-idx="${i}">Hapus</button>
       </div>
     </div>
   `).join('');
+  initLampiranDelegation();
+}
+
+// Delegated change/click handler untuk list lampiran — menggantikan onchange/onclick inline
+// yang tadinya menyisipkan index langsung ke string JS (state.lampiranList[${i}]..., removeLampiran(${i})).
+function initLampiranDelegation() {
+  const list = document.getElementById('lampiran-list');
+  if (!list || list.dataset.delegated) return;
+  list.dataset.delegated = '1';
+
+  list.addEventListener('change', e => {
+    const field = e.target.dataset.field;
+    if (!field) return;
+    const idx = parseInt(e.target.dataset.idx, 10);
+    if (isNaN(idx) || !state.lampiranList[idx]) return;
+    state.lampiranList[idx][field] = field === 'aktif' ? e.target.checked : e.target.value;
+    saveState();
+    showLampiranUnsaved();
+  });
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="remove-lampiran"]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    if (isNaN(idx)) return;
+    removeLampiran(idx);
+  });
 }
 
 function showLampiranUnsaved() {
@@ -3810,14 +4326,13 @@ function removeLampiran(i) {
 // ===== SCHEDULER =====
 function loadSchedulerForm() {
   const s = state.scheduler;
-  const el = id => document.getElementById(id);
-  if (el('sch-date'))     el('sch-date').value     = s.date || '';
-  if (el('sch-time'))     el('sch-time').value     = s.time || '08:00';
-  if (el('sch-time-end')) el('sch-time-end').value = s.timeEnd || '17:00';
-  if (el('sch-delay'))    el('sch-delay').value    = s.delay || 5;
-  if (el('sch-per-day'))  el('sch-per-day').value  = s.perDay || 100;
-  if (el('sch-gas-url'))  el('sch-gas-url').value  = s.gasUrl || '';
-  if (el('anthropic-api-key')) el('anthropic-api-key').value = state.anthropicApiKey || '';
+  if (byId('sch-date'))     byId('sch-date').value     = s.date || '';
+  if (byId('sch-time'))     byId('sch-time').value     = s.time || '08:00';
+  if (byId('sch-time-end')) byId('sch-time-end').value = s.timeEnd || '17:00';
+  if (byId('sch-delay'))    byId('sch-delay').value    = s.delay || 5;
+  if (byId('sch-per-day'))  byId('sch-per-day').value  = s.perDay || 100;
+  if (byId('sch-gas-url'))  byId('sch-gas-url').value  = s.gasUrl || '';
+  if (byId('anthropic-api-key')) byId('anthropic-api-key').value = state.anthropicApiKey || '';
   // Restore active days
   const activeDays = s.activeDays || [1, 3, 5];
   document.querySelectorAll('.day-btn').forEach(btn => {
@@ -3857,6 +4372,12 @@ function saveScheduler() {
   };
   saveState();
   updateScheduleSummary();
+
+  // Push langsung ke Firebase agar GAS time-driven trigger (server) selalu baca config terbaru,
+  // tidak menunggu klik "Sinkron ke Firebase" manual di halaman Integrasi.
+  if (fbReady()) {
+    window._fb.set(fbRef('mailblast/config'), { ...state.scheduler }).catch(e => console.warn('push config scheduler:', e));
+  }
 
   const btn = document.querySelector('#page-scheduler .btn-primary');
   const orig = btn?.innerHTML;
@@ -3907,6 +4428,11 @@ async function testKoneksi() {
 function setRunStatus(status) {
   state.runStatus = status;
   saveState(); // persist agar resume setelah refresh
+  // Sync ke Firebase — dibaca oleh GAS time-driven trigger (server) supaya pause/stop dari
+  // browser dihormati, dan status 'scheduled'/'running' jadi sinyal server boleh mengirim.
+  if (fbReady()) {
+    window._fb.set(fbRef('mailblast/run_control'), { status, ts: Date.now() }).catch(e => console.warn('push run_control:', e));
+  }
   const badge = document.getElementById('run-status-badge');
   const monBadge = document.getElementById('mon-badge');
   const map = {
@@ -3971,6 +4497,14 @@ function startSend() {
 }
 
 async function executeSendNow(pending) {
+  // Defensif: seharusnya sudah false secara alami setelah _runQueueInner selesai (lihat runQueue()).
+  // Kalau ternyata masih true, berarti ada sesi lain yang genuinely masih jalan — jangan dipaksa reset,
+  // karena itu bisa membuat dua _runQueueInner() berjalan paralel dan kirim dobel.
+  if (_queueRunning) {
+    console.warn('executeSendNow dibatalkan: sesi pengiriman lain masih berjalan');
+    addLog('Sistem', '-', 'Pengiriman baru dibatalkan — sesi sebelumnya masih aktif', 'pending');
+    return;
+  }
   const gotLock = await acquireBlastLock();
   if (!gotLock) {
     showToast('⚠️ Pengiriman sedang berjalan di device/tab lain — dibatalkan untuk hindari kirim dobel', 'error');
@@ -3978,7 +4512,6 @@ async function executeSendNow(pending) {
     setRunStatus('idle');
     return;
   }
-  _queueRunning = false; // reset mutex untuk sesi baru
   // Reset sentToday jika sudah ganti hari
   const todayStr = new Date().toDateString();
   if (state.monStats.lastSendDate !== todayStr) {
@@ -3994,35 +4527,41 @@ async function executeSendNow(pending) {
 }
 
 // Mode jadwal mingguan: cek tiap detik apakah sudah masuk window (hari+jam) berikutnya
+// CATATAN ARSITEKTUR (v45+): fungsi ini TIDAK LAGI mengeksekusi pengiriman.
+// Eksekusi sesungguhnya dilakukan oleh GAS time-driven trigger di server (lihat ScheduledQueue.gs),
+// yang membaca mailblast/config + mailblast/pt_list + mailblast/run_control langsung dari Firebase.
+// Ini murni tampilan (countdown badge) supaya tetap jalan walau halaman ditutup — GAS tidak butuh browser.
 function scheduleAutoSendWeekly(pending) {
-  releaseBlastLock(); // tidak aktif mengirim saat ini, lepas hak agar device lain bisa ambil alih saat window berikutnya
-  let fired = false; // guard: pastikan executeSendNow hanya 1x
+  releaseBlastLock(); // browser tidak pegang hak kirim di mode terjadwal — biar GAS yang pegang saat window buka
+  if (state.sendInterval) { clearInterval(state.sendInterval); state.sendInterval = null; }
+
   const countdownInterval = setInterval(() => {
     const windowCheck = isWithinScheduleWindow();
-    if (windowCheck.ok && !fired) {
-      fired = true;
-      clearInterval(countdownInterval);
-      showToast('⏰ Waktu kirim tiba! Memulai pengiriman...', 'success');
-      executeSendNow(pending);
+    const badge = document.getElementById('run-status-badge');
+    const monBadge = document.getElementById('mon-badge');
+
+    if (windowCheck.ok) {
+      // Sudah masuk jendela jadwal — server (GAS trigger) yang mengeksekusi kirim, bukan browser ini.
+      if (badge) badge.textContent = '⏰ Terjadwal (diproses server...)';
+      if (monBadge) monBadge.textContent = '⏰ Terjadwal (diproses server...)';
       return;
     }
     const waitMs = msUntilNextWindow();
     if (waitMs === null) return;
     const hours = Math.floor(waitMs / (1000 * 3600));
     const mins = Math.floor((waitMs % (1000 * 3600)) / (1000 * 60));
-
-    const badge = document.getElementById('run-status-badge');
     if (badge) badge.textContent = `⏰ Terjadwal (${hours}j ${mins}m)`;
-    const monBadge = document.getElementById('mon-badge');
     if (monBadge) monBadge.textContent = `⏰ Terjadwal (${hours}j ${mins}m)`;
   }, 1000);
 
   state.sendInterval = countdownInterval;
   setRunStatus('scheduled');
+  showToast('⏰ Jadwal aktif di server — pengiriman tetap jalan walau halaman ini ditutup.', 'success');
 }
 
 // Dipertahankan untuk kompatibilitas lama (one-time date/time scheduling), tidak dipakai lagi oleh UI utama
 function scheduleAutoSend(targetTime, pending) {
+  if (state.sendInterval) { clearInterval(state.sendInterval); state.sendInterval = null; }
   const countdownInterval = setInterval(() => {
     const now = new Date();
     if (now >= targetTime) {
@@ -4119,6 +4658,10 @@ function showQuotaWarning(type, quota) {
 
 let queueIndex = 0;
 let _queueRunning = false; // mutex: cegah runQueue paralel
+// Set berisi id PT yang SEDANG dalam proses kirim (baik dari queue otomatis maupun tombol manual).
+// Mencegah PT yang sama terkirim dobel kalau queue otomatis & klik manual (Kirim Sekarang/Retry) kebetulan
+// menyasar PT yang sama di waktu yang hampir bersamaan.
+let _sendingInFlight = new Set();
 async function runQueue() {
   if (_queueRunning) return; // sudah ada instance yang jalan
   _queueRunning = true;
@@ -4131,8 +4674,14 @@ async function runQueue() {
 
 async function _runQueueInner() {
   if (state.runStatus !== 'running') return;
-  const pending = state.ptList.filter(p => p.status === 'Pending');
+  const pending = state.ptList.filter(p => p.status === 'Pending' && !_sendingInFlight.has(String(p.id)));
   if (pending.length === 0) {
+    // Kalau semua sisa "Pending" ternyata sedang dikirim manual (in-flight), jangan tandai selesai —
+    // cukup coba lagi sebentar lagi tanpa spam toast/log "semua selesai".
+    if (state.ptList.some(p => p.status === 'Pending')) {
+      if (state.runStatus === 'running') state.sendInterval = setTimeout(runQueue, 1500);
+      return;
+    }
     setRunStatus('idle');
     releaseBlastLock();
     showQuotaWarning('none');
@@ -4194,8 +4743,15 @@ async function _runQueueInner() {
   // --- Kirim email ---
   const pt = pending[0];
   const ptIndex = state.ptList.findIndex(p => String(p.id) === String(pt.id));
+  const _ptKey = String(pt.id);
+  _sendingInFlight.add(_ptKey);
   addLog(pt.nama, pt.email, 'Mengirim...', 'processing');
-  const result = await sendEmail(pt, ptIndex);
+  let result;
+  try {
+    result = await sendEmail(pt, ptIndex);
+  } finally {
+    _sendingInFlight.delete(_ptKey);
+  }
   const ok = result.ok;
   const status = ok ? 'Sent' : 'Failed';
   const idx = state.ptList.findIndex(p => String(p.id) === String(pt.id));
@@ -4293,7 +4849,11 @@ function updateMonStats() {
 function addLog(nama, email, keterangan, status, templateUsed) {
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const entry = { waktu: timeStr, waktuFull: now.toLocaleString('id-ID'), ts: now.getTime(), nama, email, keterangan, status, templateUsed: templateUsed || null };
+  // Detail Live Log (tanggal + jam:menit:detik) — field BARU (additive),
+  // waktu/waktuFull TIDAK diubah (masih dipakai tabel Log & export CSV).
+  const tanggalStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0');
+  const jamDetailStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+  const entry = { waktu: timeStr, waktuFull: now.toLocaleString('id-ID'), tanggal: tanggalStr, jamDetail: jamDetailStr, ts: now.getTime(), nama, email, keterangan, status, templateUsed: templateUsed || null };
   state.logs.unshift(entry);
   if (state.logs.length > 500) state.logs.pop();
   renderLiveLog();
@@ -4304,12 +4864,15 @@ function addLog(nama, email, keterangan, status, templateUsed) {
 function renderLiveLog() {
   const el = document.getElementById('live-log');
   if (state.logs.length === 0) {
-    el.innerHTML = '<div class="empty-state"><p>Log pengiriman akan muncul di sini</p></div>';
+    el.innerHTML = '<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg><p>Log pengiriman akan muncul di sini</p></div>';
     return;
   }
   el.innerHTML = state.logs.slice(0,50).map(l => `
     <div class="log-item">
-      <span class="log-time">${l.waktu}</span>
+      <span class="log-time">
+        <span class="log-date">${l.tanggal || ''}</span>
+        <span class="log-clock">${l.jamDetail || l.waktu}</span>
+      </span>
       <span class="dot ${l.status}"></span>
       <span class="log-pt">${escHtml(l.nama)}</span>
       <span class="log-status ${l.status}">${escHtml(l.keterangan)}</span>
@@ -4361,7 +4924,7 @@ function showToast(msg, type = 'info') {
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   const icons = { success: '✓', error: '✗', info: 'ℹ' };
-  t.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  t.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${escHtml(String(msg))}</span>`;
   c.appendChild(t);
   setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 3500);
 }
@@ -4431,7 +4994,7 @@ async function syncAllFromGAS() {
 
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   renderLampiran();
   renderLogTable();
 
@@ -4479,11 +5042,10 @@ async function loadLampiranFromGAS() {
 // ===== FIREBASE CONFIG MANAGEMENT (dari halaman Integrasi) =====
 function loadFirebaseConfigForm() {
   const cfg = state.firebaseConfig || {};
-  const el = id => document.getElementById(id);
-  if (el('fb-dburl'))      el('fb-dburl').value      = cfg.databaseURL  || '';
-  if (el('fb-apikey'))     el('fb-apikey').value     = cfg.apiKey       || '';
-  if (el('fb-projectid'))  el('fb-projectid').value  = cfg.projectId    || '';
-  if (el('fb-authdomain')) el('fb-authdomain').value = cfg.authDomain   || '';
+  if (byId('fb-dburl'))      byId('fb-dburl').value      = cfg.databaseURL  || '';
+  if (byId('fb-apikey'))     byId('fb-apikey').value     = cfg.apiKey       || '';
+  if (byId('fb-projectid'))  byId('fb-projectid').value  = cfg.projectId    || '';
+  if (byId('fb-authdomain')) byId('fb-authdomain').value = cfg.authDomain   || '';
 
   // Update badge
   const badge = document.getElementById('fb-conn-badge');
@@ -4526,7 +5088,7 @@ async function saveFirebaseConfig() {
     }
   });
 
-  _fbListenerAttached = false; // reset agar listener bisa di-attach ulang
+  detachFirebaseListeners(); // lepas listener lama dulu agar tidak menumpuk saat re-attach
   if (window._fbInit) {
     window._fbInit(state.firebaseConfig);
     await new Promise(r => setTimeout(r, 700));
@@ -4536,7 +5098,7 @@ async function saveFirebaseConfig() {
       loadFirebaseConfigForm();
       // Update status panel
       showSyncStatus('firebase-sync-status', 'success', '🔥 Firebase terhubung! Realtime sync aktif. ' + new Date().toLocaleTimeString('id-ID'));
-      const detail = document.getElementById('fb-push-pull-detail');
+      const detail = UI.fbPushPullDetail;
       if (detail) { detail.style.display = 'block'; detail.textContent = 'Firebase terhubung — gunakan tombol Push/Pull di atas untuk sinkronisasi data.'; }
       if (btn) { btn.innerHTML = '✅ Terhubung!'; btn.style.background = '#059669'; }
       setTimeout(() => { if (btn) { btn.innerHTML = 'Simpan &amp; Hubungkan'; btn.style.background = ''; btn.disabled = false; } }, 2500);
@@ -4595,7 +5157,7 @@ async function pushAllToFirebase() {
   }
   if (!confirm('Push semua data lokal ke Firebase?\n\nIni akan menimpa data di Firebase dengan data yang ada di aplikasi sekarang.')) return;
 
-  const detail = document.getElementById('fb-push-pull-detail');
+  const detail = UI.fbPushPullDetail;
   if (detail) { detail.style.display = 'block'; detail.innerHTML = '⏳ Sedang push data...'; }
   showSyncStatus('firebase-sync-status', 'info', '⏳ Sedang push semua data ke Firebase...');
 
@@ -4653,7 +5215,7 @@ async function pullAllFromFirebase() {
   }
   if (!confirm('Pull semua data dari Firebase?\n\nIni akan menimpa data lokal dengan data dari Firebase.')) return;
 
-  const detail = document.getElementById('fb-push-pull-detail');
+  const detail = UI.fbPushPullDetail;
   if (detail) { detail.style.display = 'block'; detail.innerHTML = '⏳ Sedang pull data dari Firebase...'; }
   showSyncStatus('firebase-sync-status', 'info', '⏳ Sedang mengambil data dari Firebase...');
 
@@ -4674,9 +5236,9 @@ async function pullAllFromFirebase() {
     const data = snap.val();
     if (data) {
       state.template = { ...state.template, ...data };
-      const body = document.getElementById('tpl-body');
-      const subj = document.getElementById('tpl-subject');
-      const name = document.getElementById('tpl-name');
+      const body = UI.tplBody;
+      const subj = UI.tplSubject;
+      const name = UI.tplName;
       if (body && data.body) body.value = data.body;
       if (subj && data.subject) subj.value = data.subject;
       if (name && data.name) name.value = data.name;
@@ -4715,7 +5277,7 @@ async function pullAllFromFirebase() {
 
   saveState();
   updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
 
   const allOk = results.every(r => r.startsWith('✅'));
   if (detail) { detail.style.display = 'block'; detail.innerHTML = results.join('<br>'); }
@@ -5024,7 +5586,7 @@ function renderReplyList(replies) {
         ? '<span style="background:rgba(16,185,129,0.15);color:var(--accent);font-size:0.7rem;padding:2px 7px;border-radius:4px;font-weight:600">🎉 Panggilan Interview</span>'
         : '<span style="background:rgba(59,130,246,0.15);color:var(--accent-blue);font-size:0.7rem;padding:2px 7px;border-radius:4px;font-weight:600">💬 Ada Balasan</span>';
 
-    return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1rem;margin-bottom:0.75rem">
+    return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1rem;margin-bottom:0.75rem" data-reply-id="${escHtml(String(r.id))}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap">
         <div>
           <div style="font-weight:600;font-size:0.95rem">${escHtml(r.nama)}</div>
@@ -5035,22 +5597,42 @@ function renderReplyList(replies) {
       ${r.replyDate ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem">📅 ${new Date(r.replyDate).toLocaleString('id-ID')}</div>` : ''}
       ${r.snippet ? `<div style="font-size:0.8rem;color:var(--text-muted);background:var(--bg-input);border-radius:6px;padding:0.5rem 0.75rem;margin-bottom:0.75rem;line-height:1.5;border:1px solid var(--border)">${escHtml(r.snippet)}…</div>` : ''}
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${isBounced ? `<button class="btn btn-outline" style="font-size:0.8rem;color:var(--accent-red);border-color:var(--accent-red)" onclick="deleteRepliedPT('${r.id}','${escHtml(r.nama)}')">🗑 Hapus dari Daftar PT</button>` : ''}
-        ${isInterview ? `<button class="btn btn-primary" style="font-size:0.8rem" onclick="markReplyStatus('${r.id}','Interview')">✅ Tandai Interview</button>` : ''}
-        <button class="btn btn-outline" style="font-size:0.8rem" onclick="markReplyStatus('${r.id}','Replied')">💬 Tandai Dibalas</button>
-        <button class="btn btn-outline" style="font-size:0.8rem" onclick="deleteRepliedPT('${r.id}','${escHtml(r.nama)}')">🗑 Hapus PT</button>
+        ${isBounced ? `<button class="btn btn-outline" style="font-size:0.8rem;color:var(--accent-red);border-color:var(--accent-red)" data-action="delete">🗑 Hapus dari Daftar PT</button>` : ''}
+        ${isInterview ? `<button class="btn btn-primary" style="font-size:0.8rem" data-action="mark-interview">✅ Tandai Interview</button>` : ''}
+        <button class="btn btn-outline" style="font-size:0.8rem" data-action="mark-replied">💬 Tandai Dibalas</button>
+        <button class="btn btn-outline" style="font-size:0.8rem" data-action="delete">🗑 Hapus PT</button>
       </div>
     </div>`;
   }).join('');
+  initReplyListDelegation();
+}
+
+// Delegated handler untuk daftar balasan — id & nama diambil dari state, bukan disisipkan ke onclick.
+function initReplyListDelegation() {
+  const list = document.getElementById('reply-list');
+  if (!list || list.dataset.delegated) return;
+  list.dataset.delegated = '1';
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row = btn.closest('[data-reply-id]');
+    if (!row) return;
+    const id = row.dataset.replyId;
+    switch (btn.dataset.action) {
+      case 'delete': deleteRepliedPT(id); break;
+      case 'mark-interview': markReplyStatus(id, 'Interview'); break;
+      case 'mark-replied': markReplyStatus(id, 'Replied'); break;
+    }
+  });
 }
 
 function markReplyStatus(id, newStatus) {
-  const idx = state.ptList.findIndex(p => String(p.id) === String(id));
+  const idx = findPTIndex(id);
   if (idx < 0) return;
   state.ptList[idx].status = newStatus;
   state.ptList[idx].repliedAt = new Date().toISOString();
   saveState(); updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   if (fbReady()) fbUpdatePT(state.ptList[idx]).catch(e => console.warn('fbUpdatePT reply:', e));
   showToast('✅ Status ' + state.ptList[idx].nama + ' diubah ke ' + newStatus, 'success');
   addLog(state.ptList[idx].nama, state.ptList[idx].email, 'Status diubah: ' + newStatus, 'sent');
@@ -5061,13 +5643,14 @@ function markReplyStatus(id, newStatus) {
   }
 }
 
-async function deleteRepliedPT(id, nama) {
+async function deleteRepliedPT(id) {
+  const ref = findPT(id);
+  const nama = ref ? ref.nama : 'PT ini';
   if (!confirm('Hapus ' + nama + ' dari daftar PT?\n\nIni akan menghapus perusahaan ini karena email tidak aktif atau sudah tidak relevan.')) return;
   // Hapus dari state
   state.ptList = state.ptList.filter(p => String(p.id) !== String(id));
   saveState(); updateStats();
-  renderPTTable(document.getElementById('search-pt')?.value || '');
-  renderPTCards(document.getElementById('search-pt')?.value || '');
+  refreshPTView();
   // Hapus dari Firebase
   if (fbReady()) fbDeletePT(id).catch(e => console.warn('fbDeletePT reply:', e));
   showToast('🗑 ' + nama + ' dihapus dari daftar PT', 'info');
@@ -5111,8 +5694,42 @@ function resumeBlastIfNeeded() {
 }
 
 // ===== HELPERS =====
+
+// Cari PT berdasarkan id — sebelumnya `state.ptList.find(p => String(p.id) === String(id))`
+// ditulis ulang identik di 5 tempat, dan versi findIndex-nya di 7 tempat lain.
+function findPT(id) {
+  return state.ptList.find(p => String(p.id) === String(id));
+}
+function findPTIndex(id) {
+  return state.ptList.findIndex(p => String(p.id) === String(id));
+}
+
+// Shorthand document.getElementById, dipakai untuk menggantikan closure lokal
+// `const el = id => document.getElementById(id)` yang sebelumnya dideklarasikan
+// ulang identik di 3 fungsi berbeda (loadSchedulerForm, loadFirebaseConfigForm,
+// updateAnalyticsChart).
+function byId(id) {
+  return document.getElementById(id);
+}
+
 function escHtml(str) {
   return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Escape untuk nilai yang disisipkan di dalam onclick="fn('...')" — escHtml saja TIDAK
+// meng-escape petik satu ('), sehingga nilai yang mengandung ' bisa memutus string JS
+// dan menyuntik kode (mis. nama PT hasil import CSV berisi tanda kutip). Urutan escape
+// penting: backslash & petik satu dulu (level JS), baru entity HTML (level atribut).
+function escJs(str) {
+  return String(str == null ? '' : str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 // ===== ONBOARDING WIZARD =====
@@ -5325,10 +5942,10 @@ function obFinish() {
   state.template.senderEmail = email;
   if (posisi) state.template.defaultPosisi = posisi;
   // Update form template
-  const tplName = document.getElementById('tpl-name');
+  const tplName = UI.tplName;
   if (tplName && !tplName.value) tplName.value = 'Lamaran Kerja - ' + name;
   // Update subject default
-  const tplSubject = document.getElementById('tpl-subject');
+  const tplSubject = UI.tplSubject;
   if (tplSubject && !tplSubject.value) tplSubject.value = 'Lamaran Kerja - ' + name;
   // Tandai onboarding selesai
   state.onboardingDone = true;
@@ -5445,12 +6062,12 @@ async function aiGenerateSubjectBatch() {
       resultsEl.style.display = 'flex';
       resultsEl.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px">Klik untuk salin ke template subject:</div>` +
         subjects.map(s => `
-          <div onclick="copySubjectToTemplate('${escHtml(s)}')" data-s="${escHtml(s)}"
-            style="cursor:pointer;padding:0.5rem 0.875rem;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:8px;font-size:0.83rem;color:var(--text-primary);display:flex;align-items:center;justify-content:space-between;gap:0.5rem;transition:background .15s"
-            onmouseover="this.style.background='rgba(139,92,246,0.18)'" onmouseout="this.style.background='rgba(139,92,246,0.07)'">
+          <div class="ai-subject-suggestion" data-s="${escHtml(s)}"
+            style="cursor:pointer;padding:0.5rem 0.875rem;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:8px;font-size:0.83rem;color:var(--text-primary);display:flex;align-items:center;justify-content:space-between;gap:0.5rem;transition:background .15s">
             <span>${escHtml(s)}</span>
             <span style="font-size:0.72rem;color:#a78bfa;flex-shrink:0">📋 Pakai</span>
           </div>`).join('');
+      initAiSubjectDelegation();
     }
     showToast('5 subject AI siap!', 'success');
   } catch(e) {
@@ -5461,8 +6078,18 @@ async function aiGenerateSubjectBatch() {
   }
 }
 
+function initAiSubjectDelegation() {
+  const resultsEl = document.getElementById('ai-subject-results');
+  if (!resultsEl || resultsEl.dataset.delegated) return;
+  resultsEl.dataset.delegated = '1';
+  resultsEl.addEventListener('click', e => {
+    const item = e.target.closest('.ai-subject-suggestion');
+    if (item) copySubjectToTemplate(item.dataset.s);
+  });
+}
+
 function copySubjectToTemplate(subject) {
-  const tplSubject = document.getElementById('tpl-subject');
+  const tplSubject = UI.tplSubject;
   if (tplSubject) {
     tplSubject.value = subject;
     showToast('Subject disalin ke template! Buka halaman Template untuk melihat.', 'success');
@@ -5525,7 +6152,7 @@ Gunakan placeholder {NAMA_PT} untuk nama perusahaan dan {POSISI} untuk posisi. E
 function useAIBody() {
   const body = document.getElementById('ai-body-pre')?.textContent || '';
   if (!body) return;
-  document.getElementById('tpl-body').value = body;
+  UI.tplBody.value = body;
   saveState();
   showPage('template');
   showToast('Body AI sudah diaplikasikan ke template global!', 'success');
@@ -5552,11 +6179,10 @@ function updateAnalyticsChart() {
   const pending = total - sent - failed - replied;
 
   const pct = total > 0 ? Math.round((sent + replied) / total * 100) : 0;
-  const el = id => document.getElementById(id);
 
   // Update center
-  if (el('donut-center-pct')) el('donut-center-pct').textContent = pct + '%';
-  if (el('analytics-pct')) el('analytics-pct').textContent = `${sent + replied}/${total} selesai`;
+  if (byId('donut-center-pct')) byId('donut-center-pct').textContent = pct + '%';
+  if (byId('analytics-pct')) byId('analytics-pct').textContent = `${sent + replied}/${total} selesai`;
 
   // Donut segments (circumference = 100 for simplicity with our viewBox trick)
   const circ = 100;
@@ -5577,7 +6203,7 @@ function updateAnalyticsChart() {
   setSegment('donut-replied', replPct, sentPct + failPct);
 
   // Legend
-  const legend = el('analytics-legend');
+  const legend = byId('analytics-legend');
   if (legend) {
     const items = [
       { label: 'Terkirim', val: sent, color: 'var(--accent)' },
@@ -5651,8 +6277,8 @@ function updateDailyBars() {
 async function aiGenerateSubject() {
   const btn = document.getElementById('btn-ai-subject');
   const txtEl = document.getElementById('btn-ai-subject-txt');
-  const body = document.getElementById('tpl-body')?.value || '';
-  const suggestionsEl = document.getElementById('ai-subject-suggestions');
+  const body = UI.tplBody?.value || '';
+  const suggestionsEl = UI.aiSubjectSuggestions;
 
   if (!body.trim()) {
     showToast('Isi body email dulu sebelum generate subject', 'info');
@@ -5697,12 +6323,12 @@ Kembalikan HANYA 3 baris subject, tanpa nomor, tanpa penjelasan, tanpa tanda kut
       suggestionsEl.innerHTML = `
         <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">💡 Pilih subject dari AI:</div>
         ${subjects.map(s => `
-          <div onclick="selectAISubject(this)" data-subject="${escHtml(s)}"
-            style="cursor:pointer;padding:0.4rem 0.75rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);border-radius:6px;font-size:0.82rem;color:var(--text-primary);transition:all .15s"
-            onmouseover="this.style.background='rgba(139,92,246,0.18)'" onmouseout="this.style.background='rgba(139,92,246,0.08)'">
+          <div class="ai-subject-item" data-subject="${escHtml(s)}"
+            style="cursor:pointer;padding:0.4rem 0.75rem;border:1px solid rgba(139,92,246,0.3);border-radius:6px;font-size:0.82rem;color:var(--text-primary)">
             ${escHtml(s)}
           </div>
         `).join('')}`;
+      initAISubjectDelegation();
     }
     showToast('3 subject AI siap dipilih ✨', 'success');
   } catch(e) {
@@ -5715,10 +6341,25 @@ Kembalikan HANYA 3 baris subject, tanpa nomor, tanpa penjelasan, tanpa tanda kut
 
 function selectAISubject(el) {
   const subject = el.getAttribute('data-subject');
-  document.getElementById('tpl-subject').value = subject;
-  document.getElementById('ai-subject-suggestions').style.display = 'none';
+  UI.tplSubject.value = subject;
+  UI.aiSubjectSuggestions.style.display = 'none';
   validateTplLive();
   showToast('Subject dipilih!', 'success');
+}
+
+// Delegated click handler untuk saran subject AI — menggantikan onclick inline
+// yang tadinya dibuat ulang tiap kali generate (selectAISubject(this)), plus
+// onmouseover/onmouseout yang sekarang jadi class .ai-subject-item di CSS.
+function initAISubjectDelegation() {
+  const el = UI.aiSubjectSuggestions;
+  if (!el || el.dataset.delegated) return;
+  el.dataset.delegated = '1';
+
+  el.addEventListener('click', e => {
+    const item = e.target.closest('.ai-subject-item');
+    if (!item) return;
+    selectAISubject(item);
+  });
 }
 
 // ===== v43: QUICK CSV PASTE =====
@@ -5726,7 +6367,7 @@ function toggleQuickPaste() {
   const panel = document.getElementById('quick-paste-panel');
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   if (panel.style.display !== 'none') {
-    document.getElementById('quick-paste-input')?.focus();
+    UI.quickPasteInput?.focus();
   }
 }
 
@@ -5736,7 +6377,7 @@ function closeQuickPaste() {
 }
 
 function processQuickPaste() {
-  const raw = document.getElementById('quick-paste-input')?.value || '';
+  const raw = UI.quickPasteInput?.value || '';
   const preview = document.getElementById('quick-paste-preview');
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
@@ -5777,7 +6418,7 @@ function processQuickPaste() {
     renderPTCards();
     // Push to Firebase if connected
     if (fbReady()) fbWritePTList();
-    document.getElementById('quick-paste-input').value = '';
+    UI.quickPasteInput.value = '';
     closeQuickPaste();
     showToast(`✅ ${added} PT berhasil ditambahkan${skipped > 0 ? `, ${skipped} dilewati (duplikat/invalid)` : ''}`, 'success');
   } else {
@@ -5873,7 +6514,110 @@ function fbWritePTList() {
 
 // ===== v43: INIT ANALYTICS on updateStats =====
 // ===== INIT =====
+// ===== EVENT DELEGATION GLOBAL (menggantikan onclick statis di navbar/modal/dsb) =====
+
+// Helper kecil untuk tombol "Salin Kode" GAS — sebelumnya inline
+// navigator.clipboard.writeText(...);showToast(...) langsung di HTML.
+function copyGasCode() {
+  const codeEl = document.getElementById('gas-code-pre');
+  if (!codeEl) return;
+  navigator.clipboard.writeText(codeEl.textContent);
+  showToast('Kode disalin!', 'success');
+}
+
+// Whitelist eksplisit: hanya fungsi yang terdaftar di sini yang bisa dipanggil lewat
+// data-action tanpa parameter. Dibuat eksplisit (bukan window[nama] dinamis) supaya
+// tidak ada eksekusi fungsi arbitrer dari string — konsisten dengan prinsip hardening
+// yang sudah diterapkan di Phase 2.
+const CLICK_ACTIONS = {
+  toggleSidebar, closeSidebar, toggleQuickPaste, closeQuickPaste, processQuickPaste,
+  importExcel, openAddModal, toggleTplGuide, addVariant, saveCurrentAsVariant,
+  loadTemplateFromFirebase, renderVariantAnalytics, toggleAnalyticsCard, clearLog,
+  exportLog, checkReplies, previewAllPT, previewTemplate, saveTemplate, saveVariant,
+  addLampiran, saveLampiranToFirebase, loadLampiranFromFirebase, saveGasUrl, testKoneksi,
+  loadScheduler, saveScheduler, testFirebaseConfig, saveFirebaseConfig, saveAnthropicApiKey,
+  pullAllFromFirebase, pushAllToFirebase, syncUnsyncedPT, flushOfflineQueue, savePT,
+  editPTFromPreview, closePreviewEmailModal, aiWriteBody, useAIBody, aiGenerateSubject,
+  aiGenerateSubjectBatch, toggleActionMenu, bulkDelete, clearBulkSelect, openLainnyaSheet,
+  closeLainnyaSheet, skipLoading, rerunOnboarding, obPrev, obNext, obTestKoneksi,
+  obTestFirebase, obSkipFirebase, obNextFromStep2, obNextFromStep3, obFinish, startSendNow,
+  startSend, stopSend, pauseSend, resumeSend, retryFailed, copyGasCode,
+};
+
+// Aksi yang butuh parameter dari data-attribute, atau logika kecil tambahan.
+function initGlobalActionDelegation() {
+  if (document.body.dataset.delegated) return; // idempotent guard, sama seperti pola lain
+  document.body.dataset.delegated = '1';
+
+  // ESC menutup modal/sheet yang sedang terbuka (celah a11y §11/§17 —
+  // "Belum ada — gap yang perlu ditambah", murni tambahan keydown
+  // listener, tidak mengubah mekanisme buka/tutup yang sudah ada).
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal-backdrop.open, .sheet-backdrop.open')
+      .forEach(el => el.classList.remove('open'));
+  });
+
+  document.body.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+
+    switch (action) {
+      case 'show-page':
+        showPage(el.dataset.page);
+        return;
+      case 'toggle-panel':
+        togglePanel(el.dataset.panel, el.dataset.chevron, el.dataset.display || undefined);
+        return;
+      case 'toggle-day':
+        toggleDay(el);
+        return;
+      case 'switch-preview-tab':
+        switchPreviewTab(el.dataset.tab, el);
+        return;
+      case 'preview-nav':
+        previewNav(parseInt(el.dataset.dir, 10));
+        return;
+      case 'close-modal':
+        closeModal(el.dataset.modal);
+        return;
+      case 'bulk-set-status':
+        bulkSetStatus(el.dataset.status);
+        return;
+      case 'close-lainnya-show-page':
+        closeLainnyaSheet();
+        showPage(el.dataset.page);
+        return;
+      case 'close-modal-if-backdrop':
+        // Hanya menutup kalau klik benar-benar kena backdrop (bukan konten
+        // modal di dalamnya). Sengaja cuma dipasang di modal read-only
+        // (preview) — modal form (modal-pt/modal-variant) tidak dipasangi
+        // ini supaya tidak berisiko kehilangan input tanpa sengaja (§17
+        // filosofi Guarded Actions).
+        if (e.target === el) closeModal(el.dataset.modal);
+        return;
+      case 'close-if-backdrop':
+        if (e.target === el) closeLainnyaSheet();
+        return;
+    }
+
+    // Aksi sederhana tanpa parameter, dicek lewat whitelist di atas.
+    const fn = CLICK_ACTIONS[action];
+    if (typeof fn !== 'function') return;
+    fn();
+    // Beberapa tombol di dalam dropdown action-menu perlu menutup menu setelahnya.
+    if (el.dataset.closeMenu) closeActionMenu();
+  });
+}
+
 (async function init() {
+  // --- Event delegation global untuk seluruh tombol statis (navbar, modal, dsb) ---
+  // Menggantikan onclick inline yang tersisa dari markup statis. Satu listener di
+  // document.body, bukan satu listener per tombol — konsisten dengan pola delegation
+  // yang sudah dipakai di tabel PT, variant list, dan lampiran.
+  initGlobalActionDelegation();
+
   // Tampilkan tombol skip setelah 6 detik
   const skipTimer = setTimeout(() => {
     const btn = document.getElementById('loading-skip-btn');
@@ -5888,11 +6632,11 @@ function fbWritePTList() {
     state.scheduler.date = new Date().toISOString().slice(0,10);
   }
   // Restore UI dari cache
-  if (state.template.body) document.getElementById('tpl-body').value = state.template.body;
-  if (state.template.subject) document.getElementById('tpl-subject').value = state.template.subject;
-  if (state.template.name) document.getElementById('tpl-name').value = state.template.name;
+  if (state.template.body) UI.tplBody.value = state.template.body;
+  if (state.template.subject) UI.tplSubject.value = state.template.subject;
+  if (state.template.name) UI.tplName.value = state.template.name;
   renderVariantList();
-  const abSel = document.getElementById('ab-mode');
+  const abSel = UI.abMode;
   if (abSel && state.abMode) abSel.value = state.abMode;
   updateStats();
   renderPTTable();
@@ -6056,20 +6800,20 @@ function fbWritePTList() {
 </script>
 <!-- Bottom Navigation (Mobile) -->
 <nav class="bottom-nav" id="bottom-nav">
-  <a class="bottom-nav-item active" onclick="showPage('dashboard')" href="#">
+  <a class="bottom-nav-item active" data-action="show-page" data-page="dashboard" href="#">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Dashboard
   </a>
-  <a class="bottom-nav-item" onclick="showPage('perusahaan')" href="#">
+  <a class="bottom-nav-item" data-action="show-page" data-page="perusahaan" href="#">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3"/></svg>
     PT
     <span class="bnav-badge" id="bnav-pending" style="display:none">0</span>
   </a>
-  <a class="bottom-nav-item" onclick="showPage('scheduler')" href="#">
+  <a class="bottom-nav-item" data-action="show-page" data-page="scheduler" href="#">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Jadwal
   </a>
-  <a class="bottom-nav-item" onclick="openLainnyaSheet()" href="#">
+  <a class="bottom-nav-item" data-action="openLainnyaSheet" href="#">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
     Lainnya
   </a>
